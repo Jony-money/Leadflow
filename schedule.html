@@ -40,12 +40,19 @@ html{-webkit-text-size-adjust:100%}body{font-family:var(--font);background:var(-
 .morning-step{display:flex;gap:8px;padding:4px 0;font-size:12.5px;color:var(--text)}
 .morning-step .ms-num{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--amber);min-width:18px}
 .morning-step .ms-txt{flex:1;line-height:1.4}
+.grind-card{margin:0 20px 12px;padding:12px 16px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.15);border-radius:var(--radius);font-size:12px;color:var(--red);font-weight:700;text-align:center;letter-spacing:.02em}
 .rules{margin:0 20px 12px;padding:12px 16px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.15);border-radius:var(--radius);font-size:11.5px;color:var(--text2);line-height:1.65}.rules strong{color:var(--green)}
 .phase-toggle{display:flex;gap:4px;margin:12px 20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:3px}
 .phase-btn{flex:1;padding:8px;border:none;border-radius:6px;font-size:11px;font-weight:700;font-family:var(--font);cursor:pointer;background:transparent;color:var(--text3);transition:all .15s}
 .phase-btn.active{background:var(--green);color:#0a0f1a}
+.notif-bar{margin:0 20px 12px;display:flex;gap:8px}
+.notif-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;border-radius:var(--radius-sm);font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text2);transition:all .15s}
+.notif-btn:active{transform:scale(.97)}
+.notif-btn.on{background:var(--green-dim);border-color:var(--green);color:var(--green)}
+.notif-dot{width:8px;height:8px;border-radius:50%;background:var(--text3)}.notif-dot.on{background:var(--green);box-shadow:0 0 0 3px rgba(34,197,94,.2)}
+.copy-btn{padding:12px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text2)}
 .sched-list{padding:10px 20px 120px}
-.sched-block{display:grid;grid-template-columns:56px 4px 1fr;gap:10px;align-items:start;padding:12px 0}
+.sched-block{display:grid;grid-template-columns:72px 4px 1fr;gap:10px;align-items:start;padding:12px 0}
 .sched-block+.sched-block{border-top:1px solid rgba(30,45,74,.5)}
 .sched-block.is-now{background:linear-gradient(90deg,rgba(34,197,94,.08),transparent);margin:0 -20px;padding:12px 20px;border-radius:var(--radius-sm);border-top:none}
 .sched-block.is-now+.sched-block{border-top:none}
@@ -66,13 +73,6 @@ html{-webkit-text-size-adjust:100%}body{font-family:var(--font);background:var(-
 .workout-exercise .num{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--text3);min-width:16px}
 .workout-exercise .name{font-weight:600;flex:1}.workout-exercise .sets{font-size:11px;color:var(--text2);font-family:var(--mono)}
 .workout-note{font-size:11px;color:var(--text3);margin-top:6px;font-style:italic;line-height:1.5}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;border:none;transition:all .15s}.btn:active{transform:scale(.97)}
-.btn-primary{background:var(--green);color:#0a0f1a}.btn-primary:disabled{opacity:.4;transform:none}
-.btn-ghost{background:var(--surface);color:var(--text2);border:1px solid var(--border)}
-.btn-sm{padding:7px 12px;font-size:12px}
-.btn-icon{width:36px;height:36px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:10px;background:var(--surface);border:1px solid var(--border);color:var(--text2);font-size:16px;cursor:pointer}
-.notif-status{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:20px;font-size:11px;font-weight:600;background:var(--surface);border:1px solid var(--border);color:var(--text3);cursor:pointer}
-.notif-dot{width:7px;height:7px;border-radius:50%;background:var(--text3)}.notif-dot.on{background:var(--green);box-shadow:0 0 0 3px rgba(34,197,94,.2)}
 .toast-wrap{position:fixed;bottom:calc(20px + var(--safe-bottom));left:20px;right:20px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
 .toast{background:var(--surface2);color:var(--text);padding:12px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;box-shadow:0 4px 24px rgba(0,0,0,.4);pointer-events:auto;animation:slideUp .25s ease;border:1px solid var(--border)}
 .toast.ok{border-color:var(--green)}.toast.err{border-color:var(--red)}
@@ -82,20 +82,22 @@ html{-webkit-text-size-adjust:100%}body{font-family:var(--font);background:var(-
 </head>
 <body>
 <div class="app">
-<header class="hdr"><div class="hdr-top"><div><div class="hdr-title">Zelaya's Marketing</div><div class="hdr-greeting" id="greeting">Good morning</div><div class="hdr-date" id="dateLabel"></div></div><div style="display:flex;gap:8px;align-items:center"><div class="notif-status" id="notifBtn" onclick="toggleNotifications()"><span class="notif-dot" id="notifDot"></span><span id="notifLabel">Notifications</span></div><button class="btn-icon" onclick="copySchedule()">&#128203;</button></div></div><div class="day-tabs" id="dayTabs"></div></header>
+<header class="hdr"><div class="hdr-top"><div><div class="hdr-title">Zelaya's Marketing</div><div class="hdr-greeting" id="greeting">Good morning</div><div class="hdr-date" id="dateLabel"></div></div><button class="copy-btn" onclick="copySchedule()">Copy</button></div><div class="day-tabs" id="dayTabs"></div></header>
 <div class="now-card" id="nowCard"><div class="now-label">RIGHT NOW</div><div class="now-title" id="nowTitle">-</div><div class="now-time" id="nowTime">-</div><div class="now-next" id="nowNext"></div><div class="now-progress"><div class="now-progress-fill" id="nowBar"></div></div></div>
 <div class="stats-row"><div class="stat-mini"><div class="n" id="statRem">-</div><div class="l">blocks left</div></div><div class="stat-mini"><div class="n" id="statType">-</div><div class="l">today</div></div><div class="stat-mini"><div class="n" id="statMove">-</div><div class="l">movement</div></div></div>
 <div class="verse-card"><div class="verse-text" id="vText"></div><div class="verse-ref" id="vRef"></div></div>
 <div id="morningCard" class="morning-card" style="display:none">
-<div class="morning-title">Morning Protocol (no phone till 5:30)</div>
-<div class="morning-step"><span class="ms-num">1.</span><span class="ms-txt"><strong>Chug water</strong> — full glass, room temp, immediately</span></div>
-<div class="morning-step"><span class="ms-num">2.</span><span class="ms-txt"><strong>Step outside</strong> — 5 min sunlight or fresh air, rain or shine</span></div>
-<div class="morning-step"><span class="ms-num">3.</span><span class="ms-txt"><strong>Move</strong> — 20 pushups + 20 squats + 20 jumping jacks. No thinking, just go.</span></div>
-<div class="morning-step"><span class="ms-num">4.</span><span class="ms-txt"><strong>Eat</strong> — protein + carbs within 25 min of waking. Eggs + toast, shake + banana, whatever.</span></div>
-<div class="morning-step"><span class="ms-num">5.</span><span class="ms-txt"><strong>Word + coffee</strong> — read, pray, set intention for the day</span></div>
-<div class="morning-step"><span class="ms-num">6.</span><span class="ms-txt"><strong>5:30 = phone on</strong> — start calisthenics or first block</span></div>
+<div class="morning-title">Morning Protocol — no phone till 5:30 AM</div>
+<div class="morning-step"><span class="ms-num">1.</span><span class="ms-txt"><strong>Chug water</strong> — full glass, immediately</span></div>
+<div class="morning-step"><span class="ms-num">2.</span><span class="ms-txt"><strong>Step outside</strong> — 5 min sunlight or fresh air</span></div>
+<div class="morning-step"><span class="ms-num">3.</span><span class="ms-txt"><strong>Move</strong> — 20 pushups + 20 squats + 20 jumping jacks</span></div>
+<div class="morning-step"><span class="ms-num">4.</span><span class="ms-txt"><strong>Eat</strong> — protein + carbs within 25 min. Eggs + toast, shake + banana.</span></div>
+<div class="morning-step"><span class="ms-num">5.</span><span class="ms-txt"><strong>Word + coffee</strong> — read, pray, set intention</span></div>
+<div class="morning-step"><span class="ms-num">6.</span><span class="ms-txt"><strong>5:30 AM = phone on</strong> — start calisthenics or first block</span></div>
 </div>
+<div class="notif-bar"><button class="notif-btn" id="notifBtn" onclick="toggleNotifications()"><span class="notif-dot" id="notifDot"></span><span id="notifLabel">Enable Notifications</span></button></div>
 <div class="phase-toggle"><button class="phase-btn active" id="phase1btn" onclick="setPhase(1)">Phase 1: Build Focus</button><button class="phase-btn" id="phase2btn" onclick="setPhase(2)">Phase 2: Scale Mode</button></div>
+<div class="grind-card" id="grindCard">You only get off early if there's ZERO work left. Otherwise you're here till 7:30 PM. Earn the early finish.</div>
 <div class="rules"><strong>Hard Rules:</strong> Lights out 10 PM · 7hr sleep · 30+ min movement · Read the Word · Eat real meals · Phone OUT of bedroom · No Sunday client work</div>
 <div class="sched-list" id="schedList"></div>
 </div>
@@ -103,36 +105,27 @@ html{-webkit-text-size-adjust:100%}body{font-family:var(--font);background:var(-
 <script>
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function toast(msg,ms,kind){ms=ms||2800;var t=document.createElement('div');t.className='toast '+(kind||'');t.textContent=msg;document.getElementById('toasts').appendChild(t);setTimeout(function(){t.remove()},ms)}
-function fmtTime(t){if(!t)return'';var p=t.split(':');var h=parseInt(p[0]);return(h>12?h-12:h||12)+':'+p[1]+' '+(h>=12?'PM':'AM')}
+function fmt(t){if(!t)return'';var p=t.split(':');var h=parseInt(p[0]);var m=p[1];if(h===0)return'12:'+m+' AM';if(h<12)return h+':'+m+' AM';if(h===12)return'12:'+m+' PM';return(h-12)+':'+m+' PM'}
 function tm(t){var p=t.split(':').map(Number);return p[0]*60+p[1]}
 
 /* Notifications */
-var notifEnabled=false;
-var lastNotifBlock='';
+var notifEnabled=false;var lastNotifBlock='';
 function toggleNotifications(){
-  if(!('Notification' in window)){toast('Notifications not supported on this browser',3000,'err');return}
+  if(!('Notification' in window)){toast('Not supported on this browser',3000,'err');return}
   if(Notification.permission==='granted'){notifEnabled=!notifEnabled;updateNotifUI();toast(notifEnabled?'Notifications on':'Notifications off',1800,notifEnabled?'ok':'');localStorage.setItem('zNotif',notifEnabled?'1':'0');return}
-  if(Notification.permission==='denied'){toast('Notifications blocked — enable in browser settings',3500,'err');return}
-  Notification.requestPermission().then(function(p){if(p==='granted'){notifEnabled=true;updateNotifUI();localStorage.setItem('zNotif','1');toast('Notifications enabled',2000,'ok')}else{toast('Notifications denied',2500,'err')}})
+  if(Notification.permission==='denied'){toast('Blocked — enable in browser settings',3500,'err');return}
+  Notification.requestPermission().then(function(p){if(p==='granted'){notifEnabled=true;updateNotifUI();localStorage.setItem('zNotif','1');toast('Notifications enabled!',2000,'ok')}else{toast('Denied',2500,'err')}})
 }
-function updateNotifUI(){document.getElementById('notifDot').className='notif-dot '+(notifEnabled?'on':'');document.getElementById('notifLabel').textContent=notifEnabled?'Notifs On':'Notifs Off'}
-function checkNotification(){
+function updateNotifUI(){var on=notifEnabled;document.getElementById('notifDot').className='notif-dot '+(on?'on':'');document.getElementById('notifLabel').textContent=on?'Notifications On':'Enable Notifications';document.getElementById('notifBtn').className='notif-btn '+(on?'on':'')}
+function checkNotif(){
   if(!notifEnabled||Notification.permission!=='granted')return;
-  var entry=DAY_MAP.filter(function(d){return d.dow===new Date().getDay()})[0];
-  var blocks=S[currentPhase][entry.type];var now=new Date();var nowMin=now.getHours()*60+now.getMinutes();
-  for(var i=0;i<blocks.length;i++){
-    var sMin=tm(blocks[i].start);
-    if(nowMin===sMin-5&&lastNotifBlock!==blocks[i].title+blocks[i].start){
-      lastNotifBlock=blocks[i].title+blocks[i].start;
-      new Notification('In 5 minutes',{body:blocks[i].title+' starts at '+fmtTime(blocks[i].start),icon:'/favicon.ico',tag:'schedule-'+blocks[i].start});
-    }
-    if(nowMin===sMin&&lastNotifBlock!==blocks[i].title+blocks[i].start+'now'){
-      lastNotifBlock=blocks[i].title+blocks[i].start+'now';
-      new Notification('NOW: '+blocks[i].title,{body:blocks[i].start+' — '+blocks[i].end,icon:'/favicon.ico',tag:'schedule-now-'+blocks[i].start});
-    }
+  var dt=getDayType(new Date().getDay());var blocks=S[currentPhase][dt.type];var now=new Date();var nowMin=now.getHours()*60+now.getMinutes();
+  for(var i=0;i<blocks.length;i++){var sMin=tm(blocks[i].start);
+    if(nowMin===sMin-5&&lastNotifBlock!==blocks[i].start+'pre'){lastNotifBlock=blocks[i].start+'pre';new Notification('In 5 minutes',{body:blocks[i].title+' starts at '+fmt(blocks[i].start),tag:'z-pre-'+blocks[i].start})}
+    if(nowMin===sMin&&lastNotifBlock!==blocks[i].start+'now'){lastNotifBlock=blocks[i].start+'now';new Notification('NOW: '+blocks[i].title,{body:fmt(blocks[i].start)+' — '+fmt(blocks[i].end),tag:'z-now-'+blocks[i].start})}
   }
 }
-(function(){var n=localStorage.getItem('zNotif');if(n==='1'&&Notification.permission==='granted'){notifEnabled=true}updateNotifUI()})();
+(function(){if(localStorage.getItem('zNotif')==='1'&&typeof Notification!=='undefined'&&Notification.permission==='granted'){notifEnabled=true}updateNotifUI()})();
 
 /* Verses */
 var VERSES=[
@@ -156,7 +149,7 @@ var VERSES=[
 var WORKOUTS={
 calisthenics_push:{label:'Push (Calisthenics)',exercises:[{name:'Diamond Push-Ups',sets:'3x15'},{name:'Wide Push-Ups',sets:'3x12'},{name:'Pike Push-Ups',sets:'3x10'},{name:'Dips (chair/parallel)',sets:'3x12'},{name:'Pseudo Planche Push-Ups',sets:'3x8'},{name:'Tricep Push-Ups',sets:'2x15'}],note:'Superset pairs. 45s rest. Core finisher: 60s plank + 20 leg raises x2.'},
 calisthenics_pull:{label:'Pull (Calisthenics)',exercises:[{name:'Pull-Ups (overhand)',sets:'4xMax'},{name:'Chin-Ups (underhand)',sets:'3xMax'},{name:'Inverted Rows',sets:'3x12'},{name:'Dead Hangs',sets:'3x30s'},{name:'Scapular Pull-Ups',sets:'3x10'},{name:'Towel Rows',sets:'3x10'}],note:'90s rest on pull-ups. Core finisher: 3x15 hanging knee raises.'},
-calisthenics_legs:{label:'Legs (Calisthenics)',exercises:[{name:'Pistol Squats (each)',sets:'3x6'},{name:'Bulgarian Split Squats',sets:'3x10/leg'},{name:'Jump Squats',sets:'3x15'},{name:'Walking Lunges',sets:'3x12/leg'},{name:'Single Leg Calf Raises',sets:'3x15/leg'},{name:'Wall Sit Hold',sets:'3x45s'}],note:'60s rest. Stretch 2 min after (hip flexors, hamstrings, quads).'},
+calisthenics_legs:{label:'Legs (Calisthenics)',exercises:[{name:'Pistol Squats (each)',sets:'3x6'},{name:'Bulgarian Split Squats',sets:'3x10/leg'},{name:'Jump Squats',sets:'3x15'},{name:'Walking Lunges',sets:'3x12/leg'},{name:'Single Leg Calf Raises',sets:'3x15/leg'},{name:'Wall Sit Hold',sets:'3x45s'}],note:'60s rest. Stretch 2 min after.'},
 calisthenics_core:{label:'Core (Calisthenics)',exercises:[{name:'Hollow Body Hold',sets:'3x30s'},{name:'Leg Raises',sets:'3x15'},{name:'Plank (front)',sets:'3x60s'},{name:'Side Plank (each)',sets:'2x30s'},{name:'Mountain Climbers',sets:'3x20'},{name:'L-Sit Hold',sets:'3x15s'}],note:'30s rest. Push through it.'},
 gym_push:{label:'Push (Gym)',exercises:[{name:'Bench Press',sets:'4x8'},{name:'Overhead Press',sets:'4x8'},{name:'Incline DB Press',sets:'3x10'},{name:'Lateral Raises',sets:'4x12'},{name:'Cable Flyes',sets:'3x12'},{name:'Tricep Pushdowns',sets:'3x12'},{name:'OH Tricep Ext',sets:'3x12'}],note:'90s compounds, 60s isolations. Log weights.'},
 gym_legs:{label:'Legs (Gym)',exercises:[{name:'Barbell Squats',sets:'4x8'},{name:'Romanian Deadlifts',sets:'4x10'},{name:'Leg Press',sets:'3x12'},{name:'Leg Curls',sets:'3x12'},{name:'Leg Extensions',sets:'3x12'},{name:'Calf Raises',sets:'4x15'}],note:'2 min rest squats/RDLs. Stretch after.'},
@@ -165,7 +158,7 @@ gym_pull:{label:'Pull (Gym)',exercises:[{name:'Deadlifts',sets:'4x5'},{name:'Bar
 function getRotation(dow){var r=['calisthenics_push','calisthenics_pull','calisthenics_legs','calisthenics_core'];var w=Math.floor((Date.now()-new Date(new Date().getFullYear(),0,1))/(7*86400000));return r[((dow-1)+w)%4]}
 function getWorkout(b,dow){if(b.tag!=='fitness')return null;var t=b.title.toLowerCase();if(t.indexOf('gym')>=0&&t.indexOf('push')>=0)return WORKOUTS.gym_push;if(t.indexOf('gym')>=0&&t.indexOf('legs')>=0)return WORKOUTS.gym_legs;if(t.indexOf('gym')>=0&&t.indexOf('pull')>=0)return WORKOUTS.gym_pull;if(t.indexOf('calisthenics')>=0||t.indexOf('ppl')>=0)return WORKOUTS[getRotation(dow)];return null}
 
-/* SCHEDULE DATA — TWO PHASES */
+/* SCHEDULE DATA */
 var S={
 phase1:{
   sales:[
@@ -173,21 +166,22 @@ phase1:{
     {start:'05:05',end:'05:10',title:'Step outside — sunlight + air',tag:'personal'},
     {start:'05:10',end:'05:15',title:'Movement burst — pushups, squats, jacks',tag:'fitness'},
     {start:'05:15',end:'05:30',title:'Breakfast — protein + carbs',tag:'personal'},
-    {start:'05:30',end:'06:00',title:'Word + coffee',tag:'personal'},
+    {start:'05:30',end:'06:00',title:'Word + coffee (phone on at 5:30)',tag:'personal'},
     {start:'06:00',end:'06:30',title:'Calisthenics (PPL/Core)',tag:'fitness'},
     {start:'06:30',end:'06:45',title:'Shower',tag:'personal'},
     {start:'06:45',end:'08:15',title:'Cold outreach — builders + detailers',tag:'outreach',note:'Builders on site by 7, catch them early'},
     {start:'08:15',end:'08:30',title:'Break — stretch, reset',tag:'break'},
     {start:'08:30',end:'09:30',title:'Follow-ups + call prep',tag:'sales'},
-    {start:'09:30',end:'12:00',title:'Sales calls + strategy calls',tag:'sales',note:'GHL calendar: 10AM-12PM'},
+    {start:'09:30',end:'12:00',title:'Sales calls + strategy calls',tag:'sales',note:'GHL calendar: 10 AM-12 PM'},
     {start:'12:00',end:'12:45',title:'Lunch — no screens',tag:'personal'},
     {start:'12:45',end:'13:00',title:'DM check (15 min cap)',tag:'outreach'},
     {start:'13:00',end:'15:00',title:'Follow-ups + proposals + closing',tag:'sales'},
     {start:'15:00',end:'15:15',title:'Break — snack, sun, walk',tag:'break'},
-    {start:'15:15',end:'17:30',title:'Late calls — builder/detailer window',tag:'sales',note:'GHL calendar: 3:30-5:30PM'},
-    {start:'17:30',end:'18:30',title:'Wrap + pipeline review',tag:'work'},
-    {start:'18:30',end:'19:30',title:'Dinner',tag:'personal'},
-    {start:'19:30',end:'21:15',title:'Personal — family / friends',tag:'personal'},
+    {start:'15:15',end:'17:30',title:'Sales calls — builder/detailer window',tag:'sales',note:'GHL calendar: 3:30-5:30 PM'},
+    {start:'17:30',end:'18:30',title:'Detailer outreach — their prime window',tag:'outreach'},
+    {start:'18:30',end:'19:30',title:'Wrap + pipeline review',tag:'work'},
+    {start:'19:30',end:'20:00',title:'Dinner',tag:'personal'},
+    {start:'20:00',end:'21:15',title:'Personal — family / friends',tag:'personal'},
     {start:'21:15',end:'21:45',title:'Shutdown — phone OUT',tag:'personal'},
     {start:'21:45',end:'22:00',title:'Read / wind down',tag:'sleep'}
   ],
@@ -196,21 +190,22 @@ phase1:{
     {start:'05:05',end:'05:10',title:'Step outside — sunlight + air',tag:'personal'},
     {start:'05:10',end:'05:15',title:'Movement burst — pushups, squats, jacks',tag:'fitness'},
     {start:'05:15',end:'05:30',title:'Breakfast — protein + carbs',tag:'personal'},
-    {start:'05:30',end:'06:00',title:'Word + coffee',tag:'personal'},
+    {start:'05:30',end:'06:00',title:'Word + coffee (phone on at 5:30)',tag:'personal'},
     {start:'06:00',end:'06:30',title:'Calisthenics (PPL/Core)',tag:'fitness'},
     {start:'06:30',end:'06:45',title:'Shower',tag:'personal'},
     {start:'06:45',end:'07:00',title:'Coffee + micro-task (one small win)',tag:'work'},
-    {start:'07:00',end:'09:00',title:'Deep build block — CRM, ads, websites',tag:'work',note:'No calls, no DMs, no distractions'},
+    {start:'07:00',end:'09:00',title:'Deep build — CRM, ads, websites',tag:'work',note:'No calls, no DMs, no distractions'},
     {start:'09:00',end:'09:15',title:'Break',tag:'break'},
     {start:'09:15',end:'12:00',title:'Build block — client deliverables',tag:'work'},
     {start:'12:00',end:'12:45',title:'Lunch — no screens',tag:'personal'},
     {start:'12:45',end:'13:00',title:'Quick email + DM check',tag:'outreach'},
-    {start:'13:00',end:'15:00',title:'Client calls — kickoffs + reviews',tag:'work',note:'GHL calendar: 12-2PM reviews, 3-5PM check-ins'},
+    {start:'13:00',end:'15:00',title:'Client calls — kickoffs + reviews',tag:'work',note:'GHL calendar: 12-2 PM reviews'},
     {start:'15:00',end:'15:15',title:'Break',tag:'break'},
-    {start:'15:15',end:'17:30',title:'Build + weekly check-ins',tag:'work'},
-    {start:'17:30',end:'18:30',title:'Wrap + update pipelines',tag:'work'},
-    {start:'18:30',end:'19:30',title:'Dinner',tag:'personal'},
-    {start:'19:30',end:'21:15',title:'Personal — family / friends',tag:'personal'},
+    {start:'15:15',end:'17:30',title:'Build + weekly check-ins',tag:'work',note:'GHL calendar: 3-5 PM check-ins'},
+    {start:'17:30',end:'18:30',title:'Detailer follow-ups or extra build',tag:'work'},
+    {start:'18:30',end:'19:30',title:'Wrap + update pipelines',tag:'work'},
+    {start:'19:30',end:'20:00',title:'Dinner',tag:'personal'},
+    {start:'20:00',end:'21:15',title:'Personal — family / friends',tag:'personal'},
     {start:'21:15',end:'21:45',title:'Shutdown — phone OUT',tag:'personal'},
     {start:'21:45',end:'22:00',title:'Read / wind down',tag:'sleep'}
   ],
@@ -221,13 +216,15 @@ phase1:{
     {start:'05:30',end:'07:00',title:'Gym — Push',tag:'fitness'},
     {start:'07:00',end:'07:20',title:'Shower',tag:'personal'},
     {start:'07:20',end:'07:30',title:'Coffee + Word',tag:'personal'},
-    {start:'07:30',end:'12:00',title:'Build block — deliverables + reporting',tag:'work'},
+    {start:'07:30',end:'10:00',title:'Build block — deliverables',tag:'work'},
+    {start:'10:00',end:'10:15',title:'Break',tag:'break'},
+    {start:'10:15',end:'12:00',title:'Build + content',tag:'work'},
     {start:'12:00',end:'13:00',title:'Lunch — no screens',tag:'personal'},
-    {start:'13:00',end:'15:00',title:'Build / content / follow-ups',tag:'work'},
+    {start:'13:00',end:'15:00',title:'Build + client follow-ups',tag:'work'},
     {start:'15:00',end:'17:00',title:'Week wrap-up + reporting',tag:'work'},
     {start:'17:00',end:'18:00',title:'Next-week planning',tag:'work'},
     {start:'18:00',end:'19:00',title:'Dinner',tag:'personal'},
-    {start:'19:00',end:'23:00',title:'OFF — go out',tag:'personal'}
+    {start:'19:00',end:'23:00',title:'OFF — go out, you earned it',tag:'personal'}
   ],
   saturday:[
     {start:'06:00',end:'06:05',title:'Wake',tag:'personal'},
@@ -253,9 +250,9 @@ phase2:{
   sales:[
     {start:'05:00',end:'05:05',title:'Wake + chug water',tag:'personal'},
     {start:'05:05',end:'05:10',title:'Step outside — sunlight + air',tag:'personal'},
-    {start:'05:10',end:'05:15',title:'Movement burst — pushups, squats, jacks',tag:'fitness'},
+    {start:'05:10',end:'05:15',title:'Movement burst',tag:'fitness'},
     {start:'05:15',end:'05:30',title:'Breakfast — protein + carbs',tag:'personal'},
-    {start:'05:30',end:'06:00',title:'Word + coffee',tag:'personal'},
+    {start:'05:30',end:'06:00',title:'Word + coffee (phone on at 5:30)',tag:'personal'},
     {start:'06:00',end:'06:30',title:'Calisthenics (PPL/Core)',tag:'fitness'},
     {start:'06:30',end:'06:45',title:'Shower',tag:'personal'},
     {start:'06:45',end:'08:15',title:'Cold outreach — builders + detailers',tag:'outreach'},
@@ -266,10 +263,11 @@ phase2:{
     {start:'12:45',end:'13:00',title:'DM check (15 min cap)',tag:'outreach'},
     {start:'13:00',end:'15:00',title:'Follow-ups + proposals + closing',tag:'sales'},
     {start:'15:00',end:'15:15',title:'Break',tag:'break'},
-    {start:'15:15',end:'17:30',title:'Late calls — builder/detailer window',tag:'sales'},
-    {start:'17:30',end:'18:30',title:'Wrap + pipeline review',tag:'work'},
-    {start:'18:30',end:'19:30',title:'Dinner',tag:'personal'},
-    {start:'19:30',end:'21:15',title:'Personal',tag:'personal'},
+    {start:'15:15',end:'17:30',title:'Sales calls — builder/detailer window',tag:'sales'},
+    {start:'17:30',end:'18:30',title:'Detailer outreach',tag:'outreach'},
+    {start:'18:30',end:'19:30',title:'Wrap + pipeline review',tag:'work'},
+    {start:'19:30',end:'20:00',title:'Dinner',tag:'personal'},
+    {start:'20:00',end:'21:15',title:'Personal',tag:'personal'},
     {start:'21:15',end:'21:45',title:'Shutdown — phone OUT',tag:'personal'},
     {start:'21:45',end:'22:00',title:'Read / wind down',tag:'sleep'}
   ],
@@ -278,20 +276,22 @@ phase2:{
     {start:'05:05',end:'05:10',title:'Step outside — sunlight + air',tag:'personal'},
     {start:'05:10',end:'05:15',title:'Movement burst',tag:'fitness'},
     {start:'05:15',end:'05:30',title:'Breakfast — protein + carbs',tag:'personal'},
-    {start:'05:30',end:'06:00',title:'Word + coffee',tag:'personal'},
+    {start:'05:30',end:'06:00',title:'Word + coffee (phone on at 5:30)',tag:'personal'},
     {start:'06:00',end:'06:30',title:'Calisthenics (PPL/Core)',tag:'fitness'},
     {start:'06:30',end:'06:45',title:'Shower',tag:'personal'},
-    {start:'06:45',end:'09:00',title:'Deep build block',tag:'work'},
+    {start:'06:45',end:'07:00',title:'Coffee + micro-task',tag:'work'},
+    {start:'07:00',end:'09:00',title:'Deep build — CRM, ads, websites',tag:'work'},
     {start:'09:00',end:'09:15',title:'Break',tag:'break'},
     {start:'09:15',end:'12:00',title:'Build block — deliverables',tag:'work'},
     {start:'12:00',end:'12:45',title:'Lunch — no screens',tag:'personal'},
     {start:'12:45',end:'13:00',title:'Quick check',tag:'outreach'},
-    {start:'13:00',end:'15:00',title:'Client calls + reviews',tag:'work'},
+    {start:'13:00',end:'15:00',title:'Client calls — kickoffs + reviews',tag:'work'},
     {start:'15:00',end:'15:15',title:'Break',tag:'break'},
-    {start:'15:15',end:'17:30',title:'Build + reporting',tag:'work'},
-    {start:'17:30',end:'18:30',title:'Wrap',tag:'work'},
-    {start:'18:30',end:'19:30',title:'Dinner',tag:'personal'},
-    {start:'19:30',end:'21:15',title:'Personal',tag:'personal'},
+    {start:'15:15',end:'17:30',title:'Build + check-ins',tag:'work'},
+    {start:'17:30',end:'18:30',title:'Extra build or follow-ups',tag:'work'},
+    {start:'18:30',end:'19:30',title:'Wrap + pipelines',tag:'work'},
+    {start:'19:30',end:'20:00',title:'Dinner',tag:'personal'},
+    {start:'20:00',end:'21:15',title:'Personal',tag:'personal'},
     {start:'21:15',end:'21:45',title:'Shutdown — phone OUT',tag:'personal'},
     {start:'21:45',end:'22:00',title:'Read / wind down',tag:'sleep'}
   ],
@@ -302,12 +302,15 @@ phase2:{
     {start:'05:30',end:'07:00',title:'Gym — Push',tag:'fitness'},
     {start:'07:00',end:'07:20',title:'Shower',tag:'personal'},
     {start:'07:20',end:'07:30',title:'Coffee + Word',tag:'personal'},
-    {start:'07:30',end:'12:00',title:'Build block',tag:'work'},
+    {start:'07:30',end:'10:00',title:'Build block',tag:'work'},
+    {start:'10:00',end:'10:15',title:'Break',tag:'break'},
+    {start:'10:15',end:'12:00',title:'Build + content',tag:'work'},
     {start:'12:00',end:'13:00',title:'Lunch',tag:'personal'},
-    {start:'13:00',end:'17:00',title:'Build + week wrap-up',tag:'work'},
+    {start:'13:00',end:'15:00',title:'Build + follow-ups',tag:'work'},
+    {start:'15:00',end:'17:00',title:'Week wrap-up + reporting',tag:'work'},
     {start:'17:00',end:'18:00',title:'Next-week planning',tag:'work'},
     {start:'18:00',end:'19:00',title:'Dinner',tag:'personal'},
-    {start:'19:00',end:'23:00',title:'OFF',tag:'personal'}
+    {start:'19:00',end:'23:00',title:'OFF — go out',tag:'personal'}
   ],
   saturday:[
     {start:'06:00',end:'06:05',title:'Wake',tag:'personal'},
@@ -332,32 +335,21 @@ phase2:{
 };
 
 var currentPhase='phase1';
-function setPhase(n){
-  currentPhase='phase'+n;
-  document.getElementById('phase1btn').className='phase-btn '+(n===1?'active':'');
-  document.getElementById('phase2btn').className='phase-btn '+(n===2?'active':'');
-  localStorage.setItem('zPhase',currentPhase);
-  render();
-}
-(function(){var p=localStorage.getItem('zPhase');if(p==='phase2'){setPhase(2)}})();
+function setPhase(n){currentPhase='phase'+n;document.getElementById('phase1btn').className='phase-btn '+(n===1?'active':'');document.getElementById('phase2btn').className='phase-btn '+(n===2?'active':'');localStorage.setItem('zPhase',currentPhase);render()}
+(function(){var p=localStorage.getItem('zPhase');if(p==='phase2')setPhase(2)})();
 
-/* Phase 1: Mon=Sales, Tue=Build, Wed=Sales, Thu=Build, Fri=Build */
-/* Phase 2: Mon=Sales, Tue=Sales, Wed=Sales, Thu=Build, Fri=Build */
+/* Phase 1: Mon-Tue=Sales, Wed-Fri=Build */
+/* Phase 2: Mon-Wed=Sales, Thu-Fri=Build */
 var DAY_MAP=[
-  {dow:0,label:'Sun',type:'sunday',byday:'SU'},
-  {dow:1,label:'Mon',type:'sales',byday:'MO'},
-  {dow:2,label:'Tue',type:null,byday:'TU'},
-  {dow:3,label:'Wed',type:null,byday:'WE'},
-  {dow:4,label:'Thu',type:'build',byday:'TH'},
-  {dow:5,label:'Fri',type:'friday_build',byday:'FR'},
-  {dow:6,label:'Sat',type:'saturday',byday:'SA'}
+  {dow:0,label:'Sun'},{dow:1,label:'Mon'},{dow:2,label:'Tue'},
+  {dow:3,label:'Wed'},{dow:4,label:'Thu'},{dow:5,label:'Fri'},{dow:6,label:'Sat'}
 ];
 function getDayType(dow){
   if(dow===0)return{type:'sunday',label:'Rest'};
   if(dow===6)return{type:'saturday',label:'Catch-up'};
   if(dow===5)return{type:'friday_build',label:'Build'};
   if(currentPhase==='phase1'){
-    if(dow===1||dow===3)return{type:'sales',label:'Sales'};
+    if(dow===1||dow===2)return{type:'sales',label:'Sales'};
     return{type:'build',label:'Build'};
   }else{
     if(dow===1||dow===2||dow===3)return{type:'sales',label:'Sales'};
@@ -400,7 +392,7 @@ function renderBlocks(){
     if(showW){wHTML='<div class="workout-panel"><div class="workout-panel-title">'+esc(workout.label)+'</div>';
       workout.exercises.forEach(function(ex,i){wHTML+='<div class="workout-exercise"><span class="num">'+(i+1)+'.</span><span class="name">'+esc(ex.name)+'</span><span class="sets">'+esc(ex.sets)+'</span></div>'});
       if(workout.note)wHTML+='<div class="workout-note">'+esc(workout.note)+'</div>';wHTML+='</div>'}
-    return '<div class="sched-block '+cls+'"><div class="sb-time">'+b.start+'<span class="end">'+b.end+'</span></div><div class="sb-line tag-'+b.tag+'"></div><div class="sb-content"><div class="sb-title">'+esc(b.title)+'</div><div class="sb-meta"><span class="sb-tag tag-'+b.tag+'">'+b.tag+'</span><span>'+durStr+'</span>'+(isNow?'<span class="sb-now-badge">NOW</span>':'')+(b.note?'<span style="color:var(--text3)">'+esc(b.note)+'</span>':'')+'</div>'+wHTML+'</div></div>'
+    return '<div class="sched-block '+cls+'"><div class="sb-time">'+fmt(b.start)+'<span class="end">'+fmt(b.end)+'</span></div><div class="sb-line tag-'+b.tag+'"></div><div class="sb-content"><div class="sb-title">'+esc(b.title)+'</div><div class="sb-meta"><span class="sb-tag tag-'+b.tag+'">'+b.tag+'</span><span>'+durStr+'</span>'+(isNow?'<span class="sb-now-badge">NOW</span>':'')+(b.note?'<span style="color:var(--text3)">'+esc(b.note)+'</span>':'')+'</div>'+wHTML+'</div></div>'
   }).join('');
 }
 
@@ -412,9 +404,9 @@ function renderNow(){
   for(var i=0;i<blocks.length;i++){var sMin=tm(blocks[i].start);var eMin=blocks[i].end<blocks[i].start?1440:tm(blocks[i].end);
     if(nowMin>=sMin&&nowMin<eMin){current=blocks[i];if(i+1<blocks.length)next=blocks[i+1];
       document.getElementById('nowBar').style.width=Math.round(((nowMin-sMin)/(eMin-sMin))*100)+'%';
-      document.getElementById('nowTime').textContent=blocks[i].start+' > '+blocks[i].end+' | '+(eMin-nowMin)+'m left';break}}
+      document.getElementById('nowTime').textContent=fmt(blocks[i].start)+' > '+fmt(blocks[i].end)+' | '+(eMin-nowMin)+'m left';break}}
   if(current){document.getElementById('nowTitle').textContent=current.title;
-    document.getElementById('nowNext').innerHTML=next?'Up next: <strong>'+esc(next.title)+'</strong> at '+fmtTime(next.start):''}
+    document.getElementById('nowNext').innerHTML=next?'Up next: <strong>'+esc(next.title)+'</strong> at '+fmt(next.start):''}
   else{document.getElementById('nowTitle').textContent='Free time';document.getElementById('nowTime').textContent='';document.getElementById('nowBar').style.width='0%';document.getElementById('nowNext').textContent=''}
 }
 
@@ -429,12 +421,12 @@ function renderStats(){
 
 function copySchedule(){var dt=getDayType(activeDow);var blocks=S[currentPhase][dt.type];
   var label=DAY_MAP.filter(function(d){return d.dow===activeDow})[0].label;
-  var text=label+' ('+dt.label+') Schedule\n'+blocks.map(function(b){return b.start+'-'+b.end+'  '+b.title}).join('\n');
-  navigator.clipboard.writeText(text).then(function(){toast('Copied',1800,'ok')})}
+  var text=label+' ('+dt.label+') Schedule\n'+blocks.map(function(b){return fmt(b.start)+' - '+fmt(b.end)+'  '+b.title}).join('\n');
+  navigator.clipboard.writeText(text).then(function(){toast('Copied!',1800,'ok')})}
 
 render();
-setInterval(function(){if(activeDow===new Date().getDay()){renderNow();renderBlocks();checkNotification()}},30000);
-setInterval(checkNotification,60000);
+setInterval(function(){if(activeDow===new Date().getDay()){renderNow();renderBlocks()}},30000);
+setInterval(checkNotif,60000);
 </script>
 </body>
 </html>
