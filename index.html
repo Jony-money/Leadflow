@@ -6589,7 +6589,233 @@ window.addEventListener('load', () => {
     }
   }, 500);
 });
+</script>
 <script src="crm-schedule-addon.js"></script>
 <script src="followup-sequence-addon.js"></script>
+  /* ════════════════════════════════════════════════════════════════════
+   LEADFLOW — VISION MODULE
+   Adds a "Vision" page: The Push (motivation engine), The Climb
+   (revenue tiers wired to your LIVE MRR), and your North Star.
+   Self-contained. Loads after the base app. Edits persist via cfg.
+   ════════════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  /* ── The Climb: revenue tiers ──────────────────────────────────── */
+  const CLIMB = [
+    { tier: 'BASE', amount: 0,     label: 'Foundation', what: 'Systems built, proof of concept. Land the first paying client and prove the model.' },
+    { tier: 'T1',   amount: 1000,  label: '$1K/mo',     what: 'First paying client locked. The machine works — now repeat it.' },
+    { tier: 'T2',   amount: 5000,  label: '$5K/mo',     what: '3–5 paying clients. Delivery tightens. Systems start carrying real weight.' },
+    { tier: 'T3',   amount: 10000, label: '$10K/mo',    what: 'Repeatable acquisition. First hire or contractor. You stop being the bottleneck.' },
+    { tier: 'T4',   amount: 25000, label: '$25K/mo',    what: 'A real team. Automated onboarding. The machine runs without you in every seat.' },
+    { tier: 'T5',   amount: 50000, label: '$50K+/mo',   what: 'Fully systemized client-based marketing business. You own it — it doesn’t own you.' },
+  ];
+
+  /* ── The Push: motivation lines (rejection-proof + faith) ──────── */
+  const PUSH = [
+    { type: 'When you want to quit', line: 'They said no. Good. That one wasn’t yours — the next call might be. Pick the phone back up.' },
+    { type: 'On rejection',          line: 'The no isn’t about you. It’s a filter. Every no clears the path to the yes that pays.' },
+    { type: 'On the opportunity',    line: 'You were handed a shot most never get near. Sitting on it is the real waste.' },
+    { type: 'Faith check',           line: 'God doesn’t open a door so you can stand in front of it scared. Walk through it.' },
+    { type: 'On going soft',         line: 'Comfortable is where dreams go to die quiet. You didn’t start this to stay comfortable.' },
+    { type: 'Finish it',             line: 'You already did the hard part — you started. Quitting now wastes everything before it.' },
+    { type: 'On excuses',            line: 'Tired isn’t a reason. Scared isn’t a reason. Make the call anyway. That’s the whole game.' },
+    { type: 'The standard',          line: 'Nobody’s coming to do this for you. You wanted to build it yourself — so build it. Today.' },
+    { type: 'On the grind',          line: 'The land, the family, the people you’ll lift up — they’re on the other side of the work you’re avoiding.' },
+    { type: 'Faith check',           line: 'Talent left unused is a gift thrown back in God’s face. Go use what He gave you.' },
+    { type: 'On momentum',           line: 'One more email. One more dial. One more deliverable shipped. That’s how the whole thing gets built.' },
+    { type: 'When it’s heavy',       line: 'Heavy is the point. If it were easy it’d be worthless. Pick it up and carry it anyway.' },
+  ];
+  let pushIdx = Math.floor(Math.random() * PUSH.length);
+
+  /* ── Default North Star (editable, persisted in cfg.northStar) ─── */
+  const DEFAULT_STAR = [
+    { icon: '🌲', title: 'The Land',    desc: 'Lakeside country property & a farm. Quiet, owned outright, yours.' },
+    { icon: '🏎️', title: 'The Car',     desc: 'The dream car — earned, not financed into your neck.' },
+    { icon: '👨‍👧‍👦', title: 'The Family', desc: 'Raise confident, capable kids who never doubt what’s possible.' },
+    { icon: '🤲', title: 'The Charity',  desc: 'Lift up hardworking people in underserved communities. Pay it forward.' },
+  ];
+
+  /* ── helpers (guarded against base-app load order) ─────────────── */
+  function esc(s) {
+    if (typeof window.esc === 'function') return window.esc(s);
+    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+  function toast(m, ms, k) { if (typeof window.toast === 'function') window.toast(m, ms, k); }
+  function liveMRR() {
+    try {
+      if (typeof window.activeClients === 'function' && typeof window.clientMRR === 'function') {
+        return window.activeClients().reduce((s, c) => s + window.clientMRR(c), 0);
+      }
+    } catch (e) {}
+    return 0;
+  }
+  function getStar() {
+    if (window.cfg && Array.isArray(window.cfg.northStar) && window.cfg.northStar.length) return window.cfg.northStar;
+    return DEFAULT_STAR;
+  }
+  function saveStar(arr) {
+    if (!window.cfg) return;
+    window.cfg.northStar = arr;
+    if (typeof window.persistCfg === 'function') window.persistCfg();
+  }
+
+  /* ── inject sidebar nav item ───────────────────────────────────── */
+  function injectNav() {
+    const nav = document.querySelector('.sidebar-nav');
+    if (!nav || document.querySelector('[data-page="vision"]')) return;
+    const label = document.createElement('div');
+    label.className = 'nav-label';
+    label.textContent = 'Vision';
+    const btn = document.createElement('button');
+    btn.className = 'nav-item';
+    btn.setAttribute('data-page', 'vision');
+    btn.setAttribute('onclick', "navigate('vision')");
+    btn.innerHTML = '<span class="nav-icon">★</span>The Climb';
+    // Put it right at the top so it leads the day
+    nav.insertBefore(btn, nav.firstChild);
+    nav.insertBefore(label, btn);
+  }
+
+  /* ── inject the page container ─────────────────────────────────── */
+  function injectPage() {
+    if (document.getElementById('page-vision')) return;
+    const main = document.querySelector('main.main') || document.querySelector('.main');
+    if (!main) return;
+    const page = document.createElement('div');
+    page.id = 'page-vision';
+    page.className = 'page';
+    page.innerHTML =
+      '<div class="page-header"><div><h1>The Climb</h1><p>Why the grind — and exactly how close you are</p></div>' +
+      '<button class="btn btn-secondary btn-sm" id="vsEditGoal">⚙ MRR Goal</button></div>' +
+      '<div class="page-body" id="visionBody"></div>';
+    main.appendChild(page);
+  }
+
+  /* ── render ────────────────────────────────────────────────────── */
+  function render() {
+    const body = document.getElementById('visionBody');
+    if (!body) return;
+    const mrr = liveMRR();
+    const goal = (window.cfg && window.cfg.mrrGoal) || 25000;
+
+    // current tier = highest threshold <= mrr
+    let curIdx = 0;
+    for (let i = 0; i < CLIMB.length; i++) if (mrr >= CLIMB[i].amount) curIdx = i;
+    const next = CLIMB[curIdx + 1] || null;
+    const cur = CLIMB[curIdx];
+    let toNextPct = 100, toNextText = 'Top of the climb — keep stacking.';
+    if (next) {
+      const span = next.amount - cur.amount;
+      toNextPct = Math.max(0, Math.min(100, Math.round(((mrr - cur.amount) / span) * 100)));
+      toNextText = '$' + (next.amount - mrr).toLocaleString() + '/mo to reach ' + next.label;
+    }
+    const p = PUSH[pushIdx];
+    let verse = null;
+    if (typeof window.getDailyVerse === 'function') { try { verse = window.getDailyVerse(); } catch (e) {} }
+
+    const rungs = CLIMB.map((r, i) => {
+      const isCur = i === curIdx;
+      const passed = i < curIdx;
+      const border = isCur ? 'var(--primary)' : 'var(--border)';
+      const bg = isCur ? 'linear-gradient(90deg,#ecfdf5,#fff)' : '#fff';
+      const moneyColor = isCur ? 'var(--primary)' : passed ? 'var(--text-secondary)' : 'var(--text)';
+      const check = passed ? '<span style="color:var(--primary);font-weight:800;margin-right:6px">✓</span>' : '';
+      const badge = isCur ? '<span class="badge badge-open" style="margin-left:auto;white-space:nowrap">You are here</span>'
+                          : passed ? '<span class="badge badge-cold" style="margin-left:auto;white-space:nowrap">Cleared</span>' : '';
+      return '<div style="display:flex;align-items:center;gap:16px;padding:14px 18px;background:' + bg +
+        ';border:1px solid ' + border + ';border-radius:10px;margin-bottom:8px;flex-wrap:wrap">' +
+        '<span style="font-weight:800;font-size:12px;color:var(--text-muted);min-width:44px">' + r.tier + '</span>' +
+        '<span style="font-weight:800;font-size:22px;letter-spacing:-.02em;color:' + moneyColor + ';min-width:110px">' + check + r.label + '</span>' +
+        '<span style="font-size:12.5px;color:var(--text-secondary);flex:1;min-width:220px;line-height:1.4">' + esc(r.what) + '</span>' +
+        badge + '</div>';
+    }).join('');
+
+    const stars = getStar().map((s, i) =>
+      '<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px 18px;cursor:pointer" ' +
+      'onclick="__visionEditStar(' + i + ')" title="Click to edit">' +
+      '<div style="font-size:26px;margin-bottom:12px">' + esc(s.icon) + '</div>' +
+      '<div style="font-family:inherit;font-weight:800;font-size:16px;letter-spacing:-.01em;margin-bottom:5px">' + esc(s.title) + '</div>' +
+      '<div style="font-size:12.5px;color:var(--text-muted);line-height:1.45">' + esc(s.desc) + '</div>' +
+      '</div>'
+    ).join('');
+
+    body.innerHTML =
+      // THE PUSH
+      '<div id="vsPush" onclick="__visionNextPush()" style="position:relative;overflow:hidden;cursor:pointer;user-select:none;' +
+      'background:linear-gradient(135deg,#0f172a,#334155);color:#fff;border-radius:14px;padding:26px 28px;margin-bottom:20px">' +
+        '<div style="font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#86efac;margin-bottom:12px" id="vsPushType">' + esc(p.type) + '</div>' +
+        '<div style="font-size:clamp(20px,3vw,30px);font-weight:800;line-height:1.12;letter-spacing:-.02em;max-width:30ch" id="vsPushLine">' + esc(p.line) + '</div>' +
+        (verse ? '<div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);font-size:12.5px;color:#cbd5e1;line-height:1.5">“' + esc(verse.text) + '” <span style="color:#86efac;font-weight:600">— ' + esc(verse.ref) + '</span></div>' : '') +
+        '<div style="margin-top:14px;font-size:11px;color:#94a3b8;letter-spacing:.04em">Tap for the next one · finish what you started</div>' +
+      '</div>' +
+
+      // THE CLIMB
+      '<div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px">' +
+        '<div style="font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted)">The Climb</div>' +
+        '<div style="font-size:12.5px;color:var(--text-secondary)">Live MRR: <strong style="color:var(--primary);font-size:15px">$' + Math.round(mrr).toLocaleString() + '/mo</strong>' +
+        ' · Goal: <strong>$' + goal.toLocaleString() + '</strong></div>' +
+      '</div>' +
+      (next ? '<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:14px">' +
+        '<div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:7px"><span><strong>' + cur.label + '</strong> → ' + next.label + '</span><span style="color:var(--text-muted)">' + esc(toNextText) + '</span></div>' +
+        '<div style="height:8px;background:var(--bg);border-radius:4px;overflow:hidden"><div style="height:100%;width:' + toNextPct + '%;background:linear-gradient(90deg,#059669,#10b981);transition:width .4s"></div></div>' +
+      '</div>' : '') +
+      rungs +
+
+      // NORTH STAR
+      '<div style="font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin:28px 0 4px">North Star</div>' +
+      '<div style="font-size:12px;color:var(--text-muted);margin-bottom:14px">The why behind every dial. Click any card to make it yours.</div>' +
+      '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px" id="vsStars">' + stars + '</div>' +
+      '<div style="font-size:11px;color:var(--text-muted);text-align:center;margin-top:24px">Every shot you skip is one that won’t come around twice. Go get it.</div>';
+
+    // wire the goal button
+    const gb = document.getElementById('vsEditGoal');
+    if (gb) gb.onclick = function () {
+      if (typeof window.editMrrGoal === 'function') { window.editMrrGoal(); render(); }
+    };
+  }
+
+  /* ── interactions (exposed globally for inline onclick) ────────── */
+  window.__visionNextPush = function () {
+    pushIdx = (pushIdx + 1) % PUSH.length;
+    const t = document.getElementById('vsPushType');
+    const l = document.getElementById('vsPushLine');
+    if (!t || !l) return;
+    t.style.opacity = 0; l.style.opacity = 0;
+    setTimeout(function () {
+      t.textContent = PUSH[pushIdx].type;
+      l.textContent = PUSH[pushIdx].line;
+      t.style.transition = l.style.transition = 'opacity .3s';
+      t.style.opacity = 1; l.style.opacity = 1;
+    }, 180);
+  };
+  window.__visionEditStar = function (i) {
+    const arr = getStar().map(function (s) { return Object.assign({}, s); });
+    const s = arr[i]; if (!s) return;
+    const title = prompt('Goal title:', s.title); if (title === null) return;
+    const desc = prompt('Description / the why:', s.desc); if (desc === null) return;
+    const icon = prompt('Emoji (optional):', s.icon); if (icon === null) return;
+    arr[i] = { icon: icon || s.icon, title: title || s.title, desc: desc || s.desc };
+    saveStar(arr);
+    render();
+    toast('North Star updated', 2000, 'ok');
+  };
+
+  /* ── boot: inject, then wrap navigate so 'vision' renders ──────── */
+  function boot() {
+    injectNav();
+    injectPage();
+    if (typeof window.navigate === 'function') {
+      const prev = window.navigate;
+      window.navigate = function (id) {
+        prev(id);
+        if (id === 'vision') render();
+      };
+    }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
 </body>
 </html>
