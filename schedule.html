@@ -178,6 +178,33 @@
     font-size:11px; color:var(--ink-dim); letter-spacing:0.1em; text-align:center; line-height:1.7;
   }
   footer b { color:var(--accent); }
+  .liftday { cursor:pointer; }
+  .lifttag {
+    margin-top:14px; font-size:10px; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--fire); border:1px solid rgba(255,122,61,0.4); background:rgba(255,122,61,0.08);
+    padding:5px 9px; border-radius:999px; align-self:flex-start;
+  }
+  .lifttag.light { color:var(--sky); border-color:rgba(91,201,255,0.4); background:rgba(91,201,255,0.08); }
+  .liftday:hover .lifttag { filter:brightness(1.15); }
+  .modal-bg {
+    position:fixed; inset:0; background:rgba(8,9,7,0.78); backdrop-filter:blur(4px);
+    display:none; align-items:center; justify-content:center; padding:20px; z-index:200;
+  }
+  .modal-bg.open { display:flex; }
+  .modal-card {
+    background:var(--card-2); border:1px solid var(--line); border-radius:18px;
+    max-width:460px; width:100%; max-height:88vh; overflow-y:auto; padding:28px 26px;
+    animation:rise 0.4s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .modal-eyebrow { font-size:10px; letter-spacing:0.22em; text-transform:uppercase; color:var(--fire); margin-bottom:6px; }
+  .modal-title { font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:26px; letter-spacing:-0.02em; margin-bottom:18px; }
+  .ex { display:flex; justify-content:space-between; gap:14px; padding:12px 0; border-bottom:1px solid var(--line); }
+  .ex:last-of-type { border-bottom:none; }
+  .ex-name { font-size:13.5px; color:var(--ink); }
+  .ex-sets { font-size:12.5px; color:var(--accent); font-weight:600; white-space:nowrap; }
+  .modal-note { margin-top:16px; font-size:12px; color:var(--ink-dim); line-height:1.5; }
+  .modal-close { margin-top:20px; width:100%; background:var(--accent); color:#0b0c0a; border:none; border-radius:10px; padding:12px; font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14px; cursor:pointer; }
+  .modal-close:hover { filter:brightness(1.08); }
 </style>
 </head>
 <body>
@@ -204,9 +231,9 @@
   <div class="day"><div class="accentbar"></div><div class="daynum">02</div><div class="dayname">Tue</div><div class="focus"><span class="label">Focus</span>Client Work</div></div>
   <div class="day"><div class="accentbar"></div><div class="daynum">03</div><div class="dayname">Wed</div><div class="focus"><span class="label">Focus</span>Client Work</div></div>
   <div class="day"><div class="accentbar"></div><div class="daynum">04</div><div class="dayname">Thu</div><div class="focus"><span class="label">Focus</span>Content</div></div>
-  <div class="day sales"><div class="accentbar"></div><div class="daynum">05</div><div class="dayname">Fri</div><div class="focus"><span class="label">Focus</span>Sales &amp; Reporting</div></div>
-  <div class="day"><div class="accentbar"></div><div class="daynum">06</div><div class="dayname">Sat</div><div class="focus"><span class="label">Focus</span>Client Cleanup</div></div>
-  <div class="day light"><div class="accentbar"></div><div class="daynum">07</div><div class="dayname">Sun</div><div class="focus"><span class="label">Focus</span>Reset &amp; Plan</div></div>
+  <div class="day sales liftday" onclick="openLift('A')"><div class="accentbar"></div><div class="daynum">05</div><div class="dayname">Fri</div><div class="focus"><span class="label">Focus</span>Sales &amp; Reporting</div><div class="lifttag">🏋 Full Body A · tap</div></div>
+  <div class="day liftday" onclick="openLift('B')"><div class="accentbar"></div><div class="daynum">06</div><div class="dayname">Sat</div><div class="focus"><span class="label">Focus</span>Client Cleanup</div><div class="lifttag">🏋 Full Body B · tap</div></div>
+  <div class="day light liftday" onclick="openLift('L')"><div class="accentbar"></div><div class="daynum">07</div><div class="dayname">Sun</div><div class="focus"><span class="label">Focus</span>Reset &amp; Plan</div><div class="lifttag light">🧘 Light · tap</div></div>
 </div>
 
 <div class="section-label reveal">Up Next &mdash; tomorrow's list</div>
@@ -261,7 +288,65 @@
   Every shot you skip is one God won't hand you twice.
 </footer>
 
+<div class="modal-bg" id="liftModal" onclick="if(event.target===this)closeLift()">
+  <div class="modal-card">
+    <div class="modal-eyebrow" id="liftEyebrow">Lift Day</div>
+    <div class="modal-title" id="liftTitle">Full Body</div>
+    <div id="liftExercises"></div>
+    <div class="modal-note" id="liftNote"></div>
+    <button class="modal-close" onclick="closeLift()">Got it</button>
+  </div>
+</div>
+
 <script>
+  /* ---------- WORKOUTS ---------- */
+  var WORKOUTS = {
+    A: {
+      eyebrow: 'Friday · Lift', title: 'Full Body A',
+      ex: [
+        ['Squat or leg press', '3–4 × 6–8'],
+        ['Bench press', '3 × 6–8'],
+        ['Lat pulldown or pull-ups', '3 × 8–10'],
+        ['DB shoulder press', '3 × 8–10'],
+        ['Hanging leg raises', '3 × 12–15'],
+      ],
+      note: 'Hit the top of the rep range on all sets with clean form → add a little weight next week.',
+    },
+    B: {
+      eyebrow: 'Saturday · Lift', title: 'Full Body B',
+      ex: [
+        ['Romanian deadlift', '3 × 8–10'],
+        ['Incline DB press', '3 × 8–10'],
+        ['Barbell or DB row', '3 × 8–10'],
+        ['Lateral raises', '3 × 12–15'],
+        ['Cable crunches or planks', '3 sets'],
+      ],
+      note: 'Same progression rule. Control the eccentric on the RDL — feel the hamstrings, don’t round the back.',
+    },
+    L: {
+      eyebrow: 'Sunday · Light', title: 'Full Body Light',
+      ex: [
+        ['Goblet squat or walking lunges', '3 × 12 (light)'],
+        ['Push-ups', '3 × near-failure'],
+        ['Curls + tricep pushdowns superset', '3 × 12–15'],
+        ['Core circuit: planks + leg raises', '3 rounds'],
+      ],
+      note: 'Keep it under 45 min, low intensity. This is your reset — move, don’t grind.',
+    },
+  };
+  function openLift(key){
+    var w = WORKOUTS[key]; if (!w) return;
+    document.getElementById('liftEyebrow').textContent = w.eyebrow;
+    document.getElementById('liftTitle').textContent = w.title;
+    document.getElementById('liftExercises').innerHTML = w.ex.map(function(e){
+      return '<div class="ex"><span class="ex-name">' + e[0] + '</span><span class="ex-sets">' + e[1] + '</span></div>';
+    }).join('');
+    document.getElementById('liftNote').textContent = w.note;
+    document.getElementById('liftModal').classList.add('open');
+  }
+  function closeLift(){ document.getElementById('liftModal').classList.remove('open'); }
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeLift(); });
+
   /* ---------- TASK LIST ---------- */
   var STORE_KEY = 'zms_next_tasks_v1';
   var memoryFallback = null; // used if storage is blocked (e.g. inside preview)
