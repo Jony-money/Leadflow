@@ -6541,60 +6541,12 @@ function printReport() {
     const val = notesEl.value;
     const replacement = document.createElement('div');
     replacement.style.cssText = 'width:100%;font-size:13px;padding:10px;border:1px solid #cbd5e1;border-radius:6px;white-space:pre-wrap;min-height:80px';
-    replacement.textContent = val || '(no notes added)';
-    notesEl.parentNode.replaceChild(replacement, notesEl);
-  }
-  window.print();
-}
-
-/* ── 15. MOBILE SIDEBAR TOGGLE ────────────────────────────────────
-   Open/close sidebar on small screens. Backdrop click closes.
-   Nav clicks auto-close the sidebar.
-   ──────────────────────────────────────────────────────────────── */
-function toggleMobileSidebar() {
-  const sb = document.querySelector('.sidebar');
-  const bd = document.getElementById('sidebarBackdrop');
-  const isOpen = sb.classList.toggle('open');
-  bd.style.display = isOpen ? 'block' : 'none';
-}
-function closeMobileSidebar() {
-  document.querySelector('.sidebar')?.classList.remove('open');
-  const bd = document.getElementById('sidebarBackdrop');
-  if (bd) bd.style.display = 'none';
-}
-// Auto-close on nav click (mobile)
-document.addEventListener('click', (e) => {
-  const navBtn = e.target.closest('.nav-item');
-  if (navBtn && window.innerWidth <= 900) closeMobileSidebar();
-});
-
-/* ── 16. RE-EXTEND NAVIGATE FOR NEW PAGES ─────────────────────── */
-const _navV2 = navigate;
-navigate = function(id) {
-  _navV2(id);
-  if (id === 'deliverables') renderDeliverables();
-  if (id === 'prospecting')  renderProspecting();
-  if (id === 'kb')           renderKb();
-  if (id === 'reviews')      renderReviews();
-};
-
-/* ── 17. BOOT HOOKS ────────────────────────────────────────────────
-   On app load: ensure this month's deliverables exist, refresh badges.
-   ──────────────────────────────────────────────────────────────── */
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    if (typeof clients !== 'undefined' && clients.length) {
-      ensureCurrentMonthDeliverables();
-      updateDelivBadge();
-    }
-  }, 500);
-});
-</script>
-<script src="crm-schedule-addon.js"></script>
+   <script src="crm-schedule-addon.js"></script>
 <script src="followup-sequence-addon.js"></script>
-  /* ════════════════════════════════════════════════════════════════════
+<script>
+/* ════════════════════════════════════════════════════════════════════
    LEADFLOW — VISION MODULE
-   Adds a "Vision" page: The Push (motivation engine), The Climb
+   Adds a "The Climb" page: The Push (motivation engine), The Climb
    (revenue tiers wired to your LIVE MRR), and your North Star.
    Self-contained. Loads after the base app. Edits persist via cfg.
    ════════════════════════════════════════════════════════════════════ */
@@ -6608,23 +6560,23 @@ window.addEventListener('load', () => {
     { tier: 'T2',   amount: 5000,  label: '$5K/mo',     what: '3–5 paying clients. Delivery tightens. Systems start carrying real weight.' },
     { tier: 'T3',   amount: 10000, label: '$10K/mo',    what: 'Repeatable acquisition. First hire or contractor. You stop being the bottleneck.' },
     { tier: 'T4',   amount: 25000, label: '$25K/mo',    what: 'A real team. Automated onboarding. The machine runs without you in every seat.' },
-    { tier: 'T5',   amount: 50000, label: '$50K+/mo',   what: 'Fully systemized client-based marketing business. You own it — it doesn’t own you.' },
+    { tier: 'T5',   amount: 50000, label: '$50K+/mo',   what: 'Fully systemized client-based marketing business. You own it — it doesn\u2019t own you.' },
   ];
 
   /* ── The Push: motivation lines (rejection-proof + faith) ──────── */
   const PUSH = [
-    { type: 'When you want to quit', line: 'They said no. Good. That one wasn’t yours — the next call might be. Pick the phone back up.' },
-    { type: 'On rejection',          line: 'The no isn’t about you. It’s a filter. Every no clears the path to the yes that pays.' },
+    { type: 'When you want to quit', line: 'They said no. Good. That one wasn\u2019t yours — the next call might be. Pick the phone back up.' },
+    { type: 'On rejection',          line: 'The no isn\u2019t about you. It\u2019s a filter. Every no clears the path to the yes that pays.' },
     { type: 'On the opportunity',    line: 'You were handed a shot most never get near. Sitting on it is the real waste.' },
-    { type: 'Faith check',           line: 'God doesn’t open a door so you can stand in front of it scared. Walk through it.' },
-    { type: 'On going soft',         line: 'Comfortable is where dreams go to die quiet. You didn’t start this to stay comfortable.' },
+    { type: 'Faith check',           line: 'God doesn\u2019t open a door so you can stand in front of it scared. Walk through it.' },
+    { type: 'On going soft',         line: 'Comfortable is where dreams go to die quiet. You didn\u2019t start this to stay comfortable.' },
     { type: 'Finish it',             line: 'You already did the hard part — you started. Quitting now wastes everything before it.' },
-    { type: 'On excuses',            line: 'Tired isn’t a reason. Scared isn’t a reason. Make the call anyway. That’s the whole game.' },
-    { type: 'The standard',          line: 'Nobody’s coming to do this for you. You wanted to build it yourself — so build it. Today.' },
-    { type: 'On the grind',          line: 'The land, the family, the people you’ll lift up — they’re on the other side of the work you’re avoiding.' },
-    { type: 'Faith check',           line: 'Talent left unused is a gift thrown back in God’s face. Go use what He gave you.' },
-    { type: 'On momentum',           line: 'One more email. One more dial. One more deliverable shipped. That’s how the whole thing gets built.' },
-    { type: 'When it’s heavy',       line: 'Heavy is the point. If it were easy it’d be worthless. Pick it up and carry it anyway.' },
+    { type: 'On excuses',            line: 'Tired isn\u2019t a reason. Scared isn\u2019t a reason. Make the call anyway. That\u2019s the whole game.' },
+    { type: 'The standard',          line: 'Nobody\u2019s coming to do this for you. You wanted to build it yourself — so build it. Today.' },
+    { type: 'On the grind',          line: 'The land, the family, the people you\u2019ll lift up — they\u2019re on the other side of the work you\u2019re avoiding.' },
+    { type: 'Faith check',           line: 'Talent left unused is a gift thrown back in God\u2019s face. Go use what He gave you.' },
+    { type: 'On momentum',           line: 'One more email. One more dial. One more deliverable shipped. That\u2019s how the whole thing gets built.' },
+    { type: 'When it\u2019s heavy',  line: 'Heavy is the point. If it were easy it\u2019d be worthless. Pick it up and carry it anyway.' },
   ];
   let pushIdx = Math.floor(Math.random() * PUSH.length);
 
@@ -6632,7 +6584,7 @@ window.addEventListener('load', () => {
   const DEFAULT_STAR = [
     { icon: '🌲', title: 'The Land',    desc: 'Lakeside country property & a farm. Quiet, owned outright, yours.' },
     { icon: '🏎️', title: 'The Car',     desc: 'The dream car — earned, not financed into your neck.' },
-    { icon: '👨‍👧‍👦', title: 'The Family', desc: 'Raise confident, capable kids who never doubt what’s possible.' },
+    { icon: '👨‍👧‍👦', title: 'The Family', desc: 'Raise confident, capable kids who never doubt what\u2019s possible.' },
     { icon: '🤲', title: 'The Charity',  desc: 'Lift up hardworking people in underserved communities. Pay it forward.' },
   ];
 
@@ -6746,7 +6698,7 @@ window.addEventListener('load', () => {
       'background:linear-gradient(135deg,#0f172a,#334155);color:#fff;border-radius:14px;padding:26px 28px;margin-bottom:20px">' +
         '<div style="font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#86efac;margin-bottom:12px" id="vsPushType">' + esc(p.type) + '</div>' +
         '<div style="font-size:clamp(20px,3vw,30px);font-weight:800;line-height:1.12;letter-spacing:-.02em;max-width:30ch" id="vsPushLine">' + esc(p.line) + '</div>' +
-        (verse ? '<div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);font-size:12.5px;color:#cbd5e1;line-height:1.5">“' + esc(verse.text) + '” <span style="color:#86efac;font-weight:600">— ' + esc(verse.ref) + '</span></div>' : '') +
+        (verse ? '<div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);font-size:12.5px;color:#cbd5e1;line-height:1.5">\u201c' + esc(verse.text) + '\u201d <span style="color:#86efac;font-weight:600">— ' + esc(verse.ref) + '</span></div>' : '') +
         '<div style="margin-top:14px;font-size:11px;color:#94a3b8;letter-spacing:.04em">Tap for the next one · finish what you started</div>' +
       '</div>' +
 
@@ -6766,7 +6718,7 @@ window.addEventListener('load', () => {
       '<div style="font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin:28px 0 4px">North Star</div>' +
       '<div style="font-size:12px;color:var(--text-muted);margin-bottom:14px">The why behind every dial. Click any card to make it yours.</div>' +
       '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px" id="vsStars">' + stars + '</div>' +
-      '<div style="font-size:11px;color:var(--text-muted);text-align:center;margin-top:24px">Every shot you skip is one that won’t come around twice. Go get it.</div>';
+      '<div style="font-size:11px;color:var(--text-muted);text-align:center;margin-top:24px">Every shot you skip is one that won\u2019t come around twice. Go get it.</div>';
 
     // wire the goal button
     const gb = document.getElementById('vsEditGoal');
@@ -6817,5 +6769,6 @@ window.addEventListener('load', () => {
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
 })();
+</script>
 </body>
 </html>
