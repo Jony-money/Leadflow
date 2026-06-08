@@ -1285,6 +1285,7 @@ tbody td{padding:11px 14px;vertical-align:middle}
           <button class="qa-btn" id="qaVoicemail" onclick="markVoicemail()" style="background:#ede9fe;color:#6d28d9;border:1px solid #ddd6fe">&#127908; Left Voicemail</button>
           <button class="qa-btn" onclick="openEmailFromLead()">&#9993; Send Email</button>
           <button class="qa-btn" onclick="openBookFromLead()">&#128197; Book Meeting</button>
+          <button class="qa-btn" id="qaCallList" onclick="addToCallListFromModal()" style="background:#fef3c7;color:#92400e;border:1px solid #fcd34d">&#128222; Add to Call List</button>
           <button class="qa-btn" onclick="convertLeadToClientFromModal()" style="background:#fef3c7;color:#92400e;border:1px solid #fcd34d">&#127881; Convert to Client</button>
         </div>
       </div>
@@ -2919,7 +2920,7 @@ function renderResultsPage() {
       <td><span style="font-size:12px;color:var(--text-secondary)">${l.phone || '—'}</span></td>
       <td>${l.rating ? `<span style="color:#f59e0b">★</span> <span style="font-size:12px;font-weight:500">${l.rating.toFixed(1)}</span> <span style="font-size:11px;color:var(--text-muted)">(${l.reviews})</span>` : `<span style="color:var(--text-muted);font-size:12px">—</span>`}</td>
       <td>${gmaps ? `<a href="${esc(gmaps)}" target="_blank" onclick="event.stopPropagation()" class="social-link gmaps" style="padding:3px 8px;font-size:10.5px">📍</a>` : '—'}</td>
-      <td><button class="btn btn-sm ${saved ? 'btn-ghost' : 'btn-primary'}" onclick="event.stopPropagation();toggleSave('${esc(l.id)}')" id="sb-${esc(l.id)}">${saved ? '✓ Saved' : '+ Save'}</button></td>
+      <td><button class="btn btn-sm ${saved ? 'btn-ghost' : 'btn-primary'}" onclick="event.stopPropagation();toggleSave('${esc(l.id)}')" id="sb-${esc(l.id)}">${saved ? '✓ Saved' : '+ Save'}</button><button class="btn btn-sm btn-amber" onclick="event.stopPropagation();addToCallListFromResult('${esc(l.id)}')" id="clb-${esc(l.id)}" title="Add to Call List">&#128222;</button></td>
     </tr>`;
   }).join('');
   let pag = '';
@@ -7097,6 +7098,39 @@ function addToCallList(leadId){
   persistCallList();updateCallListBadge();
   if(document.getElementById('page-calllist')?.classList.contains('active'))renderCallList();
   toast(`Added ${lead.name} to call list`,2200,'ok');
+}
+
+function addToCallListFromResult(id){
+  // From search results: lead may not be in pipeline yet. Save it first, then queue.
+  let lead = leads.find(l=>l.id===id);
+  if(!lead){
+    const r = allResults.find(l=>l.id===id);
+    if(!r){toast('Lead not found',2200,'err');return;}
+    lead = { ...r, savedAt:Date.now(), pStatus:'new', notes:'', interest:null, contactedAt:0, contactEmail:'' };
+    leads.unshift(lead); persist(); refreshSaveBtns();
+  }
+  if(callList.find(c=>c.leadId===id)){toast('Already on call list',2000);return;}
+  callList.unshift({id:uid(),leadId:id,name:lead.name,phone:lead.phone||'',city:lead.city||'',score:lead.score||0,status:'queue',note:'',addedAt:Date.now()});
+  persistCallList();updateCallListBadge();
+  const btn=document.getElementById('clb-'+id);
+  if(btn){btn.textContent='✓';btn.classList.remove('btn-amber');btn.classList.add('btn-ghost');}
+  toast(`Added ${lead.name} to Call List`,2200,'ok');
+}
+
+function addToCallListFromModal(){
+  if(!activeLead)return;
+  if(activeLead._preview){
+    // Save preview lead to pipeline first
+    const exists = leads.find(l=>l.id===activeLead.id);
+    if(!exists){
+      leads.unshift({ ...activeLead, savedAt:Date.now(), pStatus:'new', notes:'', interest:null, contactedAt:0, contactEmail:'', _preview:undefined });
+      persist();
+    }
+    activeLead = leads.find(l=>l.id===activeLead.id) || activeLead;
+  }
+  addToCallList(activeLead.id);
+  const btn=document.getElementById('qaCallList');
+  if(btn){btn.textContent='✓ On Call List';btn.classList.add('active');}
 }
 
 function addTodayHotToCallList(){
