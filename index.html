@@ -565,7 +565,8 @@ tbody td{padding:11px 14px;vertical-align:middle}
 
       <!-- LEGACY MICRO-STATS (existing) -->
       <div class="stats-grid">
-        <div class="stat-card hot"><div class="stat-label">Hot Leads</div><div class="stat-value" id="dHot">0</div><div class="stat-sub">Score 70+</div></div>
+        <div class="stat-card hot"><div class="stat-label">High-Need</div><div class="stat-value" id="dHot">0</div><div class="stat-sub">Marketing score 70+</div>
+</div>
         <div class="stat-card"><div class="stat-label">Pipeline</div><div class="stat-value" id="dTotal">0</div><div class="stat-sub">Total saved</div></div>
         <div class="stat-card warn"><div class="stat-label">Today's Meetings</div><div class="stat-value" id="dToday">0</div><div class="stat-sub">On the calendar</div></div>
         <div class="stat-card red"><div class="stat-label">Overdue Tasks</div><div class="stat-value" id="dOverdue">0</div><div class="stat-sub">Needs attention</div></div>
@@ -604,7 +605,8 @@ tbody td{padding:11px 14px;vertical-align:middle}
         </label>
         <label class="hunt-toggle" for="noWebsiteOnly" style="margin-bottom:0">
           <input type="checkbox" id="noWebsiteOnly" checked />
-          <div class="hunt-toggle-text"><div class="hunt-toggle-title">&#127919; No-Website Only</div><div class="hunt-toggle-desc">Filter to businesses without a website.</div></div>
+          <div class="hunt-toggle-text"><div class="hunt-toggle-title">&#127919; High-Need Only</div>
+<div class="hunt-toggle-desc">Filter to prospects with weak presence: poor/no ratings, few reviews, or no website — your best marketing targets.</div>
         </label>
         <label class="hunt-toggle" for="nearbyCities" style="margin-bottom:0">
           <input type="checkbox" id="nearbyCities" />
@@ -2364,19 +2366,35 @@ function renderCoverage() {
 <script>
 /* ═══ SCORING + HOURS ═══ */
 function score(l) {
+  // Marketing Need Score — higher = better prospect for marketing services
+  // Key signals: weak reputation, thin reviews, low online visibility
   let s = 0;
-  if (!l.website)            s += 45;
-  if (!l.rating)             s += 15;
-  else if (l.rating < 3.5)   s += 25;
-  else if (l.rating < 4.0)   s += 10;
-  if (l.reviews < 20)        s += 10;
-  if (l.phone)               s += 5;
+
+  // REPUTATION SIGNALS (biggest pain — bad/no ratings = urgent marketing need)
+  if (!l.rating)             s += 30;   // no rating at all — invisible online
+  else if (l.rating < 3.5)   s += 35;   // actively bad rep — urgent need
+  else if (l.rating < 4.0)   s += 20;   // below average — clear room to grow
+  else if (l.rating < 4.5)   s += 8;    // decent but not dominant
+
+  // REVIEW VOLUME (social proof gap)
+  if (!l.reviews || l.reviews === 0) s += 25;   // zero reviews — total blind spot
+  else if (l.reviews < 5)            s += 20;   // barely any social proof
+  else if (l.reviews < 20)           s += 12;   // thin presence
+  else if (l.reviews < 50)           s += 5;    // moderate
+
+  // WEBSITE PRESENCE (one channel — not the whole picture)
+  if (!l.website)  s += 15;   // no site — missing a key channel
+
+  // PHONE LISTED (reachability = operational maturity)
+  if (!l.phone)    s += 8;    // no phone = disorganized, low-hanging fruit
+
   return Math.min(s, 100);
 }
 function scoreLabel(s) {
-  if (s >= 70) return { text:'🔥 Hot', cls:'badge-hot' };
-  if (s >= 40) return { text:'⚡ Warm', cls:'badge-warm' };
-  return { text:'❄ Cold', cls:'badge-cold' };
+  // Score = marketing need level. Higher score = stronger prospect for your services.
+  if (s >= 70) return { text:'🔥 High Need', cls:'badge-hot' };
+  if (s >= 40) return { text:'⚡ Moderate Need', cls:'badge-warm' };
+  return { text:'✓ Low Need', cls:'badge-cold' };
 }
 function openStatusBadge(lead) {
   if (!lead.hours || !lead.hours.length) return `<span class="badge badge-hours-unknown">Hours unknown</span>`;
@@ -2593,7 +2611,14 @@ async function runSearch() {
                 hours: pl.regularOpeningHours?.weekdayDescriptions || [],
               };
               lead.score = score(lead);
-              if (noWebOnly && lead.website) return;
+              // High-Need filter: keep leads with any meaningful marketing gap
+        if (noWebOnly) {
+          const hasMarketingGap = !lead.website ||
+                                  !lead.rating ||
+                                  (lead.rating < 4.0) ||
+                                  (!lead.reviews || lead.reviews < 20);
+          if (!hasMarketingGap) return;
+        }
               allResults.push(lead);
               cityLeadCounts[city]++;
             });
