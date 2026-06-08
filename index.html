@@ -407,6 +407,16 @@ tbody td{padding:11px 14px;vertical-align:middle}
 .ct-pill.blue{background:#1e3a8a;color:#93c5fd}
 .ct-pill.off{background:#334155;color:#94a3b8}
 .ct-pill.email{background:#78350f;color:#fde68a}
+
+.bf-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:10.5px;font-weight:700;white-space:nowrap}
+.bf-strong{background:#d1fae5;color:#065f46;border:1px solid #6ee7b7}
+.bf-maybe{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
+.bf-weak{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
+
+.bf-note{padding:11px 14px;border-radius:8px;font-size:12.5px;line-height:1.55}
+.bf-note.bf-strong{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+.bf-note.bf-maybe{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+.bf-note.bf-weak{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
 </style>
 </head>
 <body>
@@ -707,7 +717,7 @@ tbody td{padding:11px 14px;vertical-align:middle}
             <label class="filter-chip"><input type="checkbox" id="fHasPhone" onchange="applyFilters()" /> Has phone</label>
             <label class="filter-chip"><input type="checkbox" id="fOpenNow" onchange="applyFilters()" /> Open now</label>
             <label class="filter-chip"><input type="checkbox" id="fShowCity" onchange="applyFilters()" checked /> City column</label>
-            <div style="margin-left:auto;display:flex;align-items:center;gap:8px"><span style="font-size:12px;color:var(--text-muted)">Sort</span><select id="sortBy" style="width:auto;padding:6px 10px;font-size:12px" onchange="applyFilters()"><option value="score">Score</option><option value="name">Name A&ndash;Z</option><option value="city">City</option><option value="rating">Rating</option><option value="reviews">Reviews</option></select></div>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:8px"><span style="font-size:12px;color:var(--text-muted)">Sort</span><select id="sortBy" style="width:auto;padding:6px 10px;font-size:12px" onchange="applyFilters()"><option value="score">Score</option><option value="buyerfit">Buyer Fit (best first)</option><option value="name">Name A&ndash;Z</option><option value="city">City</option><option value="rating">Rating</option><option value="reviews">Reviews</option></select></div>
           </div>
           <div id="synonymInfo" style="display:none;margin-top:10px;font-size:12px;color:var(--text-muted);background:#f9fafb;padding:8px 12px;border-radius:6px;border:1px solid var(--border)"></div>
         </div>
@@ -1281,6 +1291,16 @@ tbody td{padding:11px 14px;vertical-align:middle}
       <button class="modal-close" onclick="closeModal()">&times;</button>
     </div>
     <div class="modal-body">
+      <div id="mBuyerFit" class="bf-note bf-maybe" style="margin-bottom:14px"></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <span style="font-size:11.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em">Niche:</span>
+        <select id="mNiche" onchange="setLeadNiche(this.value)" style="width:auto;padding:5px 10px;font-size:12.5px">
+          <option value="">Auto-detect</option>
+          <option value="drywall">🏗 Drywaller</option>
+          <option value="detail">🚗 Detailer</option>
+        </select>
+        <span style="font-size:11px;color:var(--text-muted)">Set the niche for a sharper buyer-fit read</span>
+      </div>
       <div id="mInfo"></div>
       <div id="mHoursWrap" style="margin-top:12px;display:none"><div class="section-label" style="margin-bottom:6px">Hours</div><div id="mHours"></div></div>
       <div style="margin-top:14px"><div class="section-label" style="margin-bottom:6px">Find Online</div><div class="social-links" id="mSocial"></div></div>
@@ -2473,6 +2493,61 @@ function score(l) {
 
   return Math.min(s, 100);
 }
+function detectNiche(l) {
+  // Returns 'drywall', 'detail', or '' based on the lead's bizType/name
+  const hay = ((l.bizType||'') + ' ' + (l.name||'')).toLowerCase();
+  if (/drywall|drywaller|plaster|taping|taper|sheetrock|mud|finish carpentry/.test(hay)) return 'drywall';
+  if (/detail|detailer|ceramic coat|car wash|auto spa|paint correction|mobile detail/.test(hay)) return 'detail';
+  return '';
+}
+
+function buyerFit(l) {
+  // Reads niche-specific signals to estimate whether this lead can actually PAY.
+  // Returns { level:'strong'|'maybe'|'weak', label, cls, note }
+  const niche = l._niche || detectNiche(l);
+  const reviews = l.reviews || 0;
+  const hasWeb = !!l.website;
+  const hasPhone = !!l.phone;
+  const rating = l.rating || 0;
+
+  // DRYWALLERS — 0 reviews usually = established word-of-mouth business with cash.
+  if (niche === 'drywall') {
+    if (reviews === 0 && !hasPhone && !hasWeb) {
+      return { level:'weak', label:'⚠ Likely too small', cls:'bf-weak', note:'No reviews, no phone, no site — may be barely operating. Verify before pitching.' };
+    }
+    if (reviews === 0) {
+      return { level:'strong', label:'💰 Strong buyer', cls:'bf-strong', note:'0 reviews + reachable = established word-of-mouth business. Has cash, never needed marketing. Ideal entry.' };
+    }
+    if (reviews > 0 && rating > 0 && rating < 3.5) {
+      return { level:'maybe', label:'➖ Mixed signal', cls:'bf-maybe', note:'Has reviews but weak rating — getting work but dropping the ball. Could go either way.' };
+    }
+    return { level:'strong', label:'💰 Strong buyer', cls:'bf-strong', note:'Active drywaller with a track record. Likely has steady cash flow.' };
+  }
+
+  // DETAILERS — 0 reviews more likely = new/small. Online visibility = their lifeblood.
+  if (niche === 'detail') {
+    if (reviews === 0 && !hasWeb && !hasPhone) {
+      return { level:'weak', label:'⚠ Probably broke', cls:'bf-weak', note:'No reviews, no site, no phone — likely part-time or garage operation. Low pitch priority.' };
+    }
+    if (reviews === 0) {
+      return { level:'maybe', label:'➖ Newer / verify', cls:'bf-maybe', note:'0 reviews for a detailer usually means new or part-time. Check their Instagram before investing pitch time.' };
+    }
+    if (reviews >= 20 && (!hasWeb || rating < 4.5)) {
+      return { level:'strong', label:'💰 Sweet spot', cls:'bf-strong', note:'Proven demand (20+ reviews) but digital gaps. Has cash, leaving money on the table. Your best detailer buyer.' };
+    }
+    if (reviews >= 50) {
+      return { level:'strong', label:'💰 Strong buyer', cls:'bf-strong', note:'Established shop with real volume. Has budget, ready to scale.' };
+    }
+    return { level:'maybe', label:'➖ Mid-tier', cls:'bf-maybe', note:'Some traction. Worth a call but qualify budget early.' };
+  }
+
+  // UNKNOWN NICHE — fall back to generic read
+  if (reviews === 0 && !hasWeb && !hasPhone) {
+    return { level:'weak', label:'⚠ Verify viability', cls:'bf-weak', note:'Very thin online footprint — confirm they\'re actively operating.' };
+  }
+  return { level:'maybe', label:'➖ Unknown fit', cls:'bf-maybe', note:'Set niche to drywall or detail for a sharper read.' };
+}
+
 function scoreLabel(s) {
   // Score = marketing need level. Higher score = stronger prospect for your services.
   if (s >= 70) return { text:'🔥 High Need', cls:'badge-hot' };
@@ -2693,6 +2768,8 @@ async function runSearch() {
                 openNow,
                 hours: pl.regularOpeningHours?.weekdayDescriptions || [],
               };
+              lead.bizType = bizType;
+              lead._niche = detectNiche(lead);
               lead.score = score(lead);
               // High-Need filter: keep leads with any meaningful marketing gap
         if (noWebOnly) {
@@ -2760,6 +2837,7 @@ function applyFilters() {
   });
   filtered.sort((a,b) => {
     if (sort === 'score')   return b.score - a.score;
+    if (sort === 'buyerfit') { const rank={strong:0,maybe:1,weak:2}; const d=rank[buyerFit(a).level]-rank[buyerFit(b).level]; return d!==0?d:b.score-a.score; }
     if (sort === 'name')    return a.name.localeCompare(b.name);
     if (sort === 'city')    return (a.city||'').localeCompare(b.city||'');
     if (sort === 'rating')  return (b.rating||0) - (a.rating||0);
@@ -2768,6 +2846,44 @@ function applyFilters() {
   });
   curPage = 1; renderResultsPage();
 }
+function showHottestFirst() {
+  // Sort by buyer fit (strong first) then score, and surface the best
+  document.getElementById('sortBy').value = 'buyerfit';
+  applyFilters();
+  toast('Sorted by buyer fit — best prospects up top', 2500, 'ok');
+}
+
+function addHotResultsToCallList() {
+  // Add strong-fit, high-score leads from current results to the call list.
+  // Saves them to pipeline first if not already saved (call list needs a saved lead).
+  if (!filtered.length) { toast('No results to add', 2200, 'err'); return; }
+  const existingCall = new Set(callList.map(c => c.leadId));
+  const savedIds = new Set(leads.map(l => l.id));
+  let added = 0, saved = 0;
+  // Prioritize: strong buyer fit AND score >= 70, fall back to score >= 70
+  const candidates = filtered.filter(l => {
+    const bf = buyerFit(l);
+    return l.score >= 70 && bf.level !== 'weak';
+  });
+  const finalList = candidates.length ? candidates : filtered.filter(l => l.score >= 70);
+  if (!finalList.length) { toast('No strong hot leads in these results', 2800); return; }
+  finalList.slice(0, 25).forEach(l => {
+    // Save to pipeline if needed
+    if (!savedIds.has(l.id)) {
+      leads.unshift({ ...l, savedAt:Date.now(), pStatus:'new', notes:'', interest:null, contactedAt:0, contactEmail:'' });
+      savedIds.add(l.id); saved++;
+    }
+    // Add to call list if not already there
+    if (!existingCall.has(l.id)) {
+      callList.unshift({ id:uid(), leadId:l.id, name:l.name, phone:l.phone||'', city:l.city||'', score:l.score||0, status:'queue', note:'', addedAt:Date.now() });
+      existingCall.add(l.id); added++;
+    }
+  });
+  if (saved) persist();
+  persistCallList(); updateCallListBadge(); updateDash(); refreshSaveBtns();
+  toast(`Added ${added} to call list${saved ? ` (${saved} new to pipeline)` : ''}`, 3000, 'ok');
+}
+
 function renderResultsPage() {
   if (!filtered.length) {
     document.getElementById('searchResults').innerHTML = `<div class="empty"><div class="empty-icon">🎯</div><h3>No matches</h3><p>Adjust filters.</p></div>`;
@@ -2785,6 +2901,8 @@ function renderResultsPage() {
       <span class="badge ${hotCount > 0 ? 'badge-hot' : 'badge-cold'}">${hotCount} hot leads</span>
       <button class="btn btn-secondary btn-sm" onclick="saveAllHot()">Save all hot</button>
       <button class="btn btn-secondary btn-sm" onclick="saveAll()">Save all ${filtered.length}</button>
+      <button class="btn btn-blue btn-sm" onclick="showHottestFirst()">&#128293; Hottest first</button>
+      <button class="btn btn-amber btn-sm" onclick="addHotResultsToCallList()">&#128222; Hot &rarr; Call List</button>
       ${cities.length > 1 ? `<span style="font-size:12px;color:var(--text-muted)">${cities.length} cities</span>` : ''}
       <span class="results-count">${filtered.length} lead${filtered.length !== 1 ? 's' : ''}</span>
     </div>`;
@@ -2795,6 +2913,7 @@ function renderResultsPage() {
       <td><div class="lead-name">${esc(l.name)}</div><div class="lead-addr">${esc(l.address)}</div></td>
       ${showCity ? `<td><span style="font-size:11.5px;color:var(--text-secondary)">${esc(l.city||'')}</span></td>` : ''}
       <td><span class="badge ${sl.cls}">${sl.text}</span> <span style="font-size:12px;font-weight:700;color:var(--text-muted)">${l.score}</span></td>
+      <td>${(()=>{const bf=buyerFit(l);return `<span class="bf-badge ${bf.cls}" title="${esc(bf.note)}">${bf.label}</span>`;})()}</td>
       <td>${l.website ? `<span class="badge badge-has-site">Has site</span>` : `<span class="badge badge-no-site">No website</span>`}</td>
       <td>${openStatusBadge(l)}</td>
       <td><span style="font-size:12px;color:var(--text-secondary)">${l.phone || '—'}</span></td>
@@ -2813,7 +2932,7 @@ function renderResultsPage() {
   }
   document.getElementById('searchResults').innerHTML = toolbar + `
     <div class="table-wrap"><table>
-      <thead><tr><th>Business</th>${showCity ? '<th>City</th>' : ''}<th>Score</th><th>Website</th><th>Status</th><th>Phone</th><th>Rating</th><th>Maps</th><th>Action</th></tr></thead>
+      <thead><tr><th>Business</th>${showCity ? '<th>City</th>' : ''}<th>Score</th><th>Buyer Fit</th><th>Website</th><th>Status</th><th>Phone</th><th>Rating</th><th>Maps</th><th>Action</th></tr></thead>
       <tbody>${rows}</tbody></table></div>` + pag;
 }
 function goPage(n) {
@@ -2941,6 +3060,7 @@ function openModalFromObj(l) {
   const sc = scoreLabel(l.score);
   document.getElementById('mBadge').innerHTML = `
     <span class="badge ${sc.cls}">${sc.text} ${l.score}</span>
+    ${(()=>{const bf=buyerFit(l);return `<span class="bf-badge ${bf.cls}" title="${esc(bf.note)}">${bf.label}</span>`;})()}
     ${openStatusBadge(l)}
     ${l.contactedAt ? (l.contactMethod === 'voicemail' ? '<span class="badge badge-contacted">🎙 Voicemail Left</span>' : '<span class="badge badge-contacted">📞 Contacted</span>') : ''}
     ${l.interest === 'interested' ? '<span class="badge badge-interested">⭐ Interested</span>' : ''}
@@ -2950,6 +3070,11 @@ function openModalFromObj(l) {
   document.getElementById('mEmail').value  = l.contactEmail || '';
   document.getElementById('mClientTz').value = l.clientTz || '';
   updateLeadTzDisplay();
+  const _nicheSel = document.getElementById('mNiche');
+  if (_nicheSel) _nicheSel.value = l._niche || '';
+  const _bf = buyerFit(l);
+  const _bfBox = document.getElementById('mBuyerFit');
+  if (_bfBox) { _bfBox.className = 'bf-note ' + _bf.cls; _bfBox.innerHTML = `<strong>${_bf.label}</strong> — ${esc(_bf.note)}`; }
   document.getElementById('mInfo').innerHTML = [
     ['Phone', l.phone || '—', l.phone],
     ['Website', l.website ? `<a href="${esc(l.website)}" target="_blank" style="color:var(--primary)">${esc(cleanUrl(l.website))}</a>` : '<span class="badge badge-no-site">No website — great prospect!</span>', false],
@@ -3035,6 +3160,15 @@ function closeModal() {
   activeLead = null;
   renderPipeline(); updateDash();
   if (filtered.length) renderResultsPage();
+}
+function setLeadNiche(value) {
+  if (!activeLead) return;
+  activeLead._niche = value;
+  if (!activeLead._preview) {
+    const idx = leads.findIndex(l => l.id === activeLead.id);
+    if (idx >= 0) { leads[idx]._niche = value; persist(); }
+  }
+  openModalFromObj(activeLead);
 }
 function setLeadField(field, value) {
   if (!activeLead || activeLead._preview) { if (activeLead?._preview) toast('Save lead first'); return; }
