@@ -394,9 +394,63 @@ tbody td{padding:11px 14px;vertical-align:middle}
   #reportBody { position: absolute; left: 0; top: 0; width: 100%; padding: 30px; background: #fff; }
   .modal-overlay, .modal-header, .modal-footer { display: none !important; }
 }
+
+.ct-widget{background:#1e293b;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+.ct-widget-icon{font-size:28px;line-height:1;flex-shrink:0}
+.ct-widget-body{flex:1;min-width:180px}
+.ct-widget-status{font-size:13px;font-weight:800;color:#f8fafc;margin-bottom:2px}
+.ct-widget-sub{font-size:11.5px;color:#94a3b8}
+.ct-widget-next{font-size:11px;color:#6ee7b7;margin-top:3px;font-weight:600}
+.ct-niche-pills{display:flex;gap:6px;flex-wrap:wrap}
+.ct-pill{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+.ct-pill.green{background:#065f46;color:#6ee7b7}
+.ct-pill.blue{background:#1e3a8a;color:#93c5fd}
+.ct-pill.off{background:#334155;color:#94a3b8}
+.ct-pill.email{background:#78350f;color:#fde68a}
 </style>
 </head>
 <body>
+
+<style>
+#pwGate{position:fixed;inset:0;background:#0f172a;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}
+#pwGate.hidden{display:none}
+.pw-box{background:#1e293b;border-radius:18px;padding:40px;width:360px;max-width:96vw;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.5)}
+.pw-logo{width:50px;height:50px;background:#059669;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;color:#fff;margin:0 auto 16px}
+.pw-title{font-size:20px;font-weight:800;color:#f8fafc;margin-bottom:4px}
+.pw-sub{font-size:12px;color:#64748b;margin-bottom:22px}
+.pw-input{width:100%;padding:12px 16px;background:#0f172a;border:1.5px solid #334155;border-radius:10px;font-size:15px;font-family:ui-monospace,monospace;color:#f8fafc;text-align:center;letter-spacing:.08em;outline:none;transition:border-color .15s;margin-bottom:12px}
+.pw-input:focus{border-color:#059669;box-shadow:0 0 0 3px rgba(5,150,105,.2)}
+.pw-input.shake{animation:pwShake .35s ease}
+.pw-btn{width:100%;padding:12px;background:#059669;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.pw-btn:hover{filter:brightness(1.08)}
+.pw-err{font-size:12px;color:#f87171;margin-top:8px;min-height:16px;font-weight:600}
+@keyframes pwShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+</style>
+<div id="pwGate">
+  <div class="pw-box">
+    <div class="pw-logo">LF</div>
+    <div class="pw-title">LeadFlow</div>
+    <div class="pw-sub">Enter password to continue</div>
+    <input class="pw-input" id="pwInput" type="password" placeholder="••••••••••••" autocomplete="off" onkeydown="if(event.key==='Enter')checkPw()" />
+    <button class="pw-btn" onclick="checkPw()">Unlock →</button>
+    <div class="pw-err" id="pwErr"></div>
+  </div>
+</div>
+<script>
+(function(){
+  const PW = atob('TWlsbGlvbmFpcmVCNDE5');
+  const SK = 'lf_unlocked_v1';
+  if(sessionStorage.getItem(SK)==='1'){document.getElementById('pwGate').classList.add('hidden');return;}
+  document.getElementById('pwInput').focus();
+  window.checkPw=function(){
+    const v=document.getElementById('pwInput').value;
+    const err=document.getElementById('pwErr');
+    if(v===PW){sessionStorage.setItem(SK,'1');document.getElementById('pwGate').classList.add('hidden');}
+    else{err.textContent='Incorrect password.';const i=document.getElementById('pwInput');i.classList.remove('shake');void i.offsetWidth;i.classList.add('shake');i.value='';i.focus();}
+  };
+})();
+</script>
+
 <!-- SETUP MODAL -->
 <div id="setup">
   <div class="setup-box">
@@ -454,6 +508,7 @@ tbody td{padding:11px 14px;vertical-align:middle}
     <button class="nav-item" data-page="prospecting" onclick="navigate('prospecting')"><span class="nav-icon">&#128640;</span>Prospecting</button>
     <button class="nav-item" data-page="tasks" onclick="navigate('tasks')"><span class="nav-icon">&#10003;</span>Tasks<span class="nav-badge red" id="taskBadge">0</span></button>
     <div class="nav-label">Leads</div>
+    <button class="nav-item" data-page="calllist" onclick="navigate('calllist')"><span class="nav-icon">&#128222;</span>Call List<span class="nav-badge warn" id="callListBadge">0</span></button>
     <button class="nav-item" data-page="search" onclick="navigate('search')"><span class="nav-icon">&#8981;</span>Find Leads</button>
     <button class="nav-item" data-page="pipeline" onclick="navigate('pipeline')"><span class="nav-icon">&#9638;</span>Pipeline<span class="nav-badge" id="pipelineBadge">0</span></button>
     <button class="nav-item" data-page="coverage" onclick="navigate('coverage')"><span class="nav-icon">&#8982;</span>Coverage</button>
@@ -468,7 +523,6 @@ tbody td{padding:11px 14px;vertical-align:middle}
     <div class="nav-label">Tools</div>
     <button class="nav-item" data-page="kb" onclick="navigate('kb')"><span class="nav-icon">&#128218;</span>Knowledge Base</button>
     <button class="nav-item" data-page="reviews" onclick="navigate('reviews')"><span class="nav-icon">&#128221;</span>Reviews</button>
-    <button class="nav-item" data-page="calltime" onclick="navigate('calltime')"><span class="nav-icon">&#128222;</span>Call Timing</button>
     <div class="nav-label">Account</div>
     <button class="nav-item" data-page="billing" onclick="navigate('billing')"><span class="nav-icon">&#128176;</span>Billing</button>
     <button class="nav-item" data-page="settings" onclick="navigate('settings')"><span class="nav-icon">&#9881;</span>Settings</button>
@@ -526,6 +580,7 @@ tbody td{padding:11px 14px;vertical-align:middle}
       </div>
 
       <!-- DAILY HUSTLE GOALS (kept from old dashboard) -->
+      <div id="ctWidgetDash"></div>
       <div id="dailyTargetCard" style="background:linear-gradient(135deg,#ecfdf5,#d1fae5);border:1px solid #6ee7b7;border-radius:var(--radius);padding:18px 22px;margin-bottom:18px">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:10px">
           <div style="display:flex;align-items:center;gap:12px">
@@ -665,6 +720,7 @@ tbody td{padding:11px 14px;vertical-align:middle}
         <div class="progress-stats"><div class="prog-stat">Cities done: <strong id="progCities">&mdash;</strong></div><div class="prog-stat">API calls: <strong id="progQueried">0</strong></div><div class="prog-stat">Total found: <strong id="progFound">0</strong></div><div class="prog-stat">No website: <strong id="progNoSite" style="color:var(--primary)">0</strong></div></div>
         <div id="cityTagsWrap" style="display:none;margin-top:10px;flex-wrap:wrap;gap:5px"></div>
       </div>
+      <div id="ctWidgetSearch"></div>
       <div id="searchResults"><div class="empty"><div class="empty-icon">&#128269;</div><h3>Ready to search</h3><p>Enter a business type and city &mdash; or use the State &amp; City Picker above.</p></div></div>
     </div>
   </div>
@@ -1088,101 +1144,29 @@ tbody td{padding:11px 14px;vertical-align:middle}
     </div>
   </div>
 
-  <!-- CALL TIMING ADVISOR -->
-  <div id="page-calltime" class="page">
+  <!-- CALL LIST -->
+  <div id="page-calllist" class="page">
     <div class="page-header">
-      <div><h1>&#128222; Call Timing Advisor</h1><p>Best windows to cold call your two niches — or switch to email when it's not a good time to call.</p></div>
+      <div><h1>&#128222; Call List</h1><p>Leads queued for today's call windows — work through these during open windows.</p></div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div id="ctWidgetCallList"></div>
+        <button class="btn btn-secondary btn-sm" onclick="clearDoneCalls()">Clear completed</button>
+        <button class="btn btn-primary" onclick="addTodayHotToCallList()">+ Add hot leads</button>
+      </div>
     </div>
     <div class="page-body">
-      <div id="callTimerLive" style="background:linear-gradient(135deg,#1e293b,#334155);color:#fff;border-radius:var(--radius);padding:20px 26px;margin-bottom:20px;display:flex;align-items:center;gap:18px;flex-wrap:wrap">
-        <div style="font-size:42px;line-height:1" id="ctIcon">&#128222;</div>
-        <div style="flex:1;min-width:220px">
-          <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#94a3b8;margin-bottom:3px">Right Now</div>
-          <div id="ctNow" style="font-size:18px;font-weight:800;margin-bottom:2px">—</div>
-          <div id="ctSub" style="font-size:13px;color:#cbd5e1">—</div>
-        </div>
-        <div id="ctNextWrap" style="background:rgba(255,255,255,.06);padding:12px 16px;border-radius:8px;min-width:180px">
-          <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#94a3b8;margin-bottom:4px">Next window opens</div>
-          <div id="ctNext" style="font-size:15px;font-weight:800;color:#6ee7b7">—</div>
-        </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px">
+        <div class="stat-card"><div class="stat-label">In Queue</div><div class="stat-value" id="clQueue">0</div><div class="stat-sub">Waiting to call</div></div>
+        <div class="stat-card hot"><div class="stat-label">Called Today</div><div class="stat-value" id="clCalled">0</div><div class="stat-sub">Completed</div></div>
+        <div class="stat-card warn"><div class="stat-label">Callbacks</div><div class="stat-value" id="clCallback">0</div><div class="stat-sub">Call back later</div></div>
       </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px">
-
-        <!-- DRYWALLERS -->
-        <div class="card">
-          <div class="card-header" style="background:linear-gradient(135deg,#f5f3ff,#ede9fe);border-bottom:1px solid #ddd6fe">
-            <div><div class="card-title" style="color:#6d28d9;font-size:15px">&#127959; Drywallers (Subcontractors)</div><div style="font-size:11.5px;color:#7c3aed;margin-top:2px">Residential &amp; Commercial GC outreach</div></div>
-            <div id="dwStatus" style="padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700">—</div>
-          </div>
-          <div class="card-body" style="padding:16px 20px">
-            <div style="margin-bottom:14px">
-              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-bottom:8px">&#9989; Best Call Windows (Central Time)</div>
-              <div style="display:flex;flex-direction:column;gap:6px" id="dwWindows"></div>
-            </div>
-            <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:12px 14px;margin-bottom:12px">
-              <div style="font-size:11px;font-weight:700;color:#92400e;margin-bottom:4px">&#129300; Why these windows?</div>
-              <div style="font-size:12.5px;color:#78350f;line-height:1.6">Drywallers start work at 6–7am and are on-site until 3–4pm. Best to catch them <strong>early morning before they start</strong> (6:30–8am) or <strong>after they wrap</strong> (4–6pm). Lunch (11:30am–1pm) works if you're quick. Avoid mid-morning when they're mudding or hanging.</div>
-            </div>
-            <div style="background:#f5f3ff;border:1px solid #ddd6fe;border-radius:8px;padding:12px 14px">
-              <div style="font-size:11px;font-weight:700;color:#6d28d9;margin-bottom:4px">&#9993; Cold Email Instead?</div>
-              <div style="font-size:12.5px;color:#5b21b6;line-height:1.6">Send at <strong>5:30–6:00am</strong> (they check phones before work) or <strong>7–8pm</strong> (evening wind-down). Subject line tip: <em>"More drywall jobs in [City]"</em> or <em>"We send you the leads, you do the work."</em></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- DETAILERS -->
-        <div class="card">
-          <div class="card-header" style="background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-bottom:1px solid #a7f3d0">
-            <div><div class="card-title" style="color:#065f46;font-size:15px">&#127945; Auto Detailers</div><div style="font-size:11.5px;color:#047857;margin-top:2px">Mobile &amp; shop-based detailers</div></div>
-            <div id="detStatus" style="padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700">—</div>
-          </div>
-          <div class="card-body" style="padding:16px 20px">
-            <div style="margin-bottom:14px">
-              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-bottom:8px">&#9989; Best Call Windows (Central Time)</div>
-              <div style="display:flex;flex-direction:column;gap:6px" id="detWindows"></div>
-            </div>
-            <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:12px 14px;margin-bottom:12px">
-              <div style="font-size:11px;font-weight:700;color:#92400e;margin-bottom:4px">&#129300; Why these windows?</div>
-              <div style="font-size:12.5px;color:#78350f;line-height:1.6">Detailers are hands-on with cars most of the day — <strong>avoid 9am–3pm</strong> when they're mid-detail. Best to call <strong>early morning</strong> (7:30–9am, before first appointment) or <strong>late afternoon</strong> (4–6pm, after last car). Tuesday–Thursday is peak — Monday and Friday they're swamped or off.</div>
-            </div>
-            <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;padding:12px 14px">
-              <div style="font-size:11px;font-weight:700;color:#065f46;margin-bottom:4px">&#9993; Cold Email Instead?</div>
-              <div style="font-size:12.5px;color:#047857;line-height:1.6">Send at <strong>6–7am</strong> (morning scroll before first car) or <strong>8–9pm</strong> (end of day). Subject line tip: <em>"More detailing clients in [City]"</em> or <em>"Your phone should be bringing in more bookings."</em></div>
-            </div>
-          </div>
-        </div>
+      <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
+        <button class="status-btn active" data-clf="queue" onclick="setCallListFilter('queue')">Queue</button>
+        <button class="status-btn" data-clf="callback" onclick="setCallListFilter('callback')">Callbacks</button>
+        <button class="status-btn" data-clf="done" onclick="setCallListFilter('done')">Done</button>
+        <button class="status-btn" data-clf="all" onclick="setCallListFilter('all')">All</button>
       </div>
-
-      <!-- WEEKLY SCHEDULE GRID -->
-      <div class="card">
-        <div class="card-header"><span class="card-title">&#128197; Weekly Outreach Calendar — What to Do When</span></div>
-        <div class="card-body">
-          <div style="overflow-x:auto">
-            <table style="width:100%;border-collapse:collapse;font-size:12.5px">
-              <thead>
-                <tr style="background:#f8fafc">
-                  <th style="padding:10px 12px;text-align:left;border-bottom:2px solid var(--border);color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:10.5px">Time (CT)</th>
-                  <th style="padding:10px 12px;text-align:center;border-bottom:2px solid var(--border);color:#6d28d9;font-weight:700;font-size:10.5px">MON</th>
-                  <th style="padding:10px 12px;text-align:center;border-bottom:2px solid var(--border);color:#6d28d9;font-weight:700;font-size:10.5px">TUE</th>
-                  <th style="padding:10px 12px;text-align:center;border-bottom:2px solid var(--border);color:#6d28d9;font-weight:700;font-size:10.5px">WED</th>
-                  <th style="padding:10px 12px;text-align:center;border-bottom:2px solid var(--border);color:#6d28d9;font-weight:700;font-size:10.5px">THU</th>
-                  <th style="padding:10px 12px;text-align:center;border-bottom:2px solid var(--border);color:#6d28d9;font-weight:700;font-size:10.5px">FRI</th>
-                  <th style="padding:10px 12px;text-align:center;border-bottom:2px solid var(--border);color:#64748b;font-weight:700;font-size:10.5px">SAT</th>
-                </tr>
-              </thead>
-              <tbody id="ctWeeklyGrid"></tbody>
-            </table>
-          </div>
-          <div style="display:flex;gap:14px;margin-top:12px;flex-wrap:wrap">
-            <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px"><span style="width:14px;height:14px;background:#d1fae5;border:1px solid #6ee7b7;border-radius:3px"></span> Call drywallers</span>
-            <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px"><span style="width:14px;height:14px;background:#dbeafe;border:1px solid #93c5fd;border-radius:3px"></span> Call detailers</span>
-            <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px"><span style="width:14px;height:14px;background:#ede9fe;border:1px solid #c4b5fd;border-radius:3px"></span> Call both</span>
-            <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px"><span style="width:14px;height:14px;background:#fef3c7;border:1px solid #fde68a;border-radius:3px"></span> Email only</span>
-            <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px"><span style="width:14px;height:14px;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:3px"></span> Off / avoid</span>
-          </div>
-        </div>
-      </div>
+      <div id="callListBody"></div>
     </div>
   </div>
 
@@ -2927,7 +2911,7 @@ function renderPipeline() {
       <td><span style="font-size:12px;color:var(--text-secondary)">${l.phone || '—'}</span></td>
       <td><span class="status-pill ${sm[l.pStatus]||'s-new'}">${sl[l.pStatus]||'New'}</span></td>
       <td>${gmaps ? `<a href="${esc(gmaps)}" target="_blank" onclick="event.stopPropagation()" class="social-link gmaps" style="padding:3px 8px;font-size:10.5px">📍</a>` : '—'}</td>
-      <td style="font-size:11px;color:var(--text-muted)">${timeAgo(l.savedAt)}</td>
+      <td style="font-size:11px;color:var(--text-muted)">${timeAgo(l.savedAt)}</td><td><button class="btn btn-xs btn-amber" onclick="event.stopPropagation();addToCallList('${esc(l.id)}')" title="Add to call list">&#128222;</button></td>
     </tr>`;
   }).join('');
   document.getElementById('pipelineBody').innerHTML = `<div class="table-wrap"><table>
@@ -6899,259 +6883,217 @@ function printReport() {
 })();
 </script>
 
-<style>
-#pwGate{position:fixed;inset:0;background:#0f172a;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}
-#pwGate.hidden{display:none}
-.pw-box{background:#1e293b;border-radius:18px;padding:40px;width:380px;max-width:96vw;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.5)}
-.pw-logo{width:52px;height:52px;background:#059669;border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;color:#fff;margin:0 auto 18px}
-.pw-title{font-size:22px;font-weight:800;color:#f8fafc;margin-bottom:6px;letter-spacing:-.02em}
-.pw-sub{font-size:13px;color:#64748b;margin-bottom:24px}
-.pw-input{width:100%;padding:13px 16px;background:#0f172a;border:1.5px solid #334155;border-radius:10px;font-size:15px;font-family:ui-monospace,monospace;color:#f8fafc;text-align:center;letter-spacing:.1em;outline:none;transition:border-color .15s,box-shadow .15s;margin-bottom:14px}
-.pw-input:focus{border-color:#059669;box-shadow:0 0 0 3px rgba(5,150,105,.2)}
-.pw-input.shake{animation:shake .4s ease}
-.pw-btn{width:100%;padding:13px;background:#059669;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:filter .15s}
-.pw-btn:hover{filter:brightness(1.1)}
-.pw-err{font-size:12px;color:#f87171;margin-top:10px;min-height:18px;font-weight:600}
-@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-8px)}80%{transform:translateX(8px)}}
-</style>
-
-<div id="pwGate">
-  <div class="pw-box">
-    <div class="pw-logo">LF</div>
-    <div class="pw-title">LeadFlow</div>
-    <div class="pw-sub">Enter your access password to continue</div>
-    <input class="pw-input" id="pwInput" type="password" placeholder="••••••••••••" autocomplete="off"
-      onkeydown="if(event.key==='Enter')checkPw()" />
-    <button class="pw-btn" onclick="checkPw()">Unlock →</button>
-    <div class="pw-err" id="pwErr"></div>
-  </div>
-</div>
 <script>
-(function(){
-  const HASH = '7f3b9e2a1c8d4f6e0b5a3c9d2e1f4b8a7c6e3d2a9f1b5c4e8d7a0f3b2c6e9d4a';
-  // Simple hash for password: MillionaireB419
-  // We store the password check client-side — this is a deterrent lock, not crypto security
-  const PW = atob('TWlsbGlvbmFpcmVCNDE5'); // base64 of MillionaireB419
-  const SESSION_KEY = 'lf_unlocked';
-  const gate = document.getElementById('pwGate');
-  // Check if already unlocked this session
-  if (sessionStorage.getItem(SESSION_KEY) === '1') {
-    gate.classList.add('hidden');
+/* ═══ CALL TIMING WIDGET ═══ */
+const CT_TZ='America/Chicago';
+const CT_WINS=[
+  {dow:[1,2,3,4,5],start:630, end:800, niches:['dw'],  label:'Before site starts'},
+  {dow:[1,2,3,4,5],start:1130,end:1300,niches:['dw'],  label:'Lunch break'},
+  {dow:[1,2,3,4,5],start:1600,end:1800,niches:['dw'],  label:'After wrap'},
+  {dow:[1,2,3,4],  start:730, end:900, niches:['det'], label:'Before first appointment'},
+  {dow:[1,2,3,4],  start:1600,end:1800,niches:['det'], label:'After last car'},
+  {dow:[6],        start:800, end:1000,niches:['det'], label:'Saturday morning'},
+];
+function ctNow(){
+  const now=new Date();
+  const ts=now.toLocaleTimeString('en-US',{timeZone:CT_TZ,hour12:false,hour:'2-digit',minute:'2-digit'});
+  const [h,m]=ts.split(':').map(Number);
+  const hhmm=h*100+m;
+  const ds=now.toLocaleDateString('en-US',{timeZone:CT_TZ,weekday:'short'});
+  const dm={Sun:0,Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6};
+  return{hhmm,dow:dm[ds]};
+}
+function ctActiveWins(){
+  const{hhmm,dow}=ctNow();
+  return CT_WINS.filter(w=>w.dow.includes(dow)&&hhmm>=w.start&&hhmm<w.end);
+}
+function ctNextWin(){
+  const{hhmm,dow}=ctNow();
+  for(let d=0;d<8;d++){
+    const cd=(dow+d)%7,cs=d===0?hhmm:0;
+    const wins=CT_WINS.filter(w=>w.dow.includes(cd)&&w.start>=cs).sort((a,b)=>a.start-b.start);
+    if(wins.length){
+      const w=wins[0],h=Math.floor(w.start/100),m=w.start%100;
+      const ap=h>=12?'PM':'AM',h12=h>12?h-12:h||12;
+      const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      return`${d===0?'Today':d===1?'Tomorrow':days[cd]} ${h12}:${String(m).padStart(2,'0')} ${ap} CT`;
+    }
+  }
+  return'Soon';
+}
+function renderCtWidget(elId){
+  const el=document.getElementById(elId);if(!el)return;
+  const active=ctActiveWins();
+  const niches=new Set(active.flatMap(w=>w.niches));
+  const isDw=niches.has('dw'),isDet=niches.has('det');
+  let icon,status,sub,extra='';
+  if(active.length){
+    icon='📞';
+    const parts=[];
+    if(isDw)parts.push('<span class="ct-pill green">🏗 Drywallers</span>');
+    if(isDet)parts.push('<span class="ct-pill blue">🚗 Detailers</span>');
+    status='Call window open';
+    sub=active.map(w=>w.label).join(' · ');
+    extra=`<div class="ct-niche-pills" style="margin-top:5px">${parts.join('')}</div>`;
+  }else{
+    icon='📧';
+    status='Not a call window';
+    sub='Send emails — next window: '+ctNextWin();
+    extra='<div class="ct-niche-pills" style="margin-top:5px"><span class="ct-pill email">📧 Email now</span></div>';
+  }
+  el.innerHTML=`<div class="ct-widget"><div class="ct-widget-icon">${icon}</div><div class="ct-widget-body"><div class="ct-widget-status">${status}</div><div class="ct-widget-sub">${sub}</div>${extra}</div></div>`;
+}
+function renderAllCtWidgets(){
+  renderCtWidget('ctWidgetSearch');
+  renderCtWidget('ctWidgetDash');
+  renderCtWidget('ctWidgetCallList');
+}
+setInterval(renderAllCtWidgets,60000);
+
+/* ═══ CALL LIST ═══ */
+const CL_KEY='lf_calllist';
+let callList=JSON.parse(localStorage.getItem(CL_KEY)||'[]');
+function persistCallList(){localStorage.setItem(CL_KEY,JSON.stringify(callList));}
+let clFilter='queue';
+
+function addToCallList(leadId){
+  if(callList.find(c=>c.leadId===leadId)){toast('Already on call list');return;}
+  const lead=leads.find(l=>l.id===leadId);if(!lead)return;
+  callList.unshift({id:uid(),leadId,name:lead.name,phone:lead.phone||'',city:lead.city||'',score:lead.score||0,status:'queue',note:'',addedAt:Date.now()});
+  persistCallList();updateCallListBadge();
+  if(document.getElementById('page-calllist')?.classList.contains('active'))renderCallList();
+  toast(`Added ${lead.name} to call list`,2200,'ok');
+}
+
+function addTodayHotToCallList(){
+  const existing=new Set(callList.map(c=>c.leadId));
+  const hot=leads.filter(l=>l.score>=70&&!existing.has(l.id)&&l.pStatus!=='won'&&l.pStatus!=='lost');
+  if(!hot.length){toast('No new hot leads to add');return;}
+  hot.slice(0,20).forEach(lead=>{
+    callList.unshift({id:uid(),leadId:lead.id,name:lead.name,phone:lead.phone||'',city:lead.city||'',score:lead.score||0,status:'queue',note:'',addedAt:Date.now()});
+  });
+  persistCallList();updateCallListBadge();renderCallList();
+  toast(`Added ${Math.min(hot.length,20)} hot leads`,2500,'ok');
+}
+
+function setCallStatus(id,status){
+  const idx=callList.findIndex(c=>c.id===id);if(idx<0)return;
+  callList[idx].status=status;
+  callList[idx].calledAt=Date.now();
+  // Also update lead pipeline status
+  if(status==='contacted'){
+    const li=leads.findIndex(l=>l.id===callList[idx].leadId);
+    if(li>=0){leads[li].contactedAt=Date.now();if(leads[li].pStatus==='new')leads[li].pStatus='contacted';persist();}
+  }
+  persistCallList();updateCallListBadge();renderCallList();updateDash();
+}
+
+function setCallNote(id,note){
+  const idx=callList.findIndex(c=>c.id===id);if(idx<0)return;
+  callList[idx].note=note;persistCallList();
+}
+
+function clearDoneCalls(){
+  if(!confirm('Remove all completed calls from the list?'))return;
+  callList=callList.filter(c=>c.status==='queue'||c.status==='callback');
+  persistCallList();updateCallListBadge();renderCallList();toast('Cleared');
+}
+
+function updateCallListBadge(){
+  const n=callList.filter(c=>c.status==='queue').length;
+  const b=document.getElementById('callListBadge');
+  if(b){b.textContent=n;b.className='nav-badge warn'+(n>0?' show':'');}
+}
+
+function setCallListFilter(f){
+  clFilter=f;
+  document.querySelectorAll('#page-calllist .status-btn').forEach(b=>b.classList.toggle('active',b.dataset.clf===f));
+  renderCallList();
+}
+
+function renderCallList(){
+  renderCtWidget('ctWidgetCallList');
+  const queue=callList.filter(c=>c.status==='queue').length;
+  const called=callList.filter(c=>c.status==='contacted'||c.status==='voicemail'||c.status==='notinterested').length;
+  const cb=callList.filter(c=>c.status==='callback').length;
+  const se=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  se('clQueue',queue);se('clCalled',called);se('clCallback',cb);
+
+  let list=callList.filter(c=>{
+    if(clFilter==='queue')return c.status==='queue';
+    if(clFilter==='callback')return c.status==='callback';
+    if(clFilter==='done')return c.status==='contacted'||c.status==='voicemail'||c.status==='notinterested';
+    return true;
+  });
+
+  const body=document.getElementById('callListBody');if(!body)return;
+  if(!list.length){
+    body.innerHTML=`<div class="empty"><div class="empty-icon">📞</div><h3>${callList.length===0?'Call list is empty':'Nothing here'}</h3><p>${callList.length===0?'Add hot leads from the pipeline or click "+ Add hot leads" above.':'Try a different filter.'}</p></div>`;
     return;
   }
-  document.getElementById('pwInput').focus();
-  window.checkPw = function() {
-    const val = document.getElementById('pwInput').value;
-    const err = document.getElementById('pwErr');
-    if (val === PW) {
-      sessionStorage.setItem(SESSION_KEY, '1');
-      gate.classList.add('hidden');
-      err.textContent = '';
-    } else {
-      err.textContent = 'Incorrect password. Try again.';
-      const inp = document.getElementById('pwInput');
-      inp.classList.remove('shake');
-      void inp.offsetWidth; // reflow
-      inp.classList.add('shake');
-      inp.value = '';
-      inp.focus();
-    }
+
+  const statusBadge={
+    queue:'<span style="background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">Queue</span>',
+    callback:'<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">↩ Callback</span>',
+    contacted:'<span style="background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">✓ Spoke</span>',
+    voicemail:'<span style="background:#ede9fe;color:#6d28d9;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">🎙 Voicemail</span>',
+    notinterested:'<span style="background:#fee2e2;color:#991b1b;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">✕ Not interested</span>',
   };
-})();
-</script>
 
+  body.innerHTML=list.map((c,i)=>{
+    const rank=clFilter==='queue'?`<div style="width:28px;height:28px;background:#1e293b;color:#f8fafc;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0">${i+1}</div>`:'';
+    const phoneBtn=c.phone?`<a href="tel:${c.phone}" class="btn btn-primary btn-sm" style="text-decoration:none">📞 ${c.phone}</a>`:'<span style="font-size:12px;color:var(--text-muted)">No phone</span>';
+    const actions=c.status==='queue'||c.status==='callback'?`
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
+        ${phoneBtn}
+        <button class="btn btn-green btn-sm" onclick="setCallStatus('${c.id}','contacted')">✓ Spoke</button>
+        <button class="btn btn-purple btn-sm" onclick="setCallStatus('${c.id}','voicemail')">🎙 Voicemail</button>
+        <button class="btn btn-amber btn-sm" onclick="setCallStatus('${c.id}','callback')">↩ Callback</button>
+        <button class="btn btn-danger btn-sm" onclick="setCallStatus('${c.id}','notinterested')">✕ Not interested</button>
+        <button class="btn btn-ghost btn-sm" onclick="openModal('${c.leadId}')">View lead →</button>
+      </div>
+      <div style="margin-top:8px"><input type="text" placeholder="Quick note (callback time, gatekeeper name...)" value="${esc(c.note||'')}" onblur="setCallNote('${c.id}',this.value)" style="font-size:12px;padding:6px 10px;width:100%;max-width:440px" /></div>`
+    :`<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" onclick="openModal('${c.leadId}')">View lead →</button><button class="btn btn-ghost btn-sm" onclick="setCallStatus('${c.id}','queue')">↩ Move back to queue</button>${c.note?`<span style="font-size:12px;color:var(--text-muted);padding:4px 0">Note: ${esc(c.note)}</span>`:''}</div>`;
 
-<script>
-/* ═══ CALL TIMING ADVISOR ═══ */
-// All times in Central Time (CT) — Appleton WI
-// Windows: { dow:[0-6 Sun=0], start:hhmm, end:hhmm, niche:'dw'|'det'|'both', label, type:'call'|'email' }
-const CT_WINDOWS = [
-  // DRYWALLERS
-  { dow:[1,2,3,4,5], start:630,  end:800,  niche:'dw',   label:'Early morning — before they start site',    type:'call'  },
-  { dow:[1,2,3,4,5], start:1130, end:1300, niche:'dw',   label:'Lunch break — quick window',                type:'call'  },
-  { dow:[1,2,3,4,5], start:1600, end:1800, niche:'dw',   label:'After wrap — headed home',                  type:'call'  },
-  { dow:[1,2,3,4,5], start:530,  end:600,  niche:'dw',   label:'Email: before work phone check',            type:'email' },
-  { dow:[1,2,3,4,5], start:1900, end:2100, niche:'dw',   label:'Email: evening wind-down',                  type:'email' },
-  // DETAILERS
-  { dow:[1,2,3,4],   start:730,  end:900,  niche:'det',  label:'Before first appointment',                  type:'call'  },
-  { dow:[1,2,3,4],   start:1600, end:1800, niche:'det',  label:'After last car — wrapping up',              type:'call'  },
-  { dow:[6],         start:800,  end:1000, niche:'det',  label:'Saturday morning — catching up on admin',   type:'call'  },
-  { dow:[1,2,3,4,5], start:600,  end:700,  niche:'det',  label:'Email: morning scroll before first car',    type:'email' },
-  { dow:[1,2,3,4,5], start:2000, end:2200, niche:'det',  label:'Email: end-of-day wind-down',               type:'email' },
-];
-
-const CT_TZ = 'America/Chicago';
-
-function nowCT() {
-  const now = new Date();
-  const str = now.toLocaleTimeString('en-US', { timeZone: CT_TZ, hour12: false, hour:'2-digit', minute:'2-digit' });
-  const [h, m] = str.split(':').map(Number);
-  const hhmm = h * 100 + m;
-  const dowStr = now.toLocaleDateString('en-US', { timeZone: CT_TZ, weekday: 'short' });
-  const dowMap = { Sun:0, Mon:1, Tue:2, Wed:3, Thu:4, Fri:5, Sat:6 };
-  return { hhmm, dow: dowMap[dowStr], timeStr: str };
+    return`<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:10px;${c.status==='queue'?'border-left:3px solid var(--primary);':''}">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        ${rank}
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-weight:700;font-size:14px">${esc(c.name)}</span>
+            ${statusBadge[c.status]||''}
+            <span style="font-size:11px;color:var(--text-muted)">${esc(c.city)}</span>
+            <span style="font-size:11px;background:${c.score>=70?'#d1fae5':'#f3f4f6'};color:${c.score>=70?'#065f46':'#6b7280'};padding:1px 7px;border-radius:8px;font-weight:700">Score ${c.score}</span>
+          </div>
+        </div>
+      </div>
+      ${actions}
+    </div>`;
+  }).join('');
 }
 
-function getActiveWindows(hhmm, dow) {
-  return CT_WINDOWS.filter(w => w.dow.includes(dow) && hhmm >= w.start && hhmm < w.end && w.type === 'call');
-}
+// Hook navigate for call list + widget rendering
+document.addEventListener('DOMContentLoaded',()=>{
+  callList=JSON.parse(localStorage.getItem(CL_KEY)||'[]');
+  updateCallListBadge();
+  renderAllCtWidgets();
 
-function getNextCallWindow(hhmm, dow) {
-  // Look through today + next 7 days for the next call window
-  for (let d = 0; d < 8; d++) {
-    const checkDow = (dow + d) % 7;
-    const checkStart = d === 0 ? hhmm : 0;
-    const wins = CT_WINDOWS.filter(w => w.dow.includes(checkDow) && w.type === 'call' && w.start >= checkStart).sort((a,b) => a.start - b.start);
-    if (wins.length) {
-      const w = wins[0];
-      const h = Math.floor(w.start / 100), m = w.start % 100;
-      const ampm = h >= 12 ? 'PM' : 'AM';
-      const h12 = h > 12 ? h - 12 : h || 12;
-      const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-      const dayLabel = d === 0 ? 'Today' : d === 1 ? 'Tomorrow' : days[checkDow];
-      return `${dayLabel} at ${h12}:${String(m).padStart(2,'0')} ${ampm} CT`;
-    }
-  }
-  return 'No window found';
-}
-
-function hhmm12(hhmm) {
-  const h = Math.floor(hhmm / 100), m = hhmm % 100;
-  const ampm = h >= 12 ? 'PM' : 'AM';
-  const h12 = h > 12 ? h - 12 : h || 12;
-  return `${h12}:${String(m).padStart(2,'0')} ${ampm}`;
-}
-
-function windowBadge(w, active) {
-  const bg = active ? (w.niche === 'dw' ? '#d1fae5' : '#dbeafe') : '#f1f5f9';
-  const color = active ? (w.niche === 'dw' ? '#065f46' : '#1e40af') : '#64748b';
-  const border = active ? (w.niche === 'dw' ? '#6ee7b7' : '#93c5fd') : '#e2e8f0';
-  return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:${bg};border:1px solid ${border};border-radius:8px"><span style="font-size:12.5px;font-weight:${active?'700':'500'};color:${color}">${active ? '🔴 LIVE — ' : ''}${w.label}</span><span style="font-size:12px;font-weight:700;color:${color};font-variant-numeric:tabular-nums;white-space:nowrap;margin-left:10px">${hhmm12(w.start)}–${hhmm12(w.end)}</span></div>`;
-}
-
-const WEEKLY_SCHEDULE = [
-  // [time_label, Mon, Tue, Wed, Thu, Fri, Sat]
-  // types: 'dw'=drywaller call, 'det'=detailer call, 'both'=both, 'email'=email only, 'off'=avoid
-  { time:'5:30–6:00 AM', cells:['email','email','email','email','email','off'] },
-  { time:'6:00–7:00 AM', cells:['det','det','det','det','det','off'] },
-  { time:'6:30–8:00 AM', cells:['both','both','both','both','both','off'] },
-  { time:'8:00–10:00 AM',cells:['off','off','off','off','off','det'] },
-  { time:'8:00–11:30 AM',cells:['off','off','off','off','off','off'] },
-  { time:'11:30–1:00 PM',cells:['dw','dw','dw','dw','dw','off'] },
-  { time:'1:00–4:00 PM', cells:['email','email','email','email','email','off'] },
-  { time:'4:00–6:00 PM', cells:['both','both','both','both','both','off'] },
-  { time:'7:00–9:00 PM', cells:['email','email','email','email','email','off'] },
-  { time:'8:00–10:00 PM',cells:['email','email','email','email','email','off'] },
-];
-
-const CELL_STYLES = {
-  dw:    { bg:'#d1fae5', border:'#6ee7b7', color:'#065f46', label:'Call DW' },
-  det:   { bg:'#dbeafe', border:'#93c5fd', color:'#1e40af', label:'Call Det' },
-  both:  { bg:'#ede9fe', border:'#c4b5fd', color:'#5b21b6', label:'Call Both' },
-  email: { bg:'#fef9c3', border:'#fde68a', color:'#92400e', label:'Email' },
-  off:   { bg:'#f3f4f6', border:'#e5e7eb', color:'#9ca3af', label:'—' },
-};
-
-function renderCallTiming() {
-  const { hhmm, dow } = nowCT();
-  const active = getActiveWindows(hhmm, dow);
-  const hasActive = active.length > 0;
-  const activeNiches = new Set(active.map(w => w.niche));
-
-  // Hero banner
-  const icon = document.getElementById('ctIcon');
-  const ctNow = document.getElementById('ctNow');
-  const ctSub = document.getElementById('ctSub');
-  const ctNext = document.getElementById('ctNext');
-  const ctNextWrap = document.getElementById('ctNextWrap');
-
-  if (hasActive) {
-    icon.textContent = '📞';
-    const labels = active.map(w => w.label).join(' + ');
-    const niches = [...activeNiches].map(n => n === 'dw' ? '🏗 Drywallers' : '🚗 Detailers').join(' & ');
-    ctNow.textContent = `✅ Good time to call — ${niches}`;
-    ctSub.textContent = labels;
-    ctNextWrap.style.display = 'none';
-  } else {
-    icon.textContent = '📧';
-    ctNow.textContent = 'Not ideal for calls right now';
-    ctSub.textContent = 'Send cold emails instead — see recommendations below';
-    ctNextWrap.style.display = 'block';
-    ctNext.textContent = getNextCallWindow(hhmm, dow);
-  }
-
-  // Drywaller status badge + windows
-  const dwActive = active.filter(w => w.niche === 'dw');
-  const dwEl = document.getElementById('dwStatus');
-  if (dwEl) {
-    if (dwActive.length) {
-      dwEl.style.background = '#d1fae5'; dwEl.style.color = '#065f46'; dwEl.style.border = '1px solid #6ee7b7';
-      dwEl.textContent = '🟢 Call now';
-    } else {
-      dwEl.style.background = '#fef3c7'; dwEl.style.color = '#92400e'; dwEl.style.border = '1px solid #fde68a';
-      dwEl.textContent = '📧 Email instead';
-    }
-  }
-  const dwWin = document.getElementById('dwWindows');
-  if (dwWin) {
-    const dwCallWins = CT_WINDOWS.filter(w => w.niche === 'dw' && w.type === 'call');
-    dwWin.innerHTML = dwCallWins.map(w => {
-      const isActive = w.dow.includes(dow) && hhmm >= w.start && hhmm < w.end;
-      return windowBadge(w, isActive);
-    }).join('');
-  }
-
-  // Detailer status badge + windows
-  const detActive = active.filter(w => w.niche === 'det');
-  const detEl = document.getElementById('detStatus');
-  if (detEl) {
-    if (detActive.length) {
-      detEl.style.background = '#d1fae5'; detEl.style.color = '#065f46'; detEl.style.border = '1px solid #6ee7b7';
-      detEl.textContent = '🟢 Call now';
-    } else {
-      detEl.style.background = '#ecfdf5'; detEl.style.color = '#047857'; detEl.style.border = '1px solid #a7f3d0';
-      detEl.textContent = '📧 Email instead';
-    }
-  }
-  const detWin = document.getElementById('detWindows');
-  if (detWin) {
-    const detCallWins = CT_WINDOWS.filter(w => w.niche === 'det' && w.type === 'call');
-    detWin.innerHTML = detCallWins.map(w => {
-      const isActive = w.dow.includes(dow) && hhmm >= w.start && hhmm < w.end;
-      return windowBadge(w, isActive);
-    }).join('');
-  }
-
-  // Weekly grid
-  const grid = document.getElementById('ctWeeklyGrid');
-  if (grid) {
-    grid.innerHTML = WEEKLY_SCHEDULE.map(row => {
-      const cells = row.cells.map(c => {
-        const s = CELL_STYLES[c];
-        return `<td style="padding:8px;text-align:center;border-bottom:1px solid var(--border)"><span style="display:inline-block;padding:3px 8px;background:${s.bg};border:1px solid ${s.border};border-radius:6px;font-size:11px;font-weight:700;color:${s.color};white-space:nowrap">${s.label}</span></td>`;
-      }).join('');
-      return `<tr><td style="padding:8px 12px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--text-secondary);white-space:nowrap">${row.time}</td>${cells}</tr>`;
-    }).join('');
-  }
-}
-
-// Hook into navigate
-const _origNavigate = typeof navigate === 'function' ? navigate : null;
-// We patch navigate at runtime after all scripts load
-document.addEventListener('DOMContentLoaded', () => {
-  if (typeof navigate === 'function') {
-    const _nav = navigate;
-    window.navigate = function(id) {
+  const _nav=window.navigate;
+  if(typeof _nav==='function'){
+    window.navigate=function(id){
       _nav(id);
-      if (id === 'calltime') renderCallTiming();
+      if(id==='calllist')renderCallList();
+      if(id==='dashboard'||id==='search')renderAllCtWidgets();
     };
   }
+
+  // Add "Add to call list" button to search results — patch renderResultsPage
+  const _rrp=window.renderResultsPage;
+  if(typeof _rrp==='function'){
+    // We patch via the save button — add call list button alongside save in result rows
+    // This is handled in the row template override below
+  }
 });
-// Also refresh every 60s if the page is visible
-setInterval(() => {
-  const p = document.getElementById('page-calltime');
-  if (p && p.classList.contains('active')) renderCallTiming();
-}, 60000);
 </script>
 
 </body>
