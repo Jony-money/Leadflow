@@ -395,11 +395,13 @@ tbody td{padding:11px 14px;vertical-align:middle}
   .modal-overlay, .modal-header, .modal-footer { display: none !important; }
 }
 
-.ct-widget{background:#1e293b;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap}
-.ct-widget-icon{font-size:28px;line-height:1;flex-shrink:0}
+.ct-widget{border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:16px;margin-bottom:18px;flex-wrap:wrap;border:2px solid transparent;transition:all .2s}
+.ct-widget.go{background:linear-gradient(135deg,#064e3b,#065f46);border-color:#10b981;box-shadow:0 4px 16px rgba(16,185,129,.25)}
+.ct-widget.stop{background:#1e293b;border-color:#475569}
+.ct-widget-icon{font-size:34px;line-height:1;flex-shrink:0}
 .ct-widget-body{flex:1;min-width:180px}
-.ct-widget-status{font-size:13px;font-weight:800;color:#f8fafc;margin-bottom:2px}
-.ct-widget-sub{font-size:11.5px;color:#94a3b8}
+.ct-widget-status{font-size:16px;font-weight:800;color:#f8fafc;margin-bottom:3px;letter-spacing:.01em}
+.ct-widget-sub{font-size:12px;color:#cbd5e1}
 .ct-widget-next{font-size:11px;color:#6ee7b7;margin-top:3px;font-weight:600}
 .ct-niche-pills{display:flex;gap:6px;flex-wrap:wrap}
 .ct-pill{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
@@ -417,6 +419,25 @@ tbody td{padding:11px 14px;vertical-align:middle}
 .bf-note.bf-strong{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
 .bf-note.bf-maybe{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
 .bf-note.bf-weak{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+
+.qual-panel{background:#fff;border:1px solid var(--border);border-radius:12px;margin-bottom:18px;overflow:hidden}
+.qual-head{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;cursor:pointer;user-select:none;background:linear-gradient(135deg,#f8fafc,#f1f5f9)}
+.qual-head:hover{background:#eef2f7}
+.qual-title{font-size:13.5px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px}
+.qual-toggle{font-size:12px;color:var(--text-muted);font-weight:700}
+.qual-body{padding:0 18px;max-height:0;overflow:hidden;transition:max-height .25s ease,padding .25s ease}
+.qual-body.open{max-height:1200px;padding:14px 18px 18px}
+.qual-col{margin-bottom:16px}
+.qual-col:last-child{margin-bottom:0}
+.qual-col h4{font-size:12.5px;font-weight:800;margin:0 0 8px;display:flex;align-items:center;gap:6px}
+.qual-col.dw h4{color:#1e40af}
+.qual-col.det h4{color:#9a3412}
+.qual-row{display:flex;gap:8px;align-items:flex-start;font-size:12px;line-height:1.5;margin-bottom:6px;color:#334155}
+.qual-dot{flex-shrink:0;width:16px;text-align:center;font-weight:800}
+.qual-green .qual-dot{color:#059669}
+.qual-yellow .qual-dot{color:#d97706}
+.qual-red .qual-dot{color:#dc2626}
+.qual-tip{background:#f0f6f2;border-left:3px solid var(--primary);border-radius:6px;padding:9px 12px;font-size:11.5px;color:#334155;line-height:1.5;margin-top:4px}
 </style>
 </head>
 <body>
@@ -731,6 +752,36 @@ tbody td{padding:11px 14px;vertical-align:middle}
         <div id="cityTagsWrap" style="display:none;margin-top:10px;flex-wrap:wrap;gap:5px"></div>
       </div>
       <div id="ctWidgetSearch"></div>
+      <div class="qual-panel">
+        <div class="qual-head" onclick="document.getElementById('qualBody').classList.toggle('open');this.querySelector('.qual-toggle').textContent=document.getElementById('qualBody').classList.contains('open')?'Hide \u2715':'Show \u25BC'">
+          <div class="qual-title">🎯 Who's worth calling? — quick qualifying guide</div>
+          <div class="qual-toggle">Show ▼</div>
+        </div>
+        <div class="qual-body" id="qualBody">
+          <div class="qual-col">
+            <h4>⚡ The 60-second test (any lead)</h4>
+            <div class="qual-row qual-green"><span class="qual-dot">✓</span><span><b>Working phone?</b> Must-have — these are phone-first niches.</span></div>
+            <div class="qual-row qual-green"><span class="qual-dot">✓</span><span><b>Weak/no website or dead site?</b> That gap IS the opportunity.</span></div>
+            <div class="qual-row qual-green"><span class="qual-dot">✓</span><span><b>Clearly active?</b> Recent reviews/posts, listing looks alive.</span></div>
+            <div class="qual-row qual-yellow"><span class="qual-dot">!</span><span><b>Reviews</b> — read them through the niche lens below.</span></div>
+          </div>
+          <div class="qual-col dw">
+            <h4>🏗 Drywallers</h4>
+            <div class="qual-row qual-green"><span class="qual-dot">✓</span><span><b>0 reviews + working phone = STRONG buyer.</b> Established word-of-mouth business, has cash, never needed marketing. Your best entry.</span></div>
+            <div class="qual-row qual-yellow"><span class="qual-dot">!</span><span>Reviews but bad rating (under 3.5) — getting work, dropping the ball. Could go either way.</span></div>
+            <div class="qual-row qual-red"><span class="qual-dot">✕</span><span>No phone, no site, no reviews, nothing — likely dead. Skip.</span></div>
+            <div class="qual-tip"><b>Ask early:</b> residential, commercial, or both? Routes your whole pitch. (Commercial = trust-based, not mass marketing.)</div>
+          </div>
+          <div class="qual-col det">
+            <h4>🚗 Detailers</h4>
+            <div class="qual-row qual-green"><span class="qual-dot">✓</span><span><b>20+ reviews + weak website/social = SWEET SPOT.</b> Proven demand, leaving money on the table. Best detailer buyer.</span></div>
+            <div class="qual-row qual-green"><span class="qual-dot">✓</span><span>50+ reviews, strong rating, no real social = established, has budget, ready to scale.</span></div>
+            <div class="qual-row qual-yellow"><span class="qual-dot">!</span><span><b>0 reviews = usually new or part-time</b> (opposite of drywallers). Verify their Instagram before spending pitch time.</span></div>
+            <div class="qual-row qual-red"><span class="qual-dot">✕</span><span>0 reviews + no footprint at all → probably broke. Low priority.</span></div>
+          </div>
+          <div class="qual-tip"><b>Bottom line:</b> reachable phone + obvious digital gap = worth a call. Don't overthink the rest — you learn more in 30 seconds on the phone than 10 minutes of scoping. The Buyer Fit badges below already flag this for you.</div>
+        </div>
+      </div>
       <div id="searchResults"><div class="empty"><div class="empty-icon">&#128269;</div><h3>Ready to search</h3><p>Enter a business type and city &mdash; or use the State &amp; City Picker above.</p></div></div>
     </div>
   </div>
@@ -7064,22 +7115,22 @@ function renderCtWidget(elId){
   const active=ctActiveWins();
   const niches=new Set(active.flatMap(w=>w.niches));
   const isDw=niches.has('dw'),isDet=niches.has('det');
-  let icon,status,sub,extra='';
+  let icon,status,sub,extra='',cls='';
   if(active.length){
-    icon='📞';
+    icon='📞';cls='go';
     const parts=[];
-    if(isDw)parts.push('<span class="ct-pill green">🏗 Drywallers</span>');
-    if(isDet)parts.push('<span class="ct-pill blue">🚗 Detailers</span>');
-    status='Call window open';
+    if(isDw)parts.push('<span class="ct-pill green">🏗 Call Drywallers</span>');
+    if(isDet)parts.push('<span class="ct-pill blue">🚗 Call Detailers</span>');
+    status='✅ GO — Call window is OPEN';
     sub=active.map(w=>w.label).join(' · ');
-    extra=`<div class="ct-niche-pills" style="margin-top:5px">${parts.join('')}</div>`;
+    extra=`<div class="ct-niche-pills" style="margin-top:6px">${parts.join('')}</div>`;
   }else{
-    icon='📧';
-    status='Not a call window';
-    sub='Send emails — next window: '+ctNextWin();
-    extra='<div class="ct-niche-pills" style="margin-top:5px"><span class="ct-pill email">📧 Email now</span></div>';
+    icon='✋';cls='stop';
+    status='Not a call window right now';
+    sub='Better to send emails. Next call window: '+ctNextWin();
+    extra='<div class="ct-niche-pills" style="margin-top:6px"><span class="ct-pill email">📧 Email instead</span></div>';
   }
-  el.innerHTML=`<div class="ct-widget"><div class="ct-widget-icon">${icon}</div><div class="ct-widget-body"><div class="ct-widget-status">${status}</div><div class="ct-widget-sub">${sub}</div>${extra}</div></div>`;
+  el.innerHTML=`<div class="ct-widget ${cls}"><div class="ct-widget-icon">${icon}</div><div class="ct-widget-body"><div class="ct-widget-status">${status}</div><div class="ct-widget-sub">${sub}</div>${extra}</div></div>`;
 }
 function renderAllCtWidgets(){
   renderCtWidget('ctWidgetSearch');
