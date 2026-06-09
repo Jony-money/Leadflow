@@ -455,6 +455,12 @@ tbody td{padding:11px 14px;vertical-align:middle}
 .ct-strip-badge.open{background:#059669;color:#fff}
 .ct-strip-badge.soon{background:#e0e7ff;color:#3730a3}
 .ct-strip-badge.done{background:#e5e7eb;color:#6b7280}
+
+.nav-more{max-height:0;overflow:hidden;transition:max-height .25s ease}
+.nav-more.open{max-height:600px}
+.nav-more-toggle .nav-chevron{margin-left:auto;transition:transform .2s ease;font-size:10px}
+.nav-more-toggle.open .nav-chevron{transform:rotate(90deg)}
+.nav-more .nav-item{padding-left:22px;font-size:13px;opacity:.85}
 </style>
 </head>
 <body>
@@ -550,30 +556,31 @@ tbody td{padding:11px 14px;vertical-align:middle}
     <div class="logo-date" id="sb-date"></div>
   </div>
   <nav class="sidebar-nav">
-    <div class="nav-label">Overview</div>
+    <div class="nav-label">Command</div>
     <button class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')"><span class="nav-icon">&#9678;</span>Command Center</button>
-    <button class="nav-item" data-page="kpi" onclick="navigate('kpi')"><span class="nav-icon">&#128202;</span>KPIs</button>
-    <button class="nav-item" data-page="prospecting" onclick="navigate('prospecting')"><span class="nav-icon">&#128640;</span>Prospecting</button>
-    <button class="nav-item" data-page="tasks" onclick="navigate('tasks')"><span class="nav-icon">&#10003;</span>Tasks<span class="nav-badge red" id="taskBadge">0</span></button>
     <div class="nav-label">Leads</div>
     <button class="nav-item" data-page="calllist" onclick="navigate('calllist')"><span class="nav-icon">&#128222;</span>Call List<span class="nav-badge warn" id="callListBadge">0</span></button>
     <button class="nav-item" data-page="search" onclick="navigate('search')"><span class="nav-icon">&#8981;</span>Find Leads</button>
     <button class="nav-item" data-page="pipeline" onclick="navigate('pipeline')"><span class="nav-icon">&#9638;</span>Pipeline<span class="nav-badge" id="pipelineBadge">0</span></button>
-    <button class="nav-item" data-page="coverage" onclick="navigate('coverage')"><span class="nav-icon">&#8982;</span>Coverage</button>
-    <div class="nav-label">Clients</div>
-    <button class="nav-item" data-page="clients" onclick="navigate('clients')"><span class="nav-icon">&#128101;</span>Active Clients<span class="nav-badge" id="clientsBadge">0</span></button>
-    <button class="nav-item" data-page="deliverables" onclick="navigate('deliverables')"><span class="nav-icon">&#128230;</span>Deliverables<span class="nav-badge warn" id="delivBadge">0</span></button>
-    <div class="nav-label">Outreach</div>
-    <button class="nav-item" data-page="appointments" onclick="navigate('appointments')"><span class="nav-icon">&#128197;</span>Appointments<span class="nav-badge warn" id="aptBadge">0</span></button>
-    <button class="nav-item" data-page="emails" onclick="navigate('emails')"><span class="nav-icon">&#9993;</span>Email History<span class="nav-badge red" id="emailBadge">0</span></button>
-    <button class="nav-item" data-page="templates" onclick="navigate('templates')"><span class="nav-icon">&#9999;</span>Email Templates</button>
-    <button class="nav-item" data-page="activity" onclick="navigate('activity')"><span class="nav-icon">&#8860;</span>Activity Log</button>
-    <div class="nav-label">Tools</div>
-    <button class="nav-item" data-page="kb" onclick="navigate('kb')"><span class="nav-icon">&#128218;</span>Knowledge Base</button>
-    <button class="nav-item" data-page="reviews" onclick="navigate('reviews')"><span class="nav-icon">&#128221;</span>Reviews</button>
-    <div class="nav-label">Account</div>
-    <button class="nav-item" data-page="billing" onclick="navigate('billing')"><span class="nav-icon">&#128176;</span>Billing</button>
-    <button class="nav-item" data-page="settings" onclick="navigate('settings')"><span class="nav-icon">&#9881;</span>Settings</button>
+    <div class="nav-label">Money</div>
+    <button class="nav-item" data-page="billing" onclick="navigate('billing')"><span class="nav-icon">&#128176;</span>Budgeting</button>
+    <div class="nav-label">More</div>
+    <button class="nav-item nav-more-toggle" onclick="document.getElementById('navMore').classList.toggle('open');this.classList.toggle('open')"><span class="nav-icon">&#8943;</span>More tools<span class="nav-chevron">&#9656;</span></button>
+    <div class="nav-more" id="navMore">
+      <button class="nav-item" data-page="clients" onclick="navigate('clients')"><span class="nav-icon">&#128101;</span>Active Clients<span class="nav-badge" id="clientsBadge">0</span></button>
+      <button class="nav-item" data-page="deliverables" onclick="navigate('deliverables')"><span class="nav-icon">&#128230;</span>Deliverables<span class="nav-badge warn" id="delivBadge">0</span></button>
+      <button class="nav-item" data-page="appointments" onclick="navigate('appointments')"><span class="nav-icon">&#128197;</span>Appointments<span class="nav-badge warn" id="aptBadge">0</span></button>
+      <button class="nav-item" data-page="tasks" onclick="navigate('tasks')"><span class="nav-icon">&#10003;</span>Tasks<span class="nav-badge red" id="taskBadge">0</span></button>
+      <button class="nav-item" data-page="emails" onclick="navigate('emails')"><span class="nav-icon">&#9993;</span>Email History<span class="nav-badge red" id="emailBadge">0</span></button>
+      <button class="nav-item" data-page="templates" onclick="navigate('templates')"><span class="nav-icon">&#9999;</span>Email Templates</button>
+      <button class="nav-item" data-page="kpi" onclick="navigate('kpi')"><span class="nav-icon">&#128202;</span>KPIs</button>
+      <button class="nav-item" data-page="prospecting" onclick="navigate('prospecting')"><span class="nav-icon">&#128640;</span>Prospecting</button>
+      <button class="nav-item" data-page="coverage" onclick="navigate('coverage')"><span class="nav-icon">&#8982;</span>Coverage</button>
+      <button class="nav-item" data-page="activity" onclick="navigate('activity')"><span class="nav-icon">&#8860;</span>Activity Log</button>
+      <button class="nav-item" data-page="kb" onclick="navigate('kb')"><span class="nav-icon">&#128218;</span>Knowledge Base</button>
+      <button class="nav-item" data-page="reviews" onclick="navigate('reviews')"><span class="nav-icon">&#128221;</span>Reviews</button>
+      <button class="nav-item" data-page="settings" onclick="navigate('settings')"><span class="nav-icon">&#9881;</span>Settings</button>
+    </div>
   </nav>
   <div class="sidebar-footer">
     <div class="g-pill" id="g-pill" onclick="connectGoogle()"><span class="gdot off" id="gdot"></span><span id="g-label">Google: not connected</span></div>
@@ -932,7 +939,7 @@ tbody td{padding:11px 14px;vertical-align:middle}
   <!-- BILLING -->
   <div id="page-billing" class="page">
     <div class="page-header">
-      <div><h1>Billing</h1><p id="billingSubtitle">Zelaya's Marketing &mdash; personal budget tracking and client revenue</p></div>
+      <div><h1>Budgeting</h1><p id="billingSubtitle">Zelaya's Marketing &mdash; personal budget tracking and client revenue</p></div>
       <div style="display:flex;gap:6px;flex-wrap:wrap">
         <div style="display:flex;gap:2px;background:var(--bg);padding:3px;border-radius:8px">
           <button class="mode-tab active" id="bvSubs" onclick="setBillingView('subs')">Subscriptions</button>
@@ -1233,10 +1240,12 @@ tbody td{padding:11px 14px;vertical-align:middle}
       </div>
     </div>
     <div class="page-body">
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px">
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px">
         <div class="stat-card"><div class="stat-label">In Queue</div><div class="stat-value" id="clQueue">0</div><div class="stat-sub">Waiting to call</div></div>
-        <div class="stat-card hot"><div class="stat-label">Called Today</div><div class="stat-value" id="clCalled">0</div><div class="stat-sub">Completed</div></div>
+        <div class="stat-card hot"><div class="stat-label">Spoke / Done</div><div class="stat-value" id="clCalled">0</div><div class="stat-sub">Worked through</div></div>
         <div class="stat-card warn"><div class="stat-label">Callbacks</div><div class="stat-value" id="clCallback">0</div><div class="stat-sub">Call back later</div></div>
+        <div class="stat-card"><div class="stat-label">Total Dials</div><div class="stat-value" id="clDials">0</div><div class="stat-sub">Calls made</div></div>
+        <div class="stat-card"><div class="stat-label">Pickup Rate</div><div class="stat-value" id="clPickup">0%</div><div class="stat-sub">Reached a human</div></div>
       </div>
       <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
         <button class="status-btn active" data-clf="queue" onclick="setCallListFilter('queue')">Queue</button>
@@ -3120,7 +3129,18 @@ function previewLead(id) {
   if (l) openModal(id);
 }
 function openModal(id) {
-  const l = leads.find(l => l.id === id); if (!l) return;
+  // Find the lead ANYWHERE — saved pipeline, current search results, or call list.
+  let l = leads.find(l => l.id === id);
+  if (!l && typeof allResults !== 'undefined') l = allResults.find(r => r.id === id);
+  if (!l && typeof filtered !== 'undefined') l = filtered.find(r => r.id === id);
+  if (!l && typeof callList !== 'undefined') {
+    const c = callList.find(c => c.leadId === id);
+    if (c) {
+      // Reconstruct a minimal lead from the call-list entry so the modal still opens
+      l = leads.find(x => x.id === c.leadId) || { id:c.leadId, name:c.name, phone:c.phone, city:c.city, score:c.score||0, address:c.city||'', _preview:true };
+    }
+  }
+  if (!l) { toast('Lead details not found', 2200, 'err'); return; }
   activeLead = l; openModalFromObj(l);
 }
 function openModalFromObj(l) {
@@ -7250,6 +7270,9 @@ function setCallStatus(id,status){
   const idx=callList.findIndex(c=>c.id===id);if(idx<0)return;
   callList[idx].status=status;
   callList[idx].calledAt=Date.now();
+  callList[idx].dials=(callList[idx].dials||0)+1;
+  // A "pickup" = you actually reached a human: spoke or got a callback conversation
+  if(status==='contacted') callList[idx].pickedUp=true;
   // Also update lead pipeline status
   if(status==='contacted'){
     const li=leads.findIndex(l=>l.id===callList[idx].leadId);
@@ -7286,8 +7309,12 @@ function renderCallList(){
   const queue=callList.filter(c=>c.status==='queue').length;
   const called=callList.filter(c=>c.status==='contacted'||c.status==='voicemail'||c.status==='notinterested').length;
   const cb=callList.filter(c=>c.status==='callback').length;
+  const totalDials=callList.reduce((s,c)=>s+(c.dials||0),0);
+  const pickups=callList.filter(c=>c.pickedUp).length;
+  const pickupRate=totalDials>0?Math.round((pickups/totalDials)*100):0;
   const se=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
   se('clQueue',queue);se('clCalled',called);se('clCallback',cb);
+  se('clDials',totalDials);se('clPickup',pickupRate+'%');
 
   let list=callList.filter(c=>{
     if(clFilter==='queue')return c.status==='queue';
@@ -7321,6 +7348,7 @@ function renderCallList(){
         <button class="btn btn-amber btn-sm" onclick="setCallStatus('${c.id}','callback')">↩ Callback</button>
         <button class="btn btn-danger btn-sm" onclick="setCallStatus('${c.id}','notinterested')">✕ Not interested</button>
         <button class="btn btn-ghost btn-sm" onclick="openModal('${c.leadId}')">View lead →</button>
+        ${(()=>{const lead=leads.find(x=>x.id===c.leadId);const g=lead&&(lead.googleMapsUri||(lead.placeId?`https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(lead.placeId)}`:''));return g?`<a href="${g}" target="_blank" class="btn btn-ghost btn-sm" style="text-decoration:none">📍 Google Page</a>`:'';})()}
       </div>
       <div style="margin-top:8px"><input type="text" placeholder="Quick note (callback time, gatekeeper name...)" value="${esc(c.note||'')}" onblur="setCallNote('${c.id}',this.value)" style="font-size:12px;padding:6px 10px;width:100%;max-width:440px" /></div>`
     :`<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" onclick="openModal('${c.leadId}')">View lead →</button><button class="btn btn-ghost btn-sm" onclick="setCallStatus('${c.id}','queue')">↩ Move back to queue</button>${c.note?`<span style="font-size:12px;color:var(--text-muted);padding:4px 0">Note: ${esc(c.note)}</span>`:''}</div>`;
