@@ -461,6 +461,14 @@ tbody td{padding:11px 14px;vertical-align:middle}
 .nav-more-toggle .nav-chevron{margin-left:auto;transition:transform .2s ease;font-size:10px}
 .nav-more-toggle.open .nav-chevron{transform:rotate(90deg)}
 .nav-more .nav-item{padding-left:22px;font-size:13px;opacity:.85}
+
+.ct-flat{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:8px;font-size:12.5px;white-space:nowrap}
+.ct-flat.go{background:#ecfdf5;border:1px solid #6ee7b7;color:#065f46}
+.ct-flat.stop{background:#f1f5f9;border:1px solid #e2e8f0;color:#64748b}
+.ct-flat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ct-flat.go .ct-flat-dot{background:#059669;box-shadow:0 0 0 3px rgba(5,150,105,.2)}
+.ct-flat.stop .ct-flat-dot{background:#94a3b8}
+.ct-flat-time{opacity:.7;font-weight:600}
 </style>
 </head>
 <body>
@@ -7197,6 +7205,14 @@ function renderCtWidget(elId){
     status='Not a call window right now';
     sub='Better to send emails. Next call window: '+ctNextWin();
     extra='<div class="ct-niche-pills" style="margin-top:6px"><span class="ct-pill email">📧 Email instead</span></div>';
+  }
+  // Compact one-line flat strip for the Call List (no big banner, no day strip)
+  if(elId==='ctWidgetCallList'){
+    const niceNiche = active.length ? (isDw&&isDet?'Drywallers & Detailers':isDw?'Drywallers':'Detailers') : '';
+    el.innerHTML = active.length
+      ? `<div class="ct-flat go"><span class="ct-flat-dot"></span><span class="ct-flat-text"><b>Call window open</b> — ${niceNiche}</span><span class="ct-flat-time">until ${ctFmt(active[0].end)}</span></div>`
+      : `<div class="ct-flat stop"><span class="ct-flat-dot"></span><span class="ct-flat-text">Not a call window — next: ${ctNextWin()}</span></div>`;
+    return;
   }
   el.innerHTML=`<div class="ct-widget ${cls}"><div class="ct-widget-icon">${icon}</div><div class="ct-widget-body"><div class="ct-widget-status">${status}</div><div class="ct-widget-sub">${sub}</div>${extra}</div></div>`+ctDayStrip();
 }
