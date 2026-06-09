@@ -7022,12 +7022,15 @@ function printReport() {
 /* ═══ CALL TIMING WIDGET ═══ */
 const CT_TZ='America/Chicago';
 const CT_WINS=[
-  {dow:[1,2,3,4,5],start:630, end:800, niches:['dw'],  label:'Before site starts'},
-  {dow:[1,2,3,4,5],start:1130,end:1300,niches:['dw'],  label:'Lunch break'},
-  {dow:[1,2,3,4,5],start:1600,end:1800,niches:['dw'],  label:'After wrap'},
-  {dow:[1,2,3,4],  start:730, end:900, niches:['det'], label:'Before first appointment'},
-  {dow:[1,2,3,4],  start:1600,end:1800,niches:['det'], label:'After last car'},
-  {dow:[6],        start:800, end:1000,niches:['det'], label:'Saturday morning'},
+  // DRYWALLERS — receptive once they're rolling, not in the pre-work scramble
+  {dow:[1,2,3,4,5],start:930, end:1100,niches:['dw'],  label:'Mid-morning — settled into the day, not slammed yet'},
+  {dow:[1,2,3,4,5],start:1130,end:1300,niches:['dw'],  label:'Lunch — natural break, expecting downtime'},
+  {dow:[1,2,3,4,5],start:1600,end:1730,niches:['dw'],  label:'After wrap — winding down, mind is free'},
+  // DETAILERS — between cars and after the rush, when they can actually talk
+  {dow:[1,2,3,4],  start:930, end:1100,niches:['det'], label:'Mid-morning — first car done, in a rhythm'},
+  {dow:[1,2,3,4],  start:1400,end:1530,niches:['det'], label:'Mid-afternoon lull — between bookings'},
+  {dow:[1,2,3,4],  start:1600,end:1730,niches:['det'], label:'After last car — wrapping up, relaxed'},
+  {dow:[6],        start:900, end:1100,niches:['det'], label:'Saturday late morning — caught up, easygoing'},
 ];
 function ctNow(){
   const now=new Date();
