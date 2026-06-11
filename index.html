@@ -1255,6 +1255,7 @@ tbody td{padding:11px 14px;vertical-align:middle}
         <div class="stat-card"><div class="stat-label">Total Dials</div><div class="stat-value" id="clDials">0</div><div class="stat-sub">Calls made</div></div>
         <div class="stat-card"><div class="stat-label">Pickup Rate</div><div class="stat-value" id="clPickup">0%</div><div class="stat-sub">Reached a human</div></div>
       </div>
+      <div id="openerBar" style="margin-bottom:14px"></div>
       <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
         <button class="status-btn active" data-clf="queue" onclick="setCallListFilter('queue')">Queue</button>
         <button class="status-btn" data-clf="callback" onclick="setCallListFilter('callback')">Callbacks</button>
@@ -7282,11 +7283,29 @@ function addTodayHotToCallList(){
   toast(`Added ${Math.min(hot.length,20)} hot leads`,2500,'ok');
 }
 
+// ── Opener A/B tracking ──────────────────────────────────────
+const OPENER_KEY='lf_openers_v1';
+const CUR_OPENER_KEY='lf_cur_opener_v1';
+let openers=JSON.parse(localStorage.getItem(OPENER_KEY)||'null')||[
+  {id:'op1',name:'Honest cold-call open'},
+  {id:'op2',name:'Steady-work question'},
+];
+let curOpener=localStorage.getItem(CUR_OPENER_KEY)||openers[0].id;
+function persistOpeners(){localStorage.setItem(OPENER_KEY,JSON.stringify(openers));localStorage.setItem(CUR_OPENER_KEY,curOpener);}
+function setCurOpener(v){curOpener=v;persistOpeners();renderCallList();}
+function addOpener(){const n=prompt('Name this opener (short — e.g. "Loss-framing open"):');if(!n)return;const id='op'+Date.now();openers.push({id,name:n.trim()});curOpener=id;persistOpeners();renderCallList();}
+function openerName(id){const o=openers.find(o=>o.id===id);return o?o.name:'—';}
 function setCallStatus(id,status){
   const idx=callList.findIndex(c=>c.id===id);if(idx<0)return;
   callList[idx].status=status;
   callList[idx].calledAt=Date.now();
   callList[idx].dials=(callList[idx].dials||0)+1;
+  // Tag which opener was used on any live-ish outcome (spoke / not-interested / callback = they answered)
+  if(status==='contacted'||status==='notinterested'||status==='callback'){
+    callList[idx].opener=curOpener;
+    // "got past the open" = anything except an instant not-interested brush-off
+    callList[idx].pastOpen = (status!=='notinterested');
+  }
   // A "pickup" = you actually reached a human: spoke or got a callback conversation
   if(status==='contacted') callList[idx].pickedUp=true;
   // Also update lead pipeline status
@@ -7331,6 +7350,43 @@ function renderCallList(){
   const se=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
   se('clQueue',queue);se('clCalled',called);se('clCallback',cb);
   se('clDials',totalDials);se('clPickup',pickupRate+'%');
+
+  // ── Opener tester bar + per-opener stats ──
+  const obar=document.getElementById('openerBar');
+  if(obar){
+    // Build per-opener stats: of calls where you reached someone with that opener, % got past the open
+    const stats={};
+    callList.forEach(c=>{
+      if(!c.opener) return;
+      if(!stats[c.opener]) stats[c.opener]={reached:0,past:0,booked:0};
+      stats[c.opener].reached++;
+      if(c.pastOpen) stats[c.opener].past++;
+      if(c.booked) stats[c.opener].booked++;
+    });
+    const opts=openers.map(o=>`<option value="${o.id}" ${o.id===curOpener?'selected':''}>${esc(o.name)}</option>`).join('');
+    const rows=openers.map(o=>{
+      const s=stats[o.id]||{reached:0,past:0};
+      const rate=s.reached>0?Math.round((s.past/s.reached)*100):0;
+      const isCur=o.id===curOpener;
+      return `<div style="display:flex;align-items:center;gap:8px;font-size:12px;padding:4px 0;${isCur?'font-weight:700':''}">
+        <span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${isCur?'▶ ':''}${esc(o.name)}</span>
+        <span style="color:var(--text-muted)">${s.reached} reached</span>
+        <span style="background:${rate>=50?'#d1fae5':rate>0?'#fef3c7':'#f3f4f6'};color:${rate>=50?'#065f46':rate>0?'#92400e':'#9ca3af'};padding:1px 8px;border-radius:8px;font-weight:700">${rate}% past open</span>
+      </div>`;
+    }).join('');
+    obar.innerHTML=`
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+        <span style="font-size:12px;font-weight:700">🎯 Testing opener:</span>
+        <select onchange="setCurOpener(this.value)" style="font-size:12.5px;padding:6px 10px;border-radius:8px;border:1px solid var(--border);font-weight:600">${opts}</select>
+        <button class="btn btn-ghost btn-sm" onclick="addOpener()">+ New opener</button>
+        <span style="font-size:11px;color:var(--text-muted)">Outcomes you log now get tagged to this opener</span>
+      </div>
+      <div style="background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:10px 14px">
+        <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);margin-bottom:6px">Opener scoreboard — "got past the open" rate</div>
+        ${rows}
+        <div style="font-size:10.5px;color:var(--text-muted);margin-top:6px">Need ~15–20 reached per opener before the % means anything. Don't judge on a handful.</div>
+      </div>`;
+  }
 
   let list=callList.filter(c=>{
     if(clFilter==='queue')return c.status==='queue';
