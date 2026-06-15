@@ -3,461 +3,458 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Operating Frame — Zelaya's Marketing Systems</title>
+<title>The Day — Zelaya's Marketing Systems</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0b0c0a;
-    --card: #15170f;
-    --card-2: #181a14;
-    --card-hover: #1e2118;
-    --ink: #f4f2e9;
-    --ink-dim: #8d9082;
-    --line: #292c22;
-    --accent: #c6f24e;
-    --accent-dim: #6b7a36;
-    --fire: #ff7a3d;
-    --gold: #f2c84e;
-    --sky: #5bc9ff;
+  :root{
+    --bg:#0b0c0a; --card:#15170f; --card-2:#181a14; --card-hi:#1e2118;
+    --ink:#f4f2e9; --ink-dim:#8d9082; --line:#292c22;
+    --accent:#c6f24e; --accent-dim:#6b7a36; --fire:#ff7a3d; --gold:#f2c84e;
   }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    background: var(--bg);
-    background-image:
-      radial-gradient(circle at 10% 4%, rgba(198,242,78,0.07), transparent 38%),
-      radial-gradient(circle at 92% 96%, rgba(255,122,61,0.06), transparent 42%);
-    color: var(--ink);
-    font-family: 'Spline Sans Mono', monospace;
-    min-height: 100vh;
-    padding: 4vw 5vw 6vw;
-    -webkit-font-smoothing: antialiased;
-  }
-  .grain {
-    position: fixed; inset: 0; pointer-events: none; opacity: 0.04; z-index: 99;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  }
-  .reveal { animation: rise 0.7s cubic-bezier(.2,.8,.2,1) both; }
-  @keyframes rise { from {opacity:0; transform:translateY(16px);} to {opacity:1; transform:translateY(0);} }
-  header {
-    display:flex; align-items:baseline; justify-content:space-between;
-    flex-wrap:wrap; gap:12px; margin-bottom:34px;
-    border-bottom:1px solid var(--line); padding-bottom:22px;
-  }
-  h1 {
-    font-family:'Bricolage Grotesque',sans-serif; font-weight:800;
-    font-size:clamp(30px,5.5vw,58px); letter-spacing:-0.03em; line-height:0.92;
-  }
-  h1 .mark { color:var(--accent); }
-  .sub { font-size:12px; color:var(--ink-dim); letter-spacing:0.18em; text-transform:uppercase; }
-  .section-label {
-    font-family:'Bricolage Grotesque',sans-serif; font-weight:800;
-    font-size:13px; letter-spacing:0.22em; text-transform:uppercase;
-    color:var(--accent); margin:46px 0 18px; display:flex; align-items:center; gap:12px;
-  }
-  .section-label::after { content:""; flex:1; height:1px; background:var(--line); }
-  .push {
-    position:relative; border:1px solid var(--accent-dim); border-radius:18px;
-    background:linear-gradient(135deg, rgba(198,242,78,0.06), rgba(255,122,61,0.05));
-    padding:34px 30px; overflow:hidden; cursor:pointer; user-select:none;
-  }
-  .push::before {
-    content:"\2726"; position:absolute; top:-10px; right:14px; font-size:120px;
-    color:rgba(198,242,78,0.06); pointer-events:none;
-  }
-  .push-eyebrow { font-size:10px; letter-spacing:0.3em; text-transform:uppercase; color:var(--fire); margin-bottom:14px; }
-  .push-line {
-    font-family:'Bricolage Grotesque',sans-serif; font-weight:800;
-    font-size:clamp(22px,3.4vw,38px); line-height:1.08; letter-spacing:-0.02em;
-    max-width:22ch; transition:opacity .3s;
-  }
-  .push-hint { margin-top:18px; font-size:11px; color:var(--ink-dim); letter-spacing:0.1em; }
-  .push-hint b { color:var(--accent); }
-  .grid7 { display:grid; grid-template-columns:repeat(7,1fr); gap:12px; }
-  @media (max-width:900px){ .grid7{grid-template-columns:repeat(2,1fr);} }
-  @media (max-width:520px){ .grid7{grid-template-columns:1fr;} }
-  .day {
-    position:relative; background:var(--card); border:1px solid var(--line);
-    border-radius:13px; padding:18px 15px; min-height:150px; display:flex; flex-direction:column;
-    overflow:hidden; transition:transform .35s cubic-bezier(.2,.8,.2,1), border-color .35s, background .35s;
-  }
-  .day:hover { transform:translateY(-5px); background:var(--card-hover); border-color:var(--accent-dim); }
-  .daynum { font-family:'Bricolage Grotesque',sans-serif; font-size:12px; color:var(--ink-dim); }
-  .dayname { font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:clamp(18px,1.9vw,24px); letter-spacing:-0.02em; margin:2px 0 auto; }
-  .focus { margin-top:14px; font-size:12.5px; line-height:1.45; }
-  .focus .label { display:block; font-size:9px; letter-spacing:0.2em; text-transform:uppercase; color:var(--ink-dim); margin-bottom:5px; }
-  .accentbar { position:absolute; top:0; left:0; width:100%; height:3px; background:var(--accent); transform:scaleX(0); transform-origin:left; transition:transform .4s cubic-bezier(.2,.8,.2,1); }
-  .day:hover .accentbar { transform:scaleX(1); }
-  .day.sales .accentbar { background:var(--fire); }
-  .day.light .accentbar { background:var(--sky); }
-  .next-wrap { display:block; }
-  .tasklist { margin-top:16px; display:flex; flex-direction:column; gap:8px; }
-  .task {
-    display:flex; align-items:flex-start; gap:11px; padding:11px 12px;
-    background:var(--card); border:1px solid var(--line); border-radius:10px;
-    transition:border-color .25s, background .25s;
-  }
-  .task:hover { border-color:var(--accent-dim); }
-  .task .box {
-    width:17px; height:17px; flex-shrink:0; margin-top:1px; border-radius:5px;
-    border:1.5px solid var(--accent-dim); cursor:pointer; transition:background .2s, border-color .2s;
-    display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--bg);
-  }
-  .task .box:hover { border-color:var(--accent); }
-  .task.done .box { background:var(--accent); border-color:var(--accent); }
-  .task .txt {
-    flex:1; font-size:13px; line-height:1.4; outline:none; cursor:text;
-    border-radius:4px; padding:1px 3px; transition:background .2s;
-  }
-  .task .txt:focus { background:rgba(198,242,78,0.07); }
-  .task.done .txt { color:var(--ink-dim); text-decoration:line-through; }
-  .task .del {
-    flex-shrink:0; color:var(--ink-dim); cursor:pointer; font-size:16px; line-height:1;
-    opacity:0; transition:opacity .2s, color .2s; padding:0 2px;
-  }
-  .task:hover .del { opacity:1; }
-  .task .del:hover { color:var(--fire); }
-  .task-empty { font-size:12.5px; color:var(--ink-dim); padding:8px 2px; font-style:italic; }
-  .task-add { display:flex; gap:8px; margin-top:14px; }
-  .task-add input {
-    flex:1; background:var(--card); border:1px solid var(--line); border-radius:10px;
-    padding:11px 13px; color:var(--ink); font-family:'Spline Sans Mono',monospace; font-size:13px; outline:none;
-    transition:border-color .25s;
-  }
-  .task-add input:focus { border-color:var(--accent); }
-  .task-add input::placeholder { color:var(--ink-dim); }
-  .task-add button {
-    background:var(--accent); color:#0b0c0a; border:none; border-radius:10px;
-    padding:0 18px; font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:13px;
-    cursor:pointer; transition:transform .2s, filter .2s;
-  }
-  .task-add button:hover { transform:translateY(-2px); filter:brightness(1.08); }
-  .task-add button:active { transform:translateY(0); }
-  .task-foot { margin-top:12px; font-size:10.5px; color:var(--ink-dim); letter-spacing:0.06em; }
-  .panel {
-    background:var(--card-2); border:1px solid var(--line); border-radius:14px; padding:22px 20px;
-    transition:border-color .3s, transform .3s;
-  }
-  .panel:hover { border-color:var(--accent-dim); transform:translateY(-3px); }
-  .panel h3 { font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:20px; letter-spacing:-0.02em; margin-bottom:4px; }
-  .panel .tag { font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:var(--fire); }
-  .panel ul { list-style:none; margin-top:16px; display:flex; flex-direction:column; gap:11px; }
-  .panel li { font-size:13px; line-height:1.4; padding-left:18px; position:relative; color:var(--ink); }
-  .panel li::before { content:"\203A"; position:absolute; left:0; color:var(--accent); font-weight:700; }
-  .panel li.done { color:var(--ink-dim); }
-  .panel li.done::before { content:"\2713"; color:var(--accent-dim); }
-  .climb { display:flex; flex-direction:column; gap:10px; }
-  .rung {
-    display:flex; align-items:center; gap:18px; padding:16px 20px;
-    background:var(--card); border:1px solid var(--line); border-radius:12px;
-    transition:transform .3s, border-color .3s, background .3s; flex-wrap:wrap;
-  }
-  .rung:hover { transform:translateX(6px); border-color:var(--accent-dim); background:var(--card-hover); }
-  .rung .tier { font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:13px; color:var(--ink-dim); min-width:54px; }
-  .rung .money { font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:clamp(20px,2.4vw,30px); letter-spacing:-0.02em; min-width:120px; }
-  .rung .what { font-size:12.5px; color:var(--ink-dim); line-height:1.4; flex:1; min-width:200px; }
-  .rung.current { border-color:var(--accent); background:linear-gradient(90deg, rgba(198,242,78,0.08), transparent); }
-  .rung.current .money { color:var(--accent); }
-  .rung.current .tier { color:var(--accent); }
-  .rung .badge { margin-left:auto; font-size:9px; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); border:1px solid var(--accent-dim); padding:4px 9px; border-radius:999px; white-space:nowrap; }
-  .stars { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
-  @media (max-width:820px){ .stars{grid-template-columns:repeat(2,1fr);} }
-  @media (max-width:480px){ .stars{grid-template-columns:1fr;} }
-  .star {
-    background:var(--card-2); border:1px solid var(--line); border-radius:14px; padding:22px 18px;
-    min-height:150px; display:flex; flex-direction:column; transition:transform .3s, border-color .3s;
-    position:relative; overflow:hidden;
-  }
-  .star:hover { transform:translateY(-5px); border-color:var(--gold); }
-  .star .ico { font-size:26px; margin-bottom:14px; }
-  .star h4 { font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:17px; letter-spacing:-0.02em; margin-bottom:6px; }
-  .star p { font-size:12px; color:var(--ink-dim); line-height:1.45; margin-top:auto; }
-  footer {
-    margin-top:50px; padding-top:22px; border-top:1px solid var(--line);
-    font-size:11px; color:var(--ink-dim); letter-spacing:0.1em; text-align:center; line-height:1.7;
-  }
-  footer b { color:var(--accent); }
-  .liftday { cursor:pointer; }
-  .lifttag {
-    margin-top:14px; font-size:10px; letter-spacing:0.1em; text-transform:uppercase;
-    color:var(--fire); border:1px solid rgba(255,122,61,0.4); background:rgba(255,122,61,0.08);
-    padding:5px 9px; border-radius:999px; align-self:flex-start;
-  }
-  .lifttag.light { color:var(--sky); border-color:rgba(91,201,255,0.4); background:rgba(91,201,255,0.08); }
-  .liftday:hover .lifttag { filter:brightness(1.15); }
-  .modal-bg {
-    position:fixed; inset:0; background:rgba(8,9,7,0.78); backdrop-filter:blur(4px);
-    display:none; align-items:center; justify-content:center; padding:20px; z-index:200;
-  }
-  .modal-bg.open { display:flex; }
-  .modal-card {
-    background:var(--card-2); border:1px solid var(--line); border-radius:18px;
-    max-width:460px; width:100%; max-height:88vh; overflow-y:auto; padding:28px 26px;
-    animation:rise 0.4s cubic-bezier(.2,.8,.2,1) both;
-  }
-  .modal-eyebrow { font-size:10px; letter-spacing:0.22em; text-transform:uppercase; color:var(--fire); margin-bottom:6px; }
-  .modal-title { font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:26px; letter-spacing:-0.02em; margin-bottom:18px; }
-  .ex { display:flex; justify-content:space-between; gap:14px; padding:12px 0; border-bottom:1px solid var(--line); }
-  .ex:last-of-type { border-bottom:none; }
-  .ex-name { font-size:13.5px; color:var(--ink); }
-  .ex-sets { font-size:12.5px; color:var(--accent); font-weight:600; white-space:nowrap; }
-  .modal-note { margin-top:16px; font-size:12px; color:var(--ink-dim); line-height:1.5; }
-  .modal-close { margin-top:20px; width:100%; background:var(--accent); color:#0b0c0a; border:none; border-radius:10px; padding:12px; font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14px; cursor:pointer; }
-  .modal-close:hover { filter:brightness(1.08); }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);
+    background-image:radial-gradient(circle at 8% 2%,rgba(198,242,78,0.06),transparent 36%),
+      radial-gradient(circle at 95% 98%,rgba(255,122,61,0.05),transparent 42%);
+    color:var(--ink);font-family:'Spline Sans Mono',monospace;min-height:100vh;
+    padding:4vw 5vw 7vw;-webkit-font-smoothing:antialiased;max-width:780px;margin:0 auto;}
+  .reveal{animation:rise .6s cubic-bezier(.2,.8,.2,1) both;}
+  @keyframes rise{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+
+  header{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:14px;
+    border-bottom:1px solid var(--line);padding-bottom:18px;}
+  h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:clamp(28px,6vw,48px);letter-spacing:-0.03em;line-height:0.9;}
+  h1 .mark{color:var(--accent);}
+  .who{font-size:11px;color:var(--ink-dim);letter-spacing:0.14em;text-transform:uppercase;margin-top:9px;}
+  .clock{text-align:right;}
+  .clock .time{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:clamp(20px,5vw,30px);letter-spacing:-0.02em;}
+  .clock .date{font-size:11px;color:var(--ink-dim);letter-spacing:0.1em;text-transform:uppercase;margin-top:2px;}
+
+  .tabs{display:flex;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:5px;margin:22px 0 6px;}
+  .tab{flex:1;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:13px;border:none;background:transparent;
+    color:var(--ink-dim);padding:11px 8px;border-radius:9px;cursor:pointer;transition:background .25s,color .25s;}
+  .tab.active{background:var(--accent);color:#0b0c0a;}
+  .tab:not(.active):hover{color:var(--ink);}
+
+  .notifyrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0 4px;}
+  .notifybtn{display:flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--accent-dim);color:var(--ink);
+    border-radius:11px;padding:10px 15px;cursor:pointer;font-family:'Spline Sans Mono',monospace;font-size:12.5px;transition:border-color .25s,background .25s;}
+  .notifybtn:hover{border-color:var(--accent);background:var(--card-hi);}
+  .notifybtn .dot{width:9px;height:9px;border-radius:50%;background:var(--ink-dim);}
+  .notifybtn.on .dot{background:var(--accent);box-shadow:0 0 9px var(--accent);}
+  .notifybtn.denied .dot{background:var(--fire);}
+  .notifyhint{font-size:11px;color:var(--ink-dim);line-height:1.5;flex:1;min-width:200px;}
+
+  .nowbar{margin:18px 0 24px;border:1px solid var(--accent-dim);border-radius:15px;overflow:hidden;
+    background:linear-gradient(135deg,rgba(198,242,78,0.08),rgba(255,122,61,0.04));}
+  .nowbar .strip{display:flex;flex-wrap:wrap;align-items:center;gap:16px;padding:18px 20px;}
+  .nowbar .eyebrow{font-size:10px;letter-spacing:0.26em;text-transform:uppercase;color:var(--fire);}
+  .nowbar .nowname{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:clamp(21px,5vw,29px);letter-spacing:-0.02em;line-height:1.05;margin-top:3px;}
+  .nowbar .nowwin{font-size:12px;color:var(--ink-dim);margin-top:5px;}
+  .nowbar .remain{margin-left:auto;text-align:right;}
+  .nowbar .remain .big{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:clamp(20px,5vw,26px);color:var(--accent);letter-spacing:-0.02em;}
+  .nowbar .remain .lbl{font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-dim);}
+  .nowbar .next{border-top:1px solid var(--line);padding:11px 20px;font-size:12px;color:var(--ink-dim);}
+  .nowbar .next b{color:var(--ink);}
+
+  .timeline{display:flex;flex-direction:column;}
+  .row{display:grid;grid-template-columns:74px 1fr;gap:13px;position:relative;}
+  .rail{display:flex;justify-content:flex-end;padding-top:16px;position:relative;}
+  .rail .t{font-size:12px;color:var(--ink-dim);font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .rail::before{content:"";position:absolute;right:-7px;top:20px;width:9px;height:9px;border-radius:50%;
+    background:var(--bg);border:2px solid var(--accent-dim);z-index:2;}
+  .row.is-now .rail::before{background:var(--accent);border-color:var(--accent);box-shadow:0 0 10px var(--accent);}
+  .row.is-done .rail::before{background:var(--accent-dim);border-color:var(--accent-dim);}
+  .connector{position:absolute;right:-3px;top:24px;bottom:0;width:1px;background:var(--line);}
+  .row:last-child .connector{display:none;}
+
+  .block{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 15px;margin-bottom:12px;
+    transition:border-color .3s,background .3s;position:relative;overflow:hidden;}
+  .block .edge{position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--ink-dim);}
+  .block.train .edge{background:var(--fire);}
+  .block.work .edge{background:var(--accent);}
+  .head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
+  .name{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:clamp(16px,4vw,18px);letter-spacing:-0.02em;}
+  .win{font-size:11px;color:var(--ink-dim);margin-left:auto;white-space:nowrap;}
+  .desc{font-size:12.5px;color:var(--ink-dim);line-height:1.45;margin-top:6px;}
+  .nowtag{font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:#0b0c0a;background:var(--accent);
+    padding:3px 8px;border-radius:999px;font-weight:700;display:none;}
+  .row.is-now .block{border-color:var(--accent);background:linear-gradient(90deg,rgba(198,242,78,0.08),transparent);}
+  .row.is-now .name{color:var(--accent);}
+  .row.is-now .nowtag{display:inline-block;}
+  .row.is-done .block{opacity:0.5;}
+
+  .wotoggle{margin-top:11px;display:inline-flex;align-items:center;gap:7px;font-family:'Bricolage Grotesque',sans-serif;
+    font-weight:800;font-size:12px;background:transparent;border:1px solid var(--accent-dim);color:var(--accent);
+    padding:7px 12px;border-radius:8px;cursor:pointer;transition:background .2s;}
+  .wotoggle:hover{background:rgba(198,242,78,0.1);}
+  .wopanel{display:none;margin-top:13px;padding-top:13px;border-top:1px solid var(--line);}
+  .wopanel.open{display:block;animation:rise .3s ease both;}
+  .gymtabs{display:flex;gap:6px;margin-bottom:12px;}
+  .gymtab{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:11px;border:1px solid var(--line);
+    background:transparent;color:var(--ink-dim);padding:7px 12px;border-radius:7px;cursor:pointer;transition:all .2s;}
+  .gymtab.active{background:var(--fire);border-color:var(--fire);color:#0b0c0a;}
+  .ex{display:flex;justify-content:space-between;gap:14px;padding:9px 0;border-bottom:1px solid var(--line);}
+  .ex:last-child{border-bottom:none;}
+  .ex .en{font-size:13px;color:var(--ink);}
+  .ex .es{font-size:12.5px;color:var(--accent);font-weight:600;white-space:nowrap;}
+  .wonote{margin-top:11px;font-size:11.5px;color:var(--ink-dim);line-height:1.5;border-left:2px solid var(--accent-dim);padding-left:11px;}
+
+  /* energy drink marker */
+  .drink{display:grid;grid-template-columns:74px 1fr;gap:13px;position:relative;margin-bottom:12px;}
+  .drink .rail{padding-top:0;align-items:center;}
+  .drink .rail::before{top:50%;transform:translateY(-50%);background:var(--gold);border-color:var(--gold);box-shadow:0 0 9px rgba(242,200,78,0.6);}
+  .drink .connector{display:none;}
+  .drinkcard{display:flex;align-items:center;gap:12px;background:rgba(242,200,78,0.07);border:1px dashed rgba(242,200,78,0.45);
+    border-radius:11px;padding:11px 14px;}
+  .drinkcard .zap{font-size:18px;}
+  .drinkcard .dn{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:15px;color:var(--gold);letter-spacing:-0.01em;}
+  .drinkcard .dd{font-size:11px;color:var(--ink-dim);margin-top:2px;}
+  .drinkcard .donly{margin-left:auto;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--gold);
+    border:1px solid rgba(242,200,78,0.4);padding:4px 9px;border-radius:999px;white-space:nowrap;}
+
+  /* backups page */
+  .backintro{font-size:13px;color:var(--ink-dim);line-height:1.6;margin-bottom:18px;}
+  .bcard{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:18px 17px;margin-bottom:13px;}
+  .bcard .btag{font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--fire);}
+  .bcard h3{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.02em;margin:5px 0 3px;}
+  .bcard .bsub{font-size:12px;color:var(--ink-dim);line-height:1.5;margin-bottom:6px;}
+
+  /* off-day card */
+  .off{border:1px solid var(--line);border-radius:15px;background:var(--card-2);padding:28px 24px;text-align:center;}
+  .off h3{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:24px;letter-spacing:-0.02em;margin-bottom:8px;}
+  .off p{font-size:13px;color:var(--ink-dim);line-height:1.6;max-width:42ch;margin:0 auto;}
+
+  .seclabel{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:12px;letter-spacing:0.18em;
+    text-transform:uppercase;color:var(--accent);margin:40px 0 16px;display:flex;align-items:center;gap:12px;}
+  .seclabel::after{content:"";flex:1;height:1px;background:var(--line);}
+  .climb{display:flex;flex-direction:column;gap:7px;}
+  .rung{display:flex;align-items:center;gap:14px;padding:12px 15px;background:var(--card);border:1px solid var(--line);
+    border-radius:10px;flex-wrap:wrap;transition:transform .3s,border-color .3s;}
+  .rung:hover{transform:translateX(4px);border-color:var(--accent-dim);}
+  .rung .tier{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:12px;color:var(--ink-dim);min-width:38px;}
+  .rung .money{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:clamp(16px,4vw,22px);letter-spacing:-0.02em;min-width:96px;}
+  .rung .what{font-size:11.5px;color:var(--ink-dim);line-height:1.4;flex:1;min-width:180px;}
+  .rung.current{border-color:var(--accent);background:linear-gradient(90deg,rgba(198,242,78,0.08),transparent);}
+  .rung.current .money,.rung.current .tier{color:var(--accent);}
+  .rung .badge{margin-left:auto;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--accent);
+    border:1px solid var(--accent-dim);padding:4px 9px;border-radius:999px;white-space:nowrap;}
+
+  .push{border:1px solid var(--accent-dim);border-radius:15px;padding:24px 22px;margin-top:14px;cursor:pointer;user-select:none;
+    background:linear-gradient(135deg,rgba(198,242,78,0.06),rgba(255,122,61,0.05));}
+  .push .pe{font-size:10px;letter-spacing:0.26em;text-transform:uppercase;color:var(--fire);margin-bottom:11px;}
+  .push .pl{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:clamp(18px,4.5vw,26px);line-height:1.12;letter-spacing:-0.02em;transition:opacity .3s;}
+  .push .ph{margin-top:13px;font-size:11px;color:var(--ink-dim);}
+  .push .ph b{color:var(--accent);}
+
+  footer{margin-top:42px;padding-top:18px;border-top:1px solid var(--line);font-size:11px;color:var(--ink-dim);
+    letter-spacing:0.06em;text-align:center;line-height:1.7;}
+  footer b{color:var(--accent);}
 </style>
 </head>
 <body>
-<div class="grain"></div>
 
 <header class="reveal">
   <div>
-    <h1>Build Mode<span class="mark">.</span></h1>
-    <div class="sub" style="margin-top:10px">Jony Zelaya &middot; Zelaya's Marketing Systems</div>
+    <h1>The Day<span class="mark">.</span></h1>
+    <div class="who">Jony Zelaya &middot; Zelaya's Marketing Systems</div>
   </div>
-  <div class="sub">Appleton, WI &middot; Run the day</div>
+  <div class="clock"><div class="time" id="clockTime">--:--</div><div class="date" id="clockDate">—</div></div>
 </header>
 
-<div class="section-label reveal">The Push</div>
-<div class="push reveal" id="push" onclick="nextPush()">
-  <div class="push-eyebrow" id="pushType">When you want to quit</div>
-  <div class="push-line" id="pushLine">They said no. Good. That one wasn't yours &mdash; the next call might be. Pick the phone back up.</div>
-  <div class="push-hint">Tap for the next one &middot; <b>finish what you started</b></div>
+<div class="tabs reveal" id="tabs">
+  <button class="tab" data-view="gym">Gym day</button>
+  <button class="tab" data-view="run">Run day</button>
+  <button class="tab" data-view="back">Backups</button>
 </div>
 
-<div class="section-label reveal">The Week</div>
-<div class="grid7 reveal">
-  <div class="day sales"><div class="accentbar"></div><div class="daynum">01</div><div class="dayname">Mon</div><div class="focus"><span class="label">Focus</span>Sales &amp; Outreach</div></div>
-  <div class="day"><div class="accentbar"></div><div class="daynum">02</div><div class="dayname">Tue</div><div class="focus"><span class="label">Focus</span>Client Work</div></div>
-  <div class="day"><div class="accentbar"></div><div class="daynum">03</div><div class="dayname">Wed</div><div class="focus"><span class="label">Focus</span>Client Work</div></div>
-  <div class="day"><div class="accentbar"></div><div class="daynum">04</div><div class="dayname">Thu</div><div class="focus"><span class="label">Focus</span>Content</div></div>
-  <div class="day sales liftday" onclick="openLift('A')"><div class="accentbar"></div><div class="daynum">05</div><div class="dayname">Fri</div><div class="focus"><span class="label">Focus</span>Sales &amp; Reporting</div><div class="lifttag">🏋 Full Body A · tap</div></div>
-  <div class="day liftday" onclick="openLift('B')"><div class="accentbar"></div><div class="daynum">06</div><div class="dayname">Sat</div><div class="focus"><span class="label">Focus</span>Client Cleanup</div><div class="lifttag">🏋 Full Body B · tap</div></div>
-  <div class="day light liftday" onclick="openLift('L')"><div class="accentbar"></div><div class="daynum">07</div><div class="dayname">Sun</div><div class="focus"><span class="label">Focus</span>Reset &amp; Plan</div><div class="lifttag light">🧘 Light · tap</div></div>
+<div class="notifyrow reveal" id="notifyRow">
+  <button class="notifybtn" id="notifyBtn"><span class="dot"></span><span id="notifyTxt">Turn on alerts</span></button>
+  <div class="notifyhint">Pings you at each block (and the 6 AM drink) while this page is open. For phone alarms, ask me to add it to Google Calendar.</div>
 </div>
 
-<div class="section-label reveal">Up Next &mdash; tomorrow's list</div>
-<div class="next-wrap reveal">
-  <div class="panel tasks">
-    <span class="tag">What I'm doing next</span>
-    <h3>The List</h3>
-    <div id="taskList" class="tasklist"></div>
-    <div class="task-add">
-      <input id="taskInput" type="text" placeholder="Add tomorrow's task &mdash; hit Enter" autocomplete="off" />
-      <button id="taskAddBtn" type="button">Add</button>
+<div id="dayView">
+  <div class="nowbar reveal" id="nowBar">
+    <div class="strip">
+      <div>
+        <div class="eyebrow" id="nowEyebrow">Right now</div>
+        <div class="nowname" id="nowName">—</div>
+        <div class="nowwin" id="nowWin">—</div>
+      </div>
+      <div class="remain"><div class="big" id="nowRemain">—</div><div class="lbl">left</div></div>
     </div>
-    <div class="task-foot" id="taskFoot"></div>
+    <div class="next" id="nowNext">Up next: —</div>
+  </div>
+  <div class="timeline reveal" id="timeline"></div>
+
+  <div id="dayExtras">
+    <div class="seclabel">The Climb</div>
+    <div class="climb">
+      <div class="rung current"><span class="tier">NOW</span><span class="money">$1K/mo</span>
+        <span class="what">First paying client locked. Prove the model works.</span><span class="badge">You are here</span></div>
+      <div class="rung"><span class="tier">T1</span><span class="money">$5K/mo</span><span class="what">3–5 clients. Tighten delivery.</span></div>
+      <div class="rung"><span class="tier">T2</span><span class="money">$10K/mo</span><span class="what">Repeatable acquisition. First contractor.</span></div>
+      <div class="rung"><span class="tier">T3</span><span class="money">$25K/mo</span><span class="what">A real team. You stop being the bottleneck.</span></div>
+      <div class="rung"><span class="tier">T4</span><span class="money">$50K+/mo</span><span class="what">Systemized. You own it — it doesn't own you.</span></div>
+    </div>
+    <div class="seclabel">The Push</div>
+    <div class="push" id="push" onclick="nextPush()">
+      <div class="pe" id="pushType">When you want to quit</div>
+      <div class="pl" id="pushLine">They said no. Good. That one wasn't yours — the next call might be. Pick the phone back up.</div>
+      <div class="ph">Tap for the next one · <b>finish what you started</b></div>
+    </div>
   </div>
 </div>
 
-<div class="section-label reveal">The Climb</div>
-<div class="climb reveal">
-  <div class="rung current">
-    <span class="tier">NOW</span><span class="money">$1K/mo</span>
-    <span class="what">First paying client locked. Foundation set. Prove the model works.</span>
-    <span class="badge">You are here</span>
-  </div>
-  <div class="rung">
-    <span class="tier">T1</span><span class="money">$5K/mo</span>
-    <span class="what">3&ndash;5 paying clients. Tighten delivery. Systems start carrying weight.</span>
-  </div>
-  <div class="rung">
-    <span class="tier">T2</span><span class="money">$10K/mo</span>
-    <span class="what">Repeatable acquisition. First hire or contractor. You stop being the bottleneck.</span>
-  </div>
-  <div class="rung">
-    <span class="tier">T3</span><span class="money">$25K/mo</span>
-    <span class="what">A real team. Automated onboarding. The machine runs without you in every seat.</span>
-  </div>
-  <div class="rung">
-    <span class="tier">T4</span><span class="money">$50K+/mo</span>
-    <span class="what">Fully systemized client-based marketing business. You own it &mdash; it doesn't own you.</span>
-  </div>
+<div id="backView" style="display:none">
+  <div class="seclabel" style="margin-top:24px">Backup Plans</div>
+  <div class="backintro">Can't get to the gym? Run these instead — no equipment, anywhere. Same effort, no excuse to skip.</div>
+  <div id="backList"></div>
 </div>
 
-<div class="section-label reveal">North Star &mdash; why the grind</div>
-<div class="stars reveal">
-  <div class="star"><div class="ico">&#127794;</div><h4>The Land</h4><p>Lakeside country property &amp; a farm. Quiet, owned outright, yours.</p></div>
-  <div class="star"><div class="ico">&#127950;</div><h4>The Car</h4><p>The dream car &mdash; earned, not financed into your neck.</p></div>
-  <div class="star"><div class="ico">&#128106;</div><h4>The Family</h4><p>Raise confident, capable kids who never doubt what's possible.</p></div>
-  <div class="star"><div class="ico">&#129308;</div><h4>The Charity</h4><p>Lift up hardworking people in underserved communities. Pay it forward.</p></div>
-</div>
-
-<footer class="reveal">
-  Outreach AM &middot; calls when the fire's up &middot; <b>don't flinch at no</b><br>
-  Every shot you skip is one God won't hand you twice.
-</footer>
-
-<div class="modal-bg" id="liftModal" onclick="if(event.target===this)closeLift()">
-  <div class="modal-card">
-    <div class="modal-eyebrow" id="liftEyebrow">Lift Day</div>
-    <div class="modal-title" id="liftTitle">Full Body</div>
-    <div id="liftExercises"></div>
-    <div class="modal-note" id="liftNote"></div>
-    <button class="modal-close" onclick="closeLift()">Got it</button>
-  </div>
-</div>
+<footer class="reveal">Wake 4:00 · Bed 8:45 · <b>don't flinch at no</b><br>Every shot you skip is one God won't hand you twice.</footer>
 
 <script>
-  /* ---------- WORKOUTS ---------- */
-  var WORKOUTS = {
-    A: {
-      eyebrow: 'Friday · Lift', title: 'Full Body A',
-      ex: [
-        ['Squat or leg press', '3–4 × 6–8'],
-        ['Bench press', '3 × 6–8'],
-        ['Lat pulldown or pull-ups', '3 × 8–10'],
-        ['DB shoulder press', '3 × 8–10'],
-        ['Hanging leg raises', '3 × 12–15'],
-      ],
-      note: 'Hit the top of the rep range on all sets with clean form → add a little weight next week.',
-    },
-    B: {
-      eyebrow: 'Saturday · Lift', title: 'Full Body B',
-      ex: [
-        ['Romanian deadlift', '3 × 8–10'],
-        ['Incline DB press', '3 × 8–10'],
-        ['Barbell or DB row', '3 × 8–10'],
-        ['Lateral raises', '3 × 12–15'],
-        ['Cable crunches or planks', '3 sets'],
-      ],
-      note: 'Same progression rule. Control the eccentric on the RDL — feel the hamstrings, don’t round the back.',
-    },
-    L: {
-      eyebrow: 'Sunday · Light', title: 'Full Body Light',
-      ex: [
-        ['Goblet squat or walking lunges', '3 × 12 (light)'],
-        ['Push-ups', '3 × near-failure'],
-        ['Curls + tricep pushdowns superset', '3 × 12–15'],
-        ['Core circuit: planks + leg raises', '3 rounds'],
-      ],
-      note: 'Keep it under 45 min, low intensity. This is your reset — move, don’t grind.',
-    },
-  };
-  function openLift(key){
-    var w = WORKOUTS[key]; if (!w) return;
-    document.getElementById('liftEyebrow').textContent = w.eyebrow;
-    document.getElementById('liftTitle').textContent = w.title;
-    document.getElementById('liftExercises').innerHTML = w.ex.map(function(e){
-      return '<div class="ex"><span class="ex-name">' + e[0] + '</span><span class="ex-sets">' + e[1] + '</span></div>';
-    }).join('');
-    document.getElementById('liftNote').textContent = w.note;
-    document.getElementById('liftModal').classList.add('open');
-  }
-  function closeLift(){ document.getElementById('liftModal').classList.remove('open'); }
-  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeLift(); });
+/* ============ WORKOUTS ============ */
+var WARMUP=[['Leg swings, front-to-back','10 / leg'],['Leg swings, side-to-side','10 / leg'],['Walking lunge + twist','8 / side'],
+  ['Hip circles','10 / way'],['Arm circles','15 / way'],['High knees','30 sec'],['Butt kicks','30 sec'],["World's greatest stretch",'5 / side']];
 
-  /* ---------- TASK LIST ---------- */
-  var STORE_KEY = 'zms_next_tasks_v1';
-  var memoryFallback = null; // used if storage is blocked (e.g. inside preview)
+var WO={
+  runwarm:{ex:WARMUP,note:'Run the warm-up first, then 3 miles at a steady, conversational pace. Cool down with a short walk.'},
+  jog:{ex:WARMUP,note:'Warm-up moves first, then settle into 30 min of easy jogging. This primes the legs for the sprints.'},
+  hills:{ex:[['Hill sprint — hard up','30 sec'],['Walk down — full recovery','60–90 sec'],['Repeat','8–12 rounds, ~30 min']],
+    note:'Drive the arms and attack every climb. Walk all the way down — you want fresh legs for each sprint, not a jog.'},
+  abs:{ex:[['Crunches','20'],['Bicycle crunches','20 / side'],['Leg raises','15'],['Russian twists','20 / side'],['Plank','45 sec'],['Mountain climbers','30 sec']],
+    note:'3 rounds. Rest 45 sec between rounds, minimal rest inside. Brace like you\u2019re about to take a punch on every rep.'},
+  gymA:{ex:[['Back squat','4 × 6–8'],['Bench press','3 × 6–8'],['Bent-over barbell row','3 × 8–10'],['Standing overhead press','3 × 8–10'],['Romanian deadlift','3 × 8–10'],['Plank','3 × 45 sec']]},
+  gymB:{ex:[['Deadlift','4 × 5'],['Incline DB press','3 × 8–10'],['Lat pulldown / pull-ups','3 × 8–10'],['Seated DB shoulder press','3 × 10'],['Leg press','3 × 10–12'],['Hanging leg raises','3 × 12–15']]},
+  gymC:{ex:[['Front / goblet squat','3 × 8–10'],['Dips or close-grip bench','3 × 8–10'],['Seated cable row','3 × 10'],['Lateral raises','3 × 12–15'],['Lying leg curl','3 × 10–12'],['Cable crunch','3 × 15']]},
+  homeFull:{ex:[['Push-ups','4 × max'],['Bodyweight squats','4 × 20'],['Pike push-ups','3 × 10'],['Reverse lunges','3 × 12 / leg'],['Glute bridges','3 × 20'],['Superman holds','3 × 30 sec'],['Plank','3 × 45 sec'],['Burpees','3 × 10']],
+    note:'Slow every rep — 3 sec down, 1 up — to make bodyweight bite. Chase the same near-failure feeling you\u2019d get in the gym.'},
+  homeAbs:{ex:[['Push-ups','3 × max'],['Crunches','3 × 20'],['Leg raises','3 × 15'],['Bicycle crunches','3 × 20 / side'],['Plank','3 × 45 sec'],['Mountain climbers','3 × 30 sec']],
+    note:'The 15-minute fallback when the day blows up. Needs a floor and nothing else.'}
+};
+var GYM_NOTE='Hit the top of the rep range on every set with clean form → add a little weight next week. That\u2019s the whole progression.';
 
-  function loadTasks(){
-    try {
-      var raw = localStorage.getItem(STORE_KEY);
-      if (raw) return JSON.parse(raw);
-    } catch(e){ /* storage blocked */ }
-    if (memoryFallback) return memoryFallback;
-    return [
-      { t:"Outreach emails first thing", done:false },
-      { t:"Cold calls once energy's up", done:false },
-      { t:"Push the main client forward one step", done:false }
-    ];
-  }
-  function saveTasks(tasks){
-    memoryFallback = tasks;
-    try { localStorage.setItem(STORE_KEY, JSON.stringify(tasks)); } catch(e){}
-  }
+/* ============ SCHEDULES ============ */
+var SCHED={
+  gym:[
+    {s:'4:00',e:'4:30',name:'Wake & get ready',desc:'Up, water, gear on. Move straight into it.'},
+    {s:'4:30',e:'5:30',name:'Stretch + 3-mile run',train:1,desc:'Dynamic warm-up, then 3 miles steady.',wo:'runwarm'},
+    {s:'5:40',e:'7:00',name:'Gym — Full Body',train:1,desc:'80-minute lift. A on Mon, B on Tue, C on Wed.',gym:1},
+    {drink:1,s:'6:00',name:'Energy drink',desc:'Mid-session fuel.',only:'Mondays',day:1},
+    {s:'7:00',e:'7:30',name:'Shower & eat',desc:'Refuel and reset for the desk.'},
+    {s:'7:30',e:'9:30',name:'Deep work',work:1,desc:'Client or ZMS build. Hardest task first, phone away.'},
+    {s:'9:45',e:'13:00',name:'Sales',work:1,desc:'Outreach + dials. Calls when the fire\u2019s up.'},
+    {s:'13:00',e:'13:45',name:'Break',desc:'45 min off. Eat, walk, reset.'},
+    {s:'13:45',e:'18:30',name:'Sales',work:1,desc:'The big block. Follow-ups, dials, close.'},
+    {s:'18:30',e:'20:00',name:'Admin',work:1,desc:'CRM, reporting, tomorrow\u2019s list.'},
+    {s:'20:00',e:'20:45',name:'Wind down',desc:'Off screens. Bed at 8:45.'}
+  ],
+  run:[
+    {s:'4:00',e:'4:30',name:'Wake & get ready',desc:'Same 4 AM start. Gear on, out the door.'},
+    {s:'4:30',e:'5:00',name:'Jog warm-up',train:1,desc:'30 min easy. Sets up the sprints.',wo:'jog'},
+    {s:'5:00',e:'5:30',name:'Hill sprints',train:1,desc:'30 min. Hard up, walk down.',wo:'hills'},
+    {s:'5:30',e:'5:45',name:'Ab circuit',train:1,desc:'15 min, 3 rounds. The finisher.',wo:'abs'},
+    {s:'5:45',e:'6:45',name:'Shower & eat',desc:'Clean up, big breakfast, recover.'},
+    {drink:1,s:'6:00',name:'Energy drink',desc:'With breakfast.',only:'Thursdays',day:4},
+    {s:'6:45',e:'8:30',name:'Open time',desc:'~1h45m before the desk — recovery, family, or planning.'},
+    {s:'8:30',e:'10:30',name:'Deep work',work:1,desc:'Desk starts an hour later than gym days.'},
+    {s:'10:45',e:'14:00',name:'Sales',work:1,desc:'Outreach + dials.'},
+    {s:'14:00',e:'14:45',name:'Break',desc:'45 min off. Eat, walk, reset.'},
+    {s:'14:45',e:'18:30',name:'Sales',work:1,desc:'Afternoon block.'},
+    {s:'18:30',e:'20:00',name:'Admin',work:1,desc:'CRM, reporting, tomorrow\u2019s list.'},
+    {s:'20:00',e:'20:45',name:'Wind down',desc:'Off screens. Bed at 8:45.'}
+  ]
+};
 
-  var tasks = loadTasks();
+/* ============ HELPERS ============ */
+function toMin(t){var p=t.split(':');return +p[0]*60+ +p[1];}
+function fmt(t){var m=toMin(t),h=Math.floor(m/60),mm=m%60,ap=h>=12?'PM':'AM',h12=h%12||12;return h12+':'+(mm<10?'0':'')+mm+' '+ap;}
+function dur(a,b){var d=toMin(b)-toMin(a),h=Math.floor(d/60),m=d%60;return (h?h+'h':'')+(m?(h?' ':'')+m+'m':'');}
+function todayType(){var d=new Date().getDay();return d>=1&&d<=3?'gym':d>=4&&d<=6?'run':'off';}
+function gymKey(){var d=new Date().getDay();return d===2?'gymB':d===3?'gymC':'gymA';}
 
-  function renderTasks(){
-    var list = document.getElementById('taskList');
-    list.innerHTML = '';
-    if (tasks.length === 0){
-      var empty = document.createElement('div');
-      empty.className = 'task-empty';
-      empty.textContent = "Clean slate. Write down what tomorrow demands.";
-      list.appendChild(empty);
+var view=todayType()==='off'?'gym':todayType();
+var notifyOn=false, fired={};
+
+/* ============ RENDER DAY ============ */
+function exHTML(arr){return arr.map(function(e){return '<div class="ex"><span class="en">'+e[0]+'</span><span class="es">'+e[1]+'</span></div>';}).join('');}
+
+function renderTimeline(){
+  var tl=document.getElementById('timeline'),sched=SCHED[view],html='';
+  sched.forEach(function(b,i){
+    if(b.drink){
+      html+='<div class="drink"><div class="rail"><span class="t">'+fmt(b.s)+'</span></div>'+
+        '<div class="drinkcard"><span class="zap">\u26A1</span><div><div class="dn">Energy drink</div><div class="dd">'+b.desc+'</div></div>'+
+        '<span class="donly">'+b.only+' only</span></div></div>';
+      return;
     }
-    tasks.forEach(function(task, idx){
-      var row = document.createElement('div');
-      row.className = 'task' + (task.done ? ' done' : '');
-
-      var box = document.createElement('div');
-      box.className = 'box';
-      box.innerHTML = task.done ? '\u2713' : '';
-      box.onclick = function(){ tasks[idx].done = !tasks[idx].done; saveTasks(tasks); renderTasks(); };
-
-      var txt = document.createElement('div');
-      txt.className = 'txt';
-      txt.contentEditable = true;
-      txt.spellcheck = false;
-      txt.textContent = task.t;
-      txt.onblur = function(){
-        var v = txt.textContent.trim();
-        if (v === ''){ tasks.splice(idx,1); } else { tasks[idx].t = v; }
-        saveTasks(tasks); renderTasks();
-      };
-      txt.onkeydown = function(e){ if (e.key === 'Enter'){ e.preventDefault(); txt.blur(); } };
-
-      var del = document.createElement('div');
-      del.className = 'del';
-      del.innerHTML = '\u00D7';
-      del.title = 'Delete';
-      del.onclick = function(){ tasks.splice(idx,1); saveTasks(tasks); renderTasks(); };
-
-      row.appendChild(box); row.appendChild(txt); row.appendChild(del);
-      list.appendChild(row);
-    });
-    var done = tasks.filter(function(x){return x.done;}).length;
-    document.getElementById('taskFoot').textContent =
-      tasks.length ? (done + ' of ' + tasks.length + ' done \u00B7 click text to edit, box to check off') : '';
-  }
-
-  function addTask(){
-    var inp = document.getElementById('taskInput');
-    var v = inp.value.trim();
-    if (v === '') return;
-    tasks.push({ t:v, done:false });
-    inp.value = '';
-    saveTasks(tasks); renderTasks();
-  }
-  document.getElementById('taskAddBtn').onclick = addTask;
-  document.getElementById('taskInput').addEventListener('keydown', function(e){
-    if (e.key === 'Enter') addTask();
+    var cls=b.train?'train':b.work?'work':'';
+    var panel='';
+    if(b.gym){
+      var k=gymKey();
+      panel='<div class="wopanel" id="wp'+i+'">'+
+        '<div class="gymtabs">'+
+          ['A','B','C'].map(function(L){return '<button class="gymtab'+(('gym'+L)===k?' active':'')+'" onclick="gymPick('+i+',\''+L+'\')">'+(L==='A'?'Mon · A':L==='B'?'Tue · B':'Wed · C')+'</button>';}).join('')+
+        '</div><div id="gx'+i+'">'+exHTML(WO[k].ex)+'</div>'+
+        '<div class="wonote">'+GYM_NOTE+'</div></div>';
+    }else if(b.wo){
+      var w=WO[b.wo];
+      panel='<div class="wopanel" id="wp'+i+'">'+exHTML(w.ex)+(w.note?'<div class="wonote">'+w.note+'</div>':'')+'</div>';
+    }
+    var toggle=(b.gym||b.wo)?'<button class="wotoggle" onclick="toggleWO('+i+')" id="wt'+i+'">Show workout \u25BE</button>':'';
+    html+='<div class="row" data-s="'+toMin(b.s)+'" data-e="'+toMin(b.e)+'">'+
+      '<div class="rail"><span class="t">'+fmt(b.s)+'</span><div class="connector"></div></div>'+
+      '<div class="block '+cls+'"><div class="edge"></div>'+
+        '<div class="head"><span class="name">'+b.name+'</span><span class="nowtag">Now</span><span class="win">'+dur(b.s,b.e)+'</span></div>'+
+        '<div class="desc">'+b.desc+' &middot; <span style="color:var(--ink)">'+fmt(b.s)+'–'+fmt(b.e)+'</span></div>'+
+        toggle+panel+
+      '</div></div>';
   });
-  renderTasks();
+  tl.innerHTML=html;
+  markNow();
+}
+function toggleWO(i){var p=document.getElementById('wp'+i),t=document.getElementById('wt'+i);
+  var open=p.classList.toggle('open');t.innerHTML=open?'Hide workout \u25B4':'Show workout \u25BE';}
+function gymPick(i,L){document.getElementById('gx'+i).innerHTML=exHTML(WO['gym'+L].ex);
+  var tabs=document.querySelectorAll('#wp'+i+' .gymtab');tabs.forEach(function(t){t.classList.remove('active');});
+  tabs[L==='A'?0:L==='B'?1:2].classList.add('active');}
 
-  /* ---------- THE PUSH ---------- */
-  var pushes = [
-    { type:"When you want to quit", line:"They said no. Good. That one wasn't yours \u2014 the next call might be. Pick the phone back up." },
-    { type:"On rejection", line:"The no isn't about you. It's a filter. Every no clears the path to the yes that pays." },
-    { type:"On the opportunity", line:"You were handed a shot most 17-year-olds never get near. Sitting on it is the real waste." },
-    { type:"Faith check", line:"God doesn't open a door so you can stand in front of it scared. Walk through it." },
-    { type:"On going soft", line:"Comfortable is where dreams go to die quiet. You didn't start this to stay comfortable." },
-    { type:"Finish it", line:"You already did the hard part \u2014 you started. Quitting now wastes everything that came before." },
-    { type:"On excuses", line:"Tired isn't a reason. Scared isn't a reason. Make the call anyway. That's the whole game." },
-    { type:"The standard", line:"Nobody's coming to do this for you. You wanted to build it yourself \u2014 so build it. Today." },
-    { type:"On the grind", line:"The land, the family, the people you'll lift up \u2014 they're on the other side of the work you're avoiding." },
-    { type:"Faith check", line:"Talent left unused is a gift thrown back in God's face. Go use what He gave you." },
-    { type:"On momentum", line:"One more email. One more dial. One more page finished. That's how the whole thing gets built." },
-    { type:"When it's heavy", line:"Heavy is the point. If it were easy it'd be worthless. Pick it up and carry it anyway." }
-  ];
-  let i = 0;
-  function nextPush(){
-    i = (i + 1) % pushes.length;
-    const t = document.getElementById('pushType');
-    const l = document.getElementById('pushLine');
-    l.style.opacity = 0; t.style.opacity = 0;
-    setTimeout(function(){
-      t.textContent = pushes[i].type;
-      l.textContent = pushes[i].line;
-      l.style.opacity = 1; t.style.opacity = 1;
-    }, 200);
+/* ============ NOW ============ */
+function markNow(){
+  if(view==='back')return;
+  var now=new Date(),nm=now.getHours()*60+now.getMinutes()+now.getSeconds()/60,sched=SCHED[view];
+  var rows=document.querySelectorAll('#timeline .row'),cur=-1;
+  rows.forEach(function(r){
+    var s=+r.dataset.s,e=+r.dataset.e;r.classList.remove('is-now','is-done');
+    if(nm>=s&&nm<e)r.classList.add('is-now');else if(nm>=e)r.classList.add('is-done');
+  });
+  var realBlocks=sched.filter(function(b){return !b.drink;});
+  realBlocks.forEach(function(b,i){if(nm>=toMin(b.s)&&nm<toMin(b.e))cur=i;});
+  var live=(view===todayType());
+  if(!live){
+    var off=todayType()==='off';
+    document.getElementById('nowEyebrow').textContent=off?'Today':'Previewing';
+    document.getElementById('nowName').textContent=off?'Day off':(view==='gym'?'Gym day':'Run day')+' template';
+    document.getElementById('nowWin').textContent=off?'Back at it Monday. Rest up.':'Switch to today\u2019s tab for your live spot.';
+    document.getElementById('nowRemain').textContent='—';
+    document.getElementById('nowNext').innerHTML=off?'No schedule today.':'Today is a <b>'+(todayType()==='gym'?'gym':'run')+'</b> day.';
+    return;
   }
-  i = Math.floor(Math.random()*pushes.length);
-  document.getElementById('pushType').textContent = pushes[i].type;
-  document.getElementById('pushLine').textContent = pushes[i].line;
+  if(cur>=0){
+    var b=realBlocks[cur],rem=Math.ceil(toMin(b.e)-nm),nx=realBlocks[cur+1];
+    document.getElementById('nowEyebrow').textContent='Right now';
+    document.getElementById('nowName').textContent=b.name;
+    document.getElementById('nowWin').textContent=fmt(b.s)+' – '+fmt(b.e);
+    document.getElementById('nowRemain').textContent=rem+'m';
+    document.getElementById('nowNext').innerHTML=nx?'Up next: <b>'+nx.name+'</b> at '+fmt(nx.s):'Up next: <b>Bed</b> — 8:45 PM.';
+  }else{
+    var first=realBlocks[0],last=realBlocks[realBlocks.length-1];
+    if(nm<toMin(first.s)){
+      document.getElementById('nowEyebrow').textContent='Not started';
+      document.getElementById('nowName').textContent='Pre-4 AM';
+      document.getElementById('nowWin').textContent='Day kicks off at '+fmt(first.s);
+      document.getElementById('nowNext').innerHTML='Up next: <b>'+first.name+'</b> at '+fmt(first.s);
+    }else{
+      document.getElementById('nowEyebrow').textContent='Done';
+      document.getElementById('nowName').textContent='Off the clock';
+      document.getElementById('nowWin').textContent='Bed 8:45. Tomorrow gets built tonight.';
+      document.getElementById('nowNext').innerHTML='Up next: <b>Rest.</b>';
+    }
+    document.getElementById('nowRemain').textContent='—';
+  }
+}
+
+/* ============ NOTIFICATIONS ============ */
+function notifyUI(){
+  var btn=document.getElementById('notifyBtn'),txt=document.getElementById('notifyTxt');btn.classList.remove('on','denied');
+  if(!('Notification' in window)){txt.textContent='Alerts unsupported';return;}
+  if(Notification.permission==='granted'&&notifyOn){btn.classList.add('on');txt.textContent='Alerts on';}
+  else if(Notification.permission==='denied'){btn.classList.add('denied');txt.textContent='Alerts blocked';}
+  else txt.textContent='Turn on alerts';
+}
+document.getElementById('notifyBtn').onclick=function(){
+  if(!('Notification' in window)){alert('This browser can\u2019t show notifications.');return;}
+  if(Notification.permission==='granted'){notifyOn=!notifyOn;notifyUI();return;}
+  if(Notification.permission==='denied'){alert('Notifications are blocked. Enable them in your browser\u2019s site settings, then retry.');return;}
+  Notification.requestPermission().then(function(p){
+    if(p==='granted'){notifyOn=true;new Notification('Alerts on',{body:'You\u2019ll get pinged at each block while this page is open.'});}
+    notifyUI();
+  });
+};
+function checkNotify(){
+  if(!notifyOn||!('Notification' in window)||Notification.permission!=='granted')return;
+  if(view!==todayType())return;
+  var now=new Date(),nm=now.getHours()*60+now.getMinutes(),wd=now.getDay(),stamp=now.toDateString();
+  SCHED[view].forEach(function(b,i){
+    if(b.drink&&b.day!==wd)return;
+    var key=stamp+'|'+view+'|'+i;
+    if(nm===toMin(b.s)&&!fired[key]){fired[key]=true;
+      new Notification(b.drink?'\u26A1 Energy drink — 6:00 AM':'\u25B6 '+b.name,{body:b.drink?b.desc:fmt(b.s)+'–'+fmt(b.e)+' · '+b.desc});}
+  });
+}
+
+/* ============ BACKUPS ============ */
+function renderBack(){
+  var data=[
+    {tag:'No gym · full body',name:'At-Home Full Body',sub:'Zero equipment. Your gym-day replacement.',wo:'homeFull'},
+    {tag:'Quick · abs + pushups',name:'At-Home Abs & Pushups',sub:'12–15 min, anywhere. When the day blows up.',wo:'homeAbs'}
+  ];
+  document.getElementById('backList').innerHTML=data.map(function(d){var w=WO[d.wo];
+    return '<div class="bcard"><span class="btag">'+d.tag+'</span><h3>'+d.name+'</h3><div class="bsub">'+d.sub+'</div>'+
+      exHTML(w.ex)+'<div class="wonote">'+w.note+'</div></div>';}).join('');
+}
+
+/* ============ TABS ============ */
+document.querySelectorAll('#tabs .tab').forEach(function(t){
+  t.onclick=function(){
+    view=t.dataset.view;
+    document.querySelectorAll('#tabs .tab').forEach(function(x){x.classList.remove('active');});t.classList.add('active');
+    var back=view==='back';
+    document.getElementById('dayView').style.display=back?'none':'';
+    document.getElementById('backView').style.display=back?'':'none';
+    document.getElementById('notifyRow').style.display=back?'none':'';
+    if(!back)renderTimeline();
+  };
+});
+
+/* ============ CLOCK + PUSH ============ */
+function tick(){
+  var d=new Date(),h=d.getHours(),m=d.getMinutes(),ap=h>=12?'PM':'AM',h12=h%12||12;
+  document.getElementById('clockTime').textContent=h12+':'+(m<10?'0':'')+m+' '+ap;
+  var days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('clockDate').textContent=days[d.getDay()]+' · '+mo[d.getMonth()]+' '+d.getDate();
+  if(view!=='back')markNow();
+  checkNotify();
+}
+var pushes=[
+  {type:"When you want to quit",line:"They said no. Good. That one wasn't yours — the next call might be. Pick the phone back up."},
+  {type:"On rejection",line:"The no isn't about you. It's a filter. Every no clears the path to the yes that pays."},
+  {type:"On the opportunity",line:"You were handed a shot most 17-year-olds never get near. Sitting on it is the real waste."},
+  {type:"Faith check",line:"God doesn't open a door so you can stand in front of it scared. Walk through it."},
+  {type:"On going soft",line:"Comfortable is where dreams go to die quiet. You didn't start this to stay comfortable."},
+  {type:"Finish it",line:"You already did the hard part — you started. Quitting now wastes everything that came before."},
+  {type:"On excuses",line:"Tired isn't a reason. Scared isn't a reason. Make the call anyway. That's the whole game."},
+  {type:"The standard",line:"Nobody's coming to do this for you. You wanted to build it — so build it. Today."},
+  {type:"On the grind",line:"The land, the family, the people you'll lift up — they're on the other side of the work you're avoiding."},
+  {type:"On momentum",line:"One more email. One more dial. One more task finished. That's how it gets built."}
+];
+var pi=Math.floor(Math.random()*pushes.length);
+function nextPush(){pi=(pi+1)%pushes.length;var t=document.getElementById('pushType'),l=document.getElementById('pushLine');
+  l.style.opacity=0;t.style.opacity=0;setTimeout(function(){t.textContent=pushes[pi].type;l.textContent=pushes[pi].line;l.style.opacity=1;t.style.opacity=1;},200);}
+
+/* ============ INIT ============ */
+(function(){
+  document.querySelectorAll('#tabs .tab').forEach(function(t){if(t.dataset.view===view)t.classList.add('active');});
+  renderTimeline();renderBack();notifyUI();
+  document.getElementById('pushType').textContent=pushes[pi].type;
+  document.getElementById('pushLine').textContent=pushes[pi].line;
+  tick();setInterval(tick,1000);
+})();
 </script>
 </body>
 </html>
