@@ -355,6 +355,13 @@ tbody td{padding:11px 14px;vertical-align:middle}
   <div id="page-leads" class="page active">
     <div class="page-header"><div><h1>My Leads</h1><p>Saved leads, sorted by where they stand. Days since your last call shown on each.</p></div><button class="btn btn-secondary btn-sm" onclick="exportCSV()">&darr; Export CSV</button></div>
     <div class="page-body">
+      <div id="callTracker" style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;background:linear-gradient(135deg,#0f172a,#1e293b);border-radius:var(--radius);padding:16px 20px;margin-bottom:18px;color:#f8fafc">
+        <div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:32px;font-weight:800;line-height:1" id="callsToday">0</span><span style="font-size:12px;color:#94a3b8;font-weight:600">calls today</span></div>
+        <div style="width:1px;height:32px;background:#334155"></div>
+        <div style="display:flex;align-items:baseline;gap:6px"><span style="font-size:18px;font-weight:700" id="callsWeek">0</span><span style="font-size:11px;color:#94a3b8">this week</span></div>
+        <div style="display:flex;align-items:baseline;gap:6px"><span style="font-size:18px;font-weight:700" id="callsTotal">0</span><span style="font-size:11px;color:#94a3b8">all time</span></div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:10px"><span style="font-size:11px;color:#64748b" id="callsGoalTxt"></span><button class="btn btn-ghost btn-xs" style="color:#94a3b8" onclick="resetTodayCallNote()">Daily goal</button></div>
+      </div>
       <div class="stats-grid">
         <div class="stat-card"><div class="stat-label">Total Saved</div><div class="stat-value" id="stTotal">0</div><div class="stat-sub">All leads</div></div>
         <div class="stat-card warn"><div class="stat-label">To Call</div><div class="stat-value" id="stToCall">0</div><div class="stat-sub">Never called</div></div>
@@ -584,9 +591,9 @@ const US_CITIES={
 
 <script>
 /* ═══ STATE + STORAGE ═══ */
-const LS={CFG:'lf_cfg',LEADS:'lf_leads',SEARCHED:'lf_searched',SUBS:'lf_subs',CLIENTS:'lf_clients',NOTES:'lf_notes'};
+const LS={CFG:'lf_cfg',LEADS:'lf_leads',SEARCHED:'lf_searched',SUBS:'lf_subs',CLIENTS:'lf_clients',NOTES:'lf_notes',CALLLOG:'lf_calllog'};
 let cfg={ready:false,user:{name:'',business:''},placesKey:'',maxPages:3,maxSynonyms:3};
-let leads=[],searchedStates={},subs=[],clients=[],notesText='';
+let leads=[],searchedStates={},subs=[],clients=[],notesText='',callLog=[];
 let allResults=[],cancelFlag=false,searchMode='single',leadFilter='tocall',activeLeadId=null;
 let currentPickedState='',pickedCities=new Set();
 let editingSubId=null,editingClientId=null,billingView='subs',clientCostRows=[];
@@ -598,12 +605,14 @@ function persistSearched(){lsSet(LS.SEARCHED,searchedStates);}
 function persistSubs(){lsSet(LS.SUBS,subs);}
 function persistClients(){lsSet(LS.CLIENTS,clients);}
 function persistNotes(){lsSet(LS.NOTES,notesText);}
+function persistCallLog(){lsSet(LS.CALLLOG,callLog);}
 function persistCfg(){lsSet(LS.CFG,cfg);}
 
 function loadAll(){
   const c=lsGet(LS.CFG); if(c)cfg={...cfg,...c,user:{...cfg.user,...(c.user||{})}};
   leads=lsGet(LS.LEADS,[])||[]; searchedStates=lsGet(LS.SEARCHED,{})||{};
   subs=lsGet(LS.SUBS,[])||[]; clients=lsGet(LS.CLIENTS,[])||[]; notesText=lsGet(LS.NOTES,'')||'';
+  callLog=lsGet(LS.CALLLOG,[])||[];
   // migrate old lead shape → simplified follow-up shape
   leads.forEach(l=>{
     if(l.lastCalledAt===undefined) l.lastCalledAt=l.contactedAt||0;
@@ -911,6 +920,24 @@ function updateLeadStats(){
   se('stToCall',leads.filter(l=>l.followStatus==='new').length);
   se('stFollow',leads.filter(l=>l.followStatus==='followup').length);
   se('stVM',leads.filter(l=>l.followStatus==='voicemail').length);
+  updateCallTracker();
+}
+function startOfToday(){const d=new Date();d.setHours(0,0,0,0);return d.getTime();}
+function startOfWeek(){const d=new Date();d.setHours(0,0,0,0);const day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);return d.getTime();}
+function updateCallTracker(){
+  const today=startOfToday(),week=startOfWeek();
+  const nToday=callLog.filter(c=>c.ts>=today).length;
+  const nWeek=callLog.filter(c=>c.ts>=week).length;
+  const se=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  se('callsToday',nToday); se('callsWeek',nWeek); se('callsTotal',callLog.length);
+  const goal=cfg.callGoal||0;const gt=document.getElementById('callsGoalTxt');
+  if(gt)gt.textContent=goal>0?`Goal: ${nToday}/${goal} ${nToday>=goal?'✓ hit it':''}`:'';
+}
+function resetTodayCallNote(){
+  const g=prompt('Set your daily call goal (number of dials). Leave blank to clear:',cfg.callGoal||'');
+  if(g===null)return;
+  const n=parseInt(g);cfg.callGoal=isNaN(n)||n<=0?0:n;persistCfg();updateCallTracker();
+  toast(cfg.callGoal?`Daily goal set to ${cfg.callGoal}`:'Goal cleared',2000,'ok');
 }
 function renderLeads(){
   const q=(document.getElementById('leadSearch')?.value||'').toLowerCase();
@@ -958,6 +985,7 @@ function markCalled(id){
   const i=leads.findIndex(l=>l.id===id);if(i<0)return;
   leads[i].lastCalledAt=Date.now();leads[i].callCount=(leads[i].callCount||0)+1;
   if(leads[i].followStatus==='new')leads[i].followStatus='called';
+  callLog.push({ts:Date.now(),leadId:id,type:'call'});persistCallLog();
   persist();renderLeads();updateLeadsBadge();toast('Marked called',1800,'ok');
 }
 function markVoicemail(id){
@@ -965,6 +993,7 @@ function markVoicemail(id){
   leads[i].lastCalledAt=Date.now();
   leads[i].vmCount=(leads[i].vmCount||0)+1;
   leads[i].followStatus='voicemail';
+  callLog.push({ts:Date.now(),leadId:id,type:'voicemail'});persistCallLog();
   persist();renderLeads();updateLeadsBadge();toast('Voicemail logged',1800,'ok');
 }
 function setStatus(id,s){
