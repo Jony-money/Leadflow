@@ -41,6 +41,7 @@
   .cardio-line b{ color:var(--accent2); }
   .tip{ background:var(--card2); border-left:3px solid var(--accent); border-radius:8px; padding:10px 12px; font-size:13px; color:#c8d2dd; margin-top:4px; }
   .tip.warn{ border-left-color:var(--abs); }
+  .tip.abs-tip{ border-left-color:var(--abs); margin-top:10px; }
   .divider{ display:flex; align-items:center; gap:10px; margin:26px 0 14px; }
   .divider .ln{ flex:1; height:1px; background:var(--line); }
   .divider span{ font-size:12px; text-transform:uppercase; letter-spacing:.6px; color:var(--muted); font-weight:700; }
@@ -81,13 +82,35 @@
 <script>
 // ---------- PROGRAM ----------
 // 5-day split: Push / Pull / Legs / Upper(lighter pump) / Arms, then two days off.
-// Every lifting day starts with the run warmup and ends with a hard ab finisher.
+// Every lifting day starts with the run warmup and ends with a serious core pack.
 const WARMUP = `45-minute jog <b>or</b> 4 miles — whichever finishes last`;
 
+// CORE PACKS — all leg-free (no leg raises, flutter kicks, mountain climbers,
+// v-ups, toes-to-bar, hollow holds). Each pack covers the three core jobs:
+// flexion · anti-extension · rotation/anti-rotation. Keeps the legs/hip flexors
+// fresh to recover between sessions.
 const ABS = {
-  A: ["Hanging leg raises — 3×12","Cable/weighted crunch — 3×15","Bicycle kicks — 3×30s","Plank — 1×max hold"],
-  B: ["Toes-to-bar (or knee raise) — 3×10","Ab-wheel rollout — 3×10","Russian twists (weighted) — 3×20","Hollow-body hold — 3×30s"],
-  C: ["V-ups — 3×15","Mountain climbers — 3×40s","Side plank — 2×30s/side","Flutter kicks — 3×30s"],
+  A: [ // Foundation — bodyweight, balanced
+    "Crunches — 3×20",
+    "Cross-body crunches — 3×15/side",
+    "Plank — 3×45–60s",
+    "Side plank — 3×30s/side",
+    "Russian twists (feet down) — 3×20",
+  ],
+  B: [ // Loaded — weighted progression
+    "Cable / weighted crunch — 4×15",
+    "Ab-wheel rollout (from knees) — 3×8–10",
+    "Weighted Russian twists — 3×20",
+    "Side plank — 3×35s/side",
+    "Plank — 1×max hold",
+  ],
+  C: [ // Iron — isometric / stability focus
+    "Plank — 3×60s",
+    "Side plank — 3×40s/side",
+    "Crunches — 3×25",
+    "Russian twists — 3×20",
+    "Cross-body crunches — 3×15/side",
+  ],
 };
 
 const DAYS = [
@@ -114,10 +137,10 @@ const DAYS = [
       ["Back squat","4 × 6–8"],
       ["Romanian deadlift","3 × 8"],
       ["Leg press","3 × 12"],
-      ["Walking lunges","3 × 12/leg"],
+      ["Bulgarian split squat","3 × 10/leg"],
       ["Leg curl","3 × 12"],
       ["Standing calf raise","4 × 15"],
-    ], abs:"C" },
+    ], abs:"C", note:"Leg day — the core pack today (Iron) is fully leg-free on purpose, so your fried legs and hip flexors don't have to do double duty." },
   { key:"Thu", focus:"Upper — Lighter Pump + Mobility", type:"lift",
     main:[
       ["Incline DB press","3 × 12 (lighter)"],
@@ -173,9 +196,9 @@ DAYS.forEach((d,i)=>{
       html += `</div>`;
     }
     if(d.abs){
-      html += `<div class="block abs"><h3>🔥 Ab finisher — go to failure</h3>`;
+      html += `<div class="block abs"><h3>🔥 Core pack — full core, no legs</h3>`;
       ABS[d.abs].forEach(a=>{ const [nm,sets] = a.split(" — "); html += `<div class="ex"><span class="nm">${nm}</span><span class="sets">${sets||""}</span></div>`; });
-      html += `</div>`;
+      html += `<div class="tip abs-tip">Hits all three core jobs — flexion, anti-extension, and rotation — and stays completely off the legs and hip flexors so your lower body recovers between sessions. Strict, controlled reps beat fast sloppy ones. Rest ~30–45s between sets.</div></div>`;
     }
   }
   if(d.note){ html += `<div class="tip ${d.type==='rest'?'warn':''}">${d.note}</div>`; }
@@ -217,7 +240,7 @@ trackHtml += `<button class="btn" onclick="estimate()">Estimate next week</butto
       <div><label class="f">Bodyweight (lb)</label><input type="number" id="bw" inputmode="numeric" placeholder="235" oninput="calcCals()"></div>
       <div><label class="f">Day type</label>
         <select id="dtype" onchange="calcCals()" style="width:100%;background:var(--bg);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:9px 8px;font-size:15px;font-weight:600;">
-          <option value="lift">Lift + run warmup + abs</option>
+          <option value="lift">Lift + run warmup + core</option>
           <option value="rest">Rest day</option>
         </select>
       </div>
@@ -257,7 +280,7 @@ function calcCals(){
   if(!bw){ document.getElementById("calWorkout").textContent="—"; document.getElementById("calTotal").textContent="—"; return; }
   const scale = bw/200;
   let wMin,wMax;
-  if(type==="lift"){ wMin=760; wMax=1100; }  // run warmup (~500-680) + lifting + abs
+  if(type==="lift"){ wMin=760; wMax=1100; }  // run warmup (~500-680) + lifting + core
   else { wMin=0; wMax=0; }
   const wb = Math.round(((wMin+wMax)/2)*scale);
   const bmr = Math.round(370 + 9.8*(bw/2.205));
