@@ -273,29 +273,6 @@ tbody td{padding:11px 14px;vertical-align:middle}
 </head>
 <body>
 
-<!-- PW GATE -->
-<div id="pwGate">
-  <div class="pw-box">
-    <div class="pw-logo">LF</div>
-    <div class="pw-title">LeadFlow Dialer</div>
-    <div class="pw-sub">Enter password to continue</div>
-    <input class="pw-input" id="pwInput" type="password" placeholder="••••••••••••" autocomplete="off" onkeydown="if(event.key==='Enter')checkPw()" />
-    <button class="pw-btn" onclick="checkPw()">Unlock →</button>
-    <div class="pw-err" id="pwErr"></div>
-  </div>
-</div>
-<script>
-(function(){
-  const PW=atob('TWlsbGlvbmFpcmVCNDE5'), SK='lf_unlocked_v1';
-  if(sessionStorage.getItem(SK)==='1'){document.getElementById('pwGate').classList.add('hidden');return;}
-  document.getElementById('pwInput').focus();
-  window.checkPw=function(){
-    const v=document.getElementById('pwInput').value, err=document.getElementById('pwErr');
-    if(v===PW){sessionStorage.setItem(SK,'1');document.getElementById('pwGate').classList.add('hidden');}
-    else{err.textContent='Incorrect password.';const i=document.getElementById('pwInput');i.classList.remove('shake');void i.offsetWidth;i.classList.add('shake');i.value='';i.focus();}
-  };
-})();
-</script>
 
 <!-- SETUP -->
 <div id="setup">
