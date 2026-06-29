@@ -114,6 +114,8 @@ textarea{resize:vertical;min-height:80px;line-height:1.55}
 .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
 .badge-no-site{background:var(--primary-light);color:var(--primary-dark);border:1px solid #a7f3d0}
 .badge-has-site{background:#f3f4f6;color:#9ca3af}
+.badge-openhrs{background:#dcfce7;color:#166534;border:1px solid #86efac}
+.badge-closedhrs{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
 .badge-open{background:#d1fae5;color:#065f46;border:1px solid #a7f3d0}
 .badge-cold{background:#f3f4f6;color:#6b7280}
 .status-pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
@@ -800,7 +802,7 @@ async function runSearch(){
 
   async function fetchPage(query,city,token){
     const body={textQuery:`${query} in ${city}`,maxResultCount:20,languageCode:'en'};if(token)body.pageToken=token;
-    const r=await fetch('https://places.googleapis.com/v1/places:searchText',{method:'POST',headers:{'Content-Type':'application/json','X-Goog-Api-Key':cfg.placesKey,'X-Goog-FieldMask':['places.id','places.displayName','places.formattedAddress','places.nationalPhoneNumber','places.websiteUri','places.rating','places.userRatingCount','places.googleMapsUri','nextPageToken'].join(',')},body:JSON.stringify(body)});
+    const r=await fetch('https://places.googleapis.com/v1/places:searchText',{method:'POST',headers:{'Content-Type':'application/json','X-Goog-Api-Key':cfg.placesKey,'X-Goog-FieldMask':['places.id','places.displayName','places.formattedAddress','places.nationalPhoneNumber','places.websiteUri','places.rating','places.userRatingCount','places.googleMapsUri','places.regularOpeningHours','places.utcOffsetMinutes','nextPageToken'].join(',')},body:JSON.stringify(body)});
     if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e?.error?.message||'API '+r.status);}
     return r.json();
   }
@@ -817,7 +819,7 @@ async function runSearch(){
             const data=await fetchPage(query,city,token);done++;
             (data.places||[]).forEach(pl=>{
               const id=pl.id||pl.formattedAddress;if(seen.has(id))return;seen.add(id);
-              allResults.push({id,placeId:pl.id||'',name:pl.displayName?.text||'Unknown',address:pl.formattedAddress||'',phone:pl.nationalPhoneNumber||'',website:pl.websiteUri||'',rating:pl.rating||null,reviews:pl.userRatingCount||0,city,googleMapsUri:pl.googleMapsUri||'',bizType});
+              allResults.push({id,placeId:pl.id||'',name:pl.displayName?.text||'Unknown',address:pl.formattedAddress||'',phone:pl.nationalPhoneNumber||'',website:pl.websiteUri||'',rating:pl.rating||null,reviews:pl.userRatingCount||0,city,googleMapsUri:pl.googleMapsUri||'',bizType,hours:pl.regularOpeningHours?.periods||null,utcOffset:(typeof pl.utcOffsetMinutes==='number'?pl.utcOffsetMinutes:null)});
               cityCounts[city]++;
             });
             prog(`"${query}" in ${city}`,`${allResults.length} found`);
@@ -874,7 +876,7 @@ function renderResults(){
     const saved=savedIds.has(l.id);
     const gmaps=l.googleMapsUri||(l.placeId?`https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(l.placeId)}`:'');
     return `<tr>
-      <td><div class="lead-name">${esc(l.name)}</div><div class="lead-addr">${esc(l.address)}</div></td>
+      <td><div class="lead-name">${esc(l.name)}</div><div class="lead-addr">${esc(l.address)}</div>${openBadge(l)?`<div style="margin-top:4px">${openBadge(l)}</div>`:''}</td>
       ${showCity?`<td><span style="font-size:11.5px;color:var(--text-secondary)">${esc(l.city||'')}</span></td>`:''}
       <td>${l.website?`<span class="badge badge-has-site">Has site</span>`:`<span class="badge badge-no-site">No website</span>`}</td>
       <td><span style="font-size:12px;color:var(--text-secondary)">${l.phone||'—'}</span></td>
@@ -965,7 +967,7 @@ function renderDialer(){
     return `<div class="dlead ${l.status}">
       <div class="dlead-top">
         <div class="dlead-id">
-          <div class="dlead-name">${esc(l.name)} <span class="status-pill ${sm[l.status]}">${sl[l.status]}</span>${l.website?'<span class="badge badge-has-site">Has site</span>':'<span class="badge badge-no-site">No website</span>'}</div>
+          <div class="dlead-name">${esc(l.name)} <span class="status-pill ${sm[l.status]}">${sl[l.status]}</span>${l.website?'<span class="badge badge-has-site">Has site</span>':'<span class="badge badge-no-site">No website</span>'}${openBadge(l)}</div>
           <div class="dlead-meta">${esc(meta)}</div>
         </div>
         <div class="dlead-since"><div class="n" style="color:${l.lastTouchAt&&daysSince(l.lastTouchAt)>=7?'var(--red)':'var(--text)'}">${sinceLabel(l.lastTouchAt)}</div><div class="l">last touch</div></div>
@@ -986,6 +988,33 @@ function renderDialer(){
 }
 
 function leadIdx(id){return leads.findIndex(l=>l.id===id);}
+/* live open/closed against the business's own timezone (utcOffset). returns open|closed|unknown */
+function openStatus(l){
+  const periods=l&&l.hours;
+  if(!periods||!periods.length)return 'unknown';
+  let day,min;
+  if(typeof l.utcOffset==='number'){
+    const b=new Date(Date.now()+l.utcOffset*60000);
+    day=b.getUTCDay(); min=b.getUTCHours()*60+b.getUTCMinutes();
+  }else{
+    const b=new Date(); day=b.getDay(); min=b.getHours()*60+b.getMinutes();
+  }
+  const nowMOW=day*1440+min;
+  for(const p of periods){
+    if(!p.open)continue;
+    const openMOW=p.open.day*1440+p.open.hour*60+(p.open.minute||0);
+    if(!p.close)return 'open'; // 24/7
+    let closeMOW=p.close.day*1440+p.close.hour*60+(p.close.minute||0);
+    if(closeMOW<=openMOW)closeMOW+=10080; // wraps past end of week
+    if((nowMOW>=openMOW&&nowMOW<closeMOW)||(nowMOW+10080>=openMOW&&nowMOW+10080<closeMOW))return 'open';
+  }
+  return 'closed';
+}
+function openBadge(l){
+  const s=openStatus(l);
+  return s==='open'?'<span class="badge badge-openhrs">🟢 Open now</span>'
+       :s==='closed'?'<span class="badge badge-closedhrs">🔴 Closed</span>':'';
+}
 function markCalled(id){
   const i=leadIdx(id);if(i<0)return;
   leads[i].callCount=(leads[i].callCount||0)+1;leads[i].lastTouchAt=Date.now();
