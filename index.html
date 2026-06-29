@@ -927,8 +927,12 @@ function renderDialer(){
     return true;
   });
   // To-call: oldest saved first (work the backlog). Others: most-recently-touched first.
-  if(dialFilter==='new')list.sort((a,b)=>a.savedAt-b.savedAt);
-  else list.sort((a,b)=>(b.lastTouchAt||0)-(a.lastTouchAt||0));
+  list.sort((a,b)=>{
+    const aw=a.website?1:0, bw=b.website?1:0;
+    if(aw!==bw)return aw-bw; // no-website (0) before has-website (1)
+    if(dialFilter==='new')return a.savedAt-b.savedAt;
+    return (b.lastTouchAt||0)-(a.lastTouchAt||0);
+  });
 
   const body=document.getElementById('dialerBody');
   if(!list.length){
