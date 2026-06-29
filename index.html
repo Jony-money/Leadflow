@@ -215,6 +215,17 @@ tbody td{padding:11px 14px;vertical-align:middle}
 
 /* ── STATS ── */
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+/* sticky dial progress bar */
+#page-dialer>.page-header{position:static}
+.dial-sticky{position:sticky;top:0;z-index:15;display:flex;align-items:center;gap:12px;background:#0f172a;color:#f8fafc;padding:9px 28px;box-shadow:0 3px 10px rgba(0,0,0,.18)}
+.dial-sticky .ds-num{font-family:ui-monospace,monospace;font-weight:800;font-size:14px;white-space:nowrap}
+.dial-sticky .ds-num b{color:#34d399}
+.dial-sticky .ds-num span{color:#64748b;font-weight:700}
+.dial-sticky .ds-bar{flex:1;height:8px;background:#0b1220;border:1px solid #1e293b;border-radius:5px;overflow:hidden}
+.dial-sticky .ds-fill{height:100%;background:linear-gradient(90deg,#059669,#34d399);transition:width .35s ease}
+.dial-sticky .ds-pct{font-size:11px;color:#94a3b8;white-space:nowrap;font-weight:600}
+@media(max-width:900px){.dial-sticky{padding-left:64px}}
+@media(max-width:560px){.dial-sticky{padding:8px 14px 8px 64px}}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow)}
 .stat-label{font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px}
 .stat-value{font-size:26px;font-weight:800;line-height:1}
@@ -313,6 +324,7 @@ tbody td{padding:11px 14px;vertical-align:middle}
   <!-- ── DIALER ── -->
   <div id="page-dialer" class="page active">
     <div class="page-header"><div><h1>Dialer</h1><p>Call straight down the list. Tap an outcome after each call.</p></div><button class="btn btn-secondary btn-sm" onclick="exportCSV()">&darr; Export CSV</button></div>
+    <div class="dial-sticky"><span class="ds-num"><b id="dsToday">0</b><span id="dsGoal">/500</span></span><span class="ds-bar"><span class="ds-fill" id="dsFill" style="width:0%"></span></span><span class="ds-pct" id="dsPct">0%</span></div>
     <div class="page-body">
 
       <div class="dial-hero">
@@ -906,6 +918,8 @@ function updateDialStats(){
   const pct=Math.min(100,Math.round(today/goal*100));
   const bar=document.getElementById('dhBar');if(bar)bar.style.width=pct+'%';
   se('dhPct',pct+'% of goal');
+  se('dsToday',today); se('dsGoal','/'+goal); se('dsPct',pct+'%');
+  const dsf=document.getElementById('dsFill');if(dsf)dsf.style.width=pct+'%';
   const remain=Math.max(0,goal-today);
   se('dhRemain',remain>0?`${remain} to go`:'🎯 Goal hit — keep dialing');
   se('stToCall',leads.filter(l=>l.status==='new').length);
@@ -946,7 +960,7 @@ function renderDialer(){
     const gmaps=l.googleMapsUri||(l.placeId?`https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(l.placeId)}`:'');
     const meta=[l.city||l.address||'',l.callCount?`called ${l.callCount}×`:'',l.vmCount?`${l.vmCount} VM`:'',l.textCount?`${l.textCount} text`:''].filter(Boolean).join(' · ');
     const callBtn=l.phone
-      ? `<a class="call-btn" href="${telHref(l.phone)}" onclick="logDial('${esc(l.id)}')">📞 Call <span class="num">${esc(l.phone)}</span></a>`
+      ? `<a class="call-btn" href="${telHref(l.phone)}">📞 Call <span class="num">${esc(l.phone)}</span></a>`
       : `<span class="call-btn nophone">No phone number</span>`;
     return `<div class="dlead ${l.status}">
       <div class="dlead-top">
@@ -962,7 +976,7 @@ function renderDialer(){
         <button class="btn btn-sky btn-sm" onclick="markVoicemail('${esc(l.id)}')">📩 Voicemail</button>
         <button class="btn btn-purple btn-sm" onclick="sendText('${esc(l.id)}')">💬 Text</button>
         <button class="btn btn-green btn-sm" onclick="markBooked('${esc(l.id)}')">📅 Booked</button>
-        <button class="btn btn-amber btn-sm" onclick="markNoAnswer('${esc(l.id)}')">↻ No answer</button>
+        <button class="btn btn-amber btn-sm" onclick="markCalled('${esc(l.id)}')">✓ Called</button>
         <button class="btn btn-ghost btn-sm" onclick="openLeadModal('${esc(l.id)}')">📝 Notes</button>
         <button class="btn btn-ghost btn-sm" onclick="markDead('${esc(l.id)}')">✕ Dead</button>
         ${gmaps?`<a href="${esc(gmaps)}" target="_blank" class="btn btn-ghost btn-sm" style="text-decoration:none">📍 Google</a>`:''}
@@ -972,20 +986,12 @@ function renderDialer(){
 }
 
 function leadIdx(id){return leads.findIndex(l=>l.id===id);}
-function logDial(id){ /* fired when tapping the tel: Call link — counts the dial, marks called */
+function markCalled(id){
   const i=leadIdx(id);if(i<0)return;
   leads[i].callCount=(leads[i].callCount||0)+1;leads[i].lastTouchAt=Date.now();
   if(leads[i].status==='new')leads[i].status='called';
   callLog.push({ts:Date.now(),leadId:id,type:'call'});persistCallLog();persist();
-  // brief delay so the tel: handler fires first, then refresh UI
-  setTimeout(()=>{renderDialer();updateDialBadge();},400);
-}
-function markNoAnswer(id){
-  const i=leadIdx(id);if(i<0)return;
-  leads[i].callCount=(leads[i].callCount||0)+1;leads[i].lastTouchAt=Date.now();
-  if(leads[i].status==='new')leads[i].status='called';
-  callLog.push({ts:Date.now(),leadId:id,type:'call'});persistCallLog();persist();
-  renderDialer();updateDialBadge();toast('Logged dial — no answer',1600,'ok');
+  renderDialer();updateDialBadge();toast('Marked called',1600,'ok');
 }
 function markVoicemail(id){
   const i=leadIdx(id);if(i<0)return;
