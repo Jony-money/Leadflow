@@ -1,458 +1,1090 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#0d0f12">
-<title>Training</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LeadFlow Dialer — Find. Call. Book.</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
-  :root{
-    --bg:#0d0f12; --panel:#16191f; --panel-2:#1d212a; --line:#272c36;
-    --txt:#e8eaed; --muted:#878d99; --dim:#5c6270;
-    --accent:#ff7a33; --accent-dim:#7a3c1a; --good:#3ddc84; --good-dim:#16361f;
-    --warn:#ffd24a;
-    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
-    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-  }
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{margin:0;padding:0}
-  body{
-    background:var(--bg);color:var(--txt);font-family:var(--sans);
-    font-size:15px;line-height:1.4;padding-bottom:env(safe-area-inset-bottom);
-    -webkit-font-smoothing:antialiased;
-  }
-  .wrap{max-width:560px;margin:0 auto;padding:0 14px 80px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#059669;--primary-light:#d1fae5;--primary-dark:#047857;
+  --accent:#3b7ef8;--accent-dim:#eff3fe;
+  --sidebar-bg:#0f172a;--sidebar-hover:#1e293b;--sidebar-active:#1e293b;
+  --sidebar-text:#94a3b8;--sidebar-text-active:#f8fafc;
+  --bg:#f3f4f6;--surface:#fff;--border:#e5e7eb;--border-strong:#d1d5db;
+  --text:#111827;--text-secondary:#6b7280;--text-muted:#9ca3af;
+  --green:#16a34a;--green-dim:#f0fdf4;--red:#dc2626;--red-dim:#fef2f2;
+  --amber:#d97706;--amber-dim:#fffbeb;--purple:#7c3aed;--purple-dim:#f5f3ff;
+  --sky:#0ea5e9;--sky-dim:#e0f2fe;
+  --radius:10px;--radius-sm:6px;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+  --shadow-lg:0 10px 25px rgba(0,0,0,.12);
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;height:100vh;overflow:hidden;font-size:14px;line-height:1.5}
 
-  header{padding:18px 0 10px;position:sticky;top:0;background:linear-gradient(var(--bg) 70%,transparent);z-index:20}
-  .brand{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
-  h1{font-size:22px;margin:0;letter-spacing:-.5px;font-weight:800}
-  h1 .acc{color:var(--accent)}
-  .todaytag{font-family:var(--mono);font-size:11px;color:var(--muted);text-align:right;line-height:1.3}
-  .todaytag b{color:var(--txt);display:block;font-size:13px}
+/* ── PW GATE ── */
+#pwGate{position:fixed;inset:0;background:#0f172a;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}
+#pwGate.hidden{display:none}
+.pw-box{background:#1e293b;border-radius:18px;padding:40px;width:360px;max-width:96vw;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.5)}
+.pw-logo{width:50px;height:50px;background:#059669;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;color:#fff;margin:0 auto 16px}
+.pw-title{font-size:20px;font-weight:800;color:#f8fafc;margin-bottom:4px}
+.pw-sub{font-size:12px;color:#64748b;margin-bottom:22px}
+.pw-input{width:100%;padding:12px 16px;background:#0f172a;border:1.5px solid #334155;border-radius:10px;font-size:15px;font-family:ui-monospace,monospace;color:#f8fafc;text-align:center;letter-spacing:.08em;outline:none;margin-bottom:12px}
+.pw-input:focus{border-color:#059669;box-shadow:0 0 0 3px rgba(5,150,105,.2)}
+.pw-input.shake{animation:pwShake .35s ease}
+.pw-btn{width:100%;padding:12px;background:#059669;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.pw-btn:hover{filter:brightness(1.08)}
+.pw-err{font-size:12px;color:#f87171;margin-top:8px;min-height:16px;font-weight:600}
+@keyframes pwShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
 
-  /* tabs */
-  .tabs{display:flex;gap:6px;overflow-x:auto;margin-top:12px;padding-bottom:4px;scrollbar-width:none}
-  .tabs::-webkit-scrollbar{display:none}
-  .tab{flex:0 0 auto;background:var(--panel);border:1px solid var(--line);color:var(--muted);
-    padding:9px 13px;border-radius:11px;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;
-    display:flex;flex-direction:column;align-items:center;gap:1px;min-width:54px;transition:.12s}
-  .tab small{font-family:var(--mono);font-size:9px;font-weight:600;opacity:.7;letter-spacing:.5px}
-  .tab.active{background:var(--accent);border-color:var(--accent);color:#1a0f06}
-  .tab.active small{opacity:.85}
-  .tab.rest{opacity:.6}
-  .tab.today::after{content:"";width:4px;height:4px;border-radius:50%;background:var(--good);position:relative;top:-1px}
-  .tab.active.today::after{background:#1a0f06}
+/* ── SETUP ── */
+#setup{position:fixed;inset:0;background:rgba(10,14,35,.85);z-index:300;display:none;align-items:center;justify-content:center;padding:20px}
+#setup.show{display:flex}
+.setup-box{background:#fff;border-radius:18px;padding:36px;width:480px;max-width:96vw;box-shadow:0 24px 80px rgba(0,0,0,.3)}
+.setup-brand{font-size:24px;font-weight:800;margin-bottom:4px}
+.setup-tag{font-size:13px;color:var(--text-muted);margin-bottom:24px}
+.step-h{font-size:17px;font-weight:700;margin-bottom:8px}
+.step-p{font-size:13px;color:var(--text-secondary);line-height:1.65;margin-bottom:16px}
+.step-p a{color:var(--primary);font-weight:600;text-decoration:none}
+.step-p a:hover{text-decoration:underline}
+.setup-input{width:100%;padding:11px 14px;border:1.5px solid var(--border-strong);border-radius:8px;font-size:14px;color:var(--text);background:#fafafa;margin-bottom:12px}
+.setup-input:focus{outline:none;border-color:var(--primary);background:#fff;box-shadow:0 0 0 3px rgba(5,150,105,.12)}
+.setup-skip{margin-top:10px;background:none;border:none;font-size:12px;color:var(--text-muted);cursor:pointer;text-decoration:underline}
 
-  /* day header */
-  .dayhead{display:flex;align-items:center;justify-content:space-between;margin:18px 0 4px}
-  .dayhead h2{margin:0;font-size:18px;letter-spacing:-.3px}
-  .dayhead .focus{font-family:var(--mono);font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px}
+/* ── SIDEBAR ── */
+.sidebar{width:230px;min-width:230px;background:var(--sidebar-bg);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.sidebar-logo{padding:20px 18px 16px;border-bottom:1px solid #1e293b}
+.logo-row{display:flex;align-items:center;gap:10px}
+.logo-mark{width:32px;height:32px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff}
+.logo-name{color:#f8fafc;font-weight:800;font-size:15px}
+.logo-tag{font-size:10px;color:#64748b;letter-spacing:.06em;text-transform:uppercase;margin-top:6px}
+.logo-date{font-size:11px;color:#64748b;margin-top:3px}
+.sidebar-nav{padding:12px 8px;flex:1;overflow-y:auto}
+.nav-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#475569;padding:12px 8px 5px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px;border-radius:7px;cursor:pointer;color:var(--sidebar-text);font-size:13.5px;font-weight:500;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:inherit;transition:background .12s,color .12s}
+.nav-item:hover{background:var(--sidebar-hover);color:#cbd5e1}
+.nav-item.active{background:var(--sidebar-active);color:var(--sidebar-text-active);border-left:2px solid var(--primary);padding-left:8px}
+.nav-icon{width:16px;text-align:center;font-size:14px;opacity:.85}
+.nav-badge{margin-left:auto;background:var(--primary);color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;min-width:18px;text-align:center;display:none}
+.nav-badge.warn{background:var(--amber)}
+.nav-badge.show{display:inline-block}
+.sidebar-footer{padding:12px 16px;border-top:1px solid #1e293b}
+.api-status{display:flex;align-items:center;gap:7px;font-size:11px;color:#64748b}
+.api-status .dot{width:6px;height:6px;border-radius:50%;background:#475569}
+.api-status .dot.ok{background:var(--primary)}.api-status .dot.warn{background:#f59e0b}
 
-  .section{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin-top:12px;overflow:hidden}
-  .sechead{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line);font-weight:700;font-size:13px;letter-spacing:.3px}
-  .sechead .ico{width:24px;height:24px;border-radius:7px;display:grid;place-items:center;font-size:13px;background:var(--panel-2)}
-  .sechead .rest{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+/* ── MAIN ── */
+.main{flex:1;overflow-y:auto;height:100vh;display:flex;flex-direction:column}
+.page{display:none}.page.active{display:flex;flex-direction:column;flex:1}
+.page-header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;gap:12px;flex-wrap:wrap}
+.page-header h1{font-size:18px;font-weight:800}
+.page-header p{font-size:12px;color:var(--text-secondary);margin-top:1px}
+.page-body{padding:24px 28px;flex:1}
 
-  .ex{padding:12px 14px;border-bottom:1px solid var(--line)}
-  .ex:last-child{border-bottom:none}
-  .ex-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
-  .ex-name{font-weight:600;font-size:14.5px}
-  .ex-name .sup{display:block;font-size:12px;color:var(--muted);font-weight:500;margin-top:1px}
-  .ex-name .sup b{color:var(--txt);font-weight:600}
-  .ex-scheme{font-family:var(--mono);font-size:12px;color:var(--accent);white-space:nowrap;font-weight:600}
-  .pump{color:var(--good)}
+/* ── CARDS / FIELDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+.card-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card-title{font-size:13px;font-weight:700}
+.card-body{padding:20px}.card+.card{margin-top:16px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:11.5px;font-weight:600;color:var(--text-secondary);text-transform:uppercase}
+input[type=text],input[type=password],input[type=email],input[type=tel],input[type=date],input[type=number],input[type=url],select,textarea{background:#fff;border:1px solid var(--border-strong);border-radius:var(--radius-sm);padding:9px 12px;font-size:13.5px;font-family:inherit;color:var(--text);outline:none;transition:border-color .15s,box-shadow .15s;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(5,150,105,.12)}
+input::placeholder,textarea::placeholder{color:var(--text-muted)}
+textarea{resize:vertical;min-height:80px;line-height:1.55}
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.section-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:14px}
 
-  /* logging row */
-  .logrow{display:flex;align-items:center;gap:7px;margin-top:9px;flex-wrap:wrap}
-  .logrow input{background:var(--panel-2);border:1px solid var(--line);color:var(--txt);
-    font-family:var(--mono);font-size:14px;padding:7px 8px;border-radius:8px;width:62px;text-align:center}
-  .logrow input:focus{outline:none;border-color:var(--accent)}
-  .logrow .x{color:var(--dim);font-family:var(--mono);font-size:13px}
-  .logrow .unit{color:var(--muted);font-size:11px;font-family:var(--mono)}
-  .logrow button{margin-left:auto;background:var(--accent);color:#1a0f06;border:none;font-weight:700;
-    font-size:12px;padding:8px 12px;border-radius:8px;cursor:pointer}
-  .logrow button:active{transform:scale(.97)}
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:600;font-family:inherit;cursor:pointer;border:none;white-space:nowrap;text-decoration:none;transition:all .15s}
+.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{filter:brightness(1.08)}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.btn-secondary{background:var(--surface);color:var(--text);border:1px solid var(--border-strong)}.btn-secondary:hover{background:var(--bg)}
+.btn-ghost{background:none;color:var(--text-secondary);border:none;padding:6px 10px;font-size:12px}.btn-ghost:hover{color:var(--text);background:var(--bg);border-radius:var(--radius-sm)}
+.btn-danger{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}.btn-danger:hover{background:#fee2e2}
+.btn-blue{background:var(--accent-dim);color:var(--accent);border:1px solid #bfdbfe}
+.btn-green{background:var(--green-dim);color:var(--green);border:1px solid #bbf7d0}
+.btn-amber{background:var(--amber-dim);color:var(--amber);border:1px solid #fde68a}
+.btn-purple{background:var(--purple-dim);color:var(--purple);border:1px solid #ddd6fe}
+.btn-sky{background:var(--sky-dim);color:var(--sky);border:1px solid #bae6fd}
+.btn-sm{padding:6px 12px;font-size:12px}.btn-xs{padding:4px 10px;font-size:11px}
 
-  .hint{margin-top:8px;font-size:11.5px;font-family:var(--mono);line-height:1.5;color:var(--muted);
-    background:var(--panel-2);border-radius:8px;padding:7px 9px;display:none}
-  .hint.show{display:block}
-  .hint .lvl{color:var(--good)}
-  .hint .up{color:var(--accent);font-weight:700}
-  .hint .last{color:var(--dim)}
-  .pr{color:var(--warn)}
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-no-site{background:var(--primary-light);color:var(--primary-dark);border:1px solid #a7f3d0}
+.badge-has-site{background:#f3f4f6;color:#9ca3af}
+.badge-open{background:#d1fae5;color:#065f46;border:1px solid #a7f3d0}
+.badge-cold{background:#f3f4f6;color:#6b7280}
+.status-pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.s-new{background:#dbeafe;color:#1d4ed8}.s-called{background:#fef3c7;color:#b45309}
+.s-texted{background:#ede9fe;color:#6d28d9}.s-voicemail{background:#e0f2fe;color:#0369a1}
+.s-booked{background:#d1fae5;color:#065f46}.s-dead{background:#f3f4f6;color:#6b7280}
 
-  .jog{display:flex;align-items:center;gap:12px;padding:14px}
-  .jog .big{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--accent)}
-  .jog .lbl{font-size:12px;color:var(--muted);line-height:1.3}
-  .jog.opt .big{color:var(--good)}
+/* ── TABLE ── */
+.table-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{padding:10px 14px;text-align:left;font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted);background:#fafafa;border-bottom:1px solid var(--border);white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:#f9fafb}
+tbody td{padding:11px 14px;vertical-align:middle}
+.lead-name{font-weight:600;font-size:13.5px}
+.lead-addr{font-size:11px;color:var(--text-muted);margin-top:1px;max-width:240px}
 
-  /* estimator / tracker cards */
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin-top:14px;padding:14px}
-  .card h3{margin:0 0 10px;font-size:14px;letter-spacing:.2px;display:flex;align-items:center;gap:8px}
-  .card h3 .ico{width:22px;height:22px;border-radius:6px;display:grid;place-items:center;font-size:12px;background:var(--panel-2)}
-  .field{display:flex;align-items:center;gap:10px;margin:8px 0}
-  .field label{font-size:13px;color:var(--muted);flex:1}
-  .field input,.field select{background:var(--panel-2);border:1px solid var(--line);color:var(--txt);
-    font-family:var(--mono);font-size:14px;padding:8px;border-radius:8px;width:90px;text-align:center}
-  .field input:focus,.field select:focus{outline:none;border-color:var(--accent)}
-  .burnout{margin-top:10px;border-top:1px solid var(--line);padding-top:11px}
-  .brow{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;color:var(--muted)}
-  .brow span:last-child{font-family:var(--mono);color:var(--txt)}
-  .btot{display:flex;justify-content:space-between;margin-top:8px;padding-top:9px;border-top:1px solid var(--line);font-weight:700}
-  .btot span:last-child{font-family:var(--mono);color:var(--accent);font-size:18px}
+/* ── PROGRESS / SEARCH ── */
+.progress-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 22px;margin-bottom:18px;box-shadow:var(--shadow)}
+.progress-label{font-size:13px;font-weight:600;margin-bottom:4px}
+.progress-sub{font-size:12px;color:var(--text-muted);margin-bottom:12px}
+.progress-bar-bg{height:6px;background:#e5e7eb;border-radius:3px;overflow:hidden}
+.progress-bar-fill{height:100%;background:var(--primary);border-radius:3px;transition:width .3s ease}
+.progress-stats{display:flex;gap:20px;margin-top:10px;flex-wrap:wrap;font-size:12px;color:var(--text-secondary)}
+.progress-stats strong{color:var(--text)}
+.hunt-toggle{display:flex;align-items:center;gap:12px;padding:14px 18px;background:linear-gradient(135deg,#ecfdf5,#d1fae5);border:1px solid #a7f3d0;border-radius:var(--radius);cursor:pointer;user-select:none}
+.hunt-toggle input{width:18px;height:18px;accent-color:var(--primary);cursor:pointer}
+.hunt-toggle-title{font-size:13.5px;font-weight:700;color:#065f46}
+.hunt-toggle-desc{font-size:11.5px;color:#047857;margin-top:1px}
+.filter-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:14px}
+.filter-chip{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border-strong);background:var(--surface);color:var(--text-secondary)}
+.filter-chip input{width:13px;height:13px;accent-color:var(--primary);margin:0}
+.filter-chip:hover{border-color:var(--primary);color:var(--text)}
+.mode-tab{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border-strong);background:var(--surface);color:var(--text-secondary);font-family:inherit}
+.mode-tab.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.results-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.results-count{font-size:12px;color:var(--text-muted);margin-left:auto}
 
-  .trk-empty{color:var(--dim);font-size:13px;font-style:italic}
-  .trk-ex{border-top:1px solid var(--line);padding:10px 0}
-  .trk-ex:first-of-type{border-top:none}
-  .trk-ex .nm{font-size:13px;font-weight:600;display:flex;justify-content:space-between}
-  .trk-ex .nm .best{font-family:var(--mono);font-size:11px;color:var(--warn)}
-  .spark{display:flex;gap:3px;align-items:flex-end;height:30px;margin-top:6px}
-  .spark .bar{flex:1;background:var(--accent-dim);border-radius:2px 2px 0 0;min-height:3px;position:relative}
-  .spark .bar.last{background:var(--accent)}
-  .trk-meta{font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:4px;display:flex;justify-content:space-between}
-  .clearbtn{background:none;border:1px solid var(--line);color:var(--dim);font-size:11px;padding:6px 10px;border-radius:8px;cursor:pointer;margin-top:10px}
+/* ── STATE PICKER ── */
+.state-picker{background:#f9fafb;border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px}
+.state-picker-header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.state-picker-title{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text-secondary)}
+.state-select select{width:auto;min-width:200px;padding:7px 12px;font-size:13px}
+.cities-grid{display:flex;flex-wrap:wrap;gap:6px;max-height:200px;overflow-y:auto;padding:4px}
+.city-chip{padding:5px 10px;border-radius:14px;font-size:11.5px;font-weight:500;cursor:pointer;border:1px solid var(--border-strong);background:#fff;color:var(--text-secondary);user-select:none}
+.city-chip:hover{border-color:var(--primary);color:var(--text)}
+.city-chip.selected{background:var(--primary);color:#fff;border-color:var(--primary)}
+.city-chip.searched::after{content:'\2713';font-size:10px;color:#065f46;font-weight:800;margin-left:3px}
+.city-chip.selected.searched::after{color:#d1fae5}
+.cities-actions{display:flex;gap:8px;align-items:center;margin-top:8px;font-size:12px;color:var(--text-muted);flex-wrap:wrap}
 
-  .restday{text-align:center;padding:50px 20px}
-  .restday .em{font-size:46px}
-  .restday h2{margin:14px 0 6px;font-size:20px}
-  .restday p{color:var(--muted);font-size:14px;max-width:300px;margin:0 auto}
+/* ── DIALER ── */
+.dial-hero{background:linear-gradient(135deg,#0f172a,#1e293b);border-radius:14px;padding:22px 24px;margin-bottom:18px;color:#f8fafc;box-shadow:var(--shadow)}
+.dial-hero-top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.dial-count{display:flex;align-items:baseline;gap:10px}
+.dial-count .big{font-size:46px;font-weight:800;line-height:1;letter-spacing:-1px}
+.dial-count .goal{font-size:20px;font-weight:700;color:#64748b}
+.dial-count .lbl{font-size:12px;color:#94a3b8;font-weight:600}
+.dial-mini{display:flex;gap:18px;flex-wrap:wrap}
+.dial-mini .m{text-align:right}
+.dial-mini .m .n{font-size:18px;font-weight:700;line-height:1}
+.dial-mini .m .t{font-size:10px;color:#64748b;letter-spacing:.05em;text-transform:uppercase;margin-top:2px}
+.dial-bar-bg{height:10px;background:#0b1220;border-radius:6px;overflow:hidden;border:1px solid #1e293b}
+.dial-bar-fill{height:100%;background:linear-gradient(90deg,#059669,#34d399);border-radius:6px;transition:width .35s ease}
+.dial-hero-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px;flex-wrap:wrap}
+.dial-hero-foot .pct{font-size:12px;color:#94a3b8;font-weight:600}
+.dial-hero-foot .remain{font-size:12px;color:#cbd5e1}
+.goal-btn{background:#1e293b;border:1px solid #334155;color:#94a3b8;font-size:11px;padding:5px 10px;border-radius:7px;cursor:pointer;font-family:inherit}
+.goal-btn:hover{color:#f8fafc}
 
-  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--good);
-    color:#06210f;font-weight:700;font-size:13px;padding:11px 18px;border-radius:11px;opacity:0;transition:.25s;z-index:50;pointer-events:none}
-  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-  .save{color:var(--dim);font-family:var(--mono);font-size:10px;text-align:center;margin-top:24px;letter-spacing:.5px}
+.script-bar{background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius);margin-bottom:16px;overflow:hidden}
+.script-head{display:flex;align-items:center;gap:8px;padding:11px 16px;cursor:pointer;font-size:13px;font-weight:700;color:#92400e;user-select:none}
+.script-head .chev{margin-left:auto;transition:transform .2s}
+.script-bar.open .script-head .chev{transform:rotate(90deg)}
+.script-body{display:none;padding:0 16px 14px}
+.script-bar.open .script-body{display:block}
+.script-body textarea{min-height:120px;background:#fff;font-size:13.5px;line-height:1.6}
+
+.dlead{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px}
+.dlead.new{border-left:3px solid var(--accent)}
+.dlead.voicemail{border-left:3px solid var(--sky)}
+.dlead.texted{border-left:3px solid var(--purple)}
+.dlead.booked{border-left:3px solid var(--primary);background:#f6fefb}
+.dlead.dead{border-left:3px solid #cbd5e1;opacity:.72}
+.dlead-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.dlead-id{min-width:0;flex:1}
+.dlead-name{font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dlead-meta{font-size:11.5px;color:var(--text-muted);margin-top:2px}
+.dlead-since{text-align:right}
+.dlead-since .n{font-size:15px;font-weight:800;line-height:1}
+.dlead-since .l{font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted)}
+.call-btn{display:inline-flex;align-items:center;gap:8px;background:var(--primary);color:#fff;font-weight:800;font-size:16px;padding:11px 20px;border-radius:10px;text-decoration:none;box-shadow:0 2px 6px rgba(5,150,105,.3)}
+.call-btn:hover{filter:brightness(1.07)}
+.call-btn.nophone{background:#e5e7eb;color:#9ca3af;box-shadow:none;pointer-events:none}
+.call-btn .num{font-family:ui-monospace,monospace;font-size:14px;font-weight:700}
+.dlead-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;border-top:1px solid var(--border);padding-top:12px}
+.dlead-note{font-size:12.5px;color:var(--text-secondary);background:#f9fafb;padding:8px 12px;border-radius:6px;margin-top:10px;white-space:pre-wrap}
+
+/* ── STATS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow)}
+.stat-label{font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px}
+.stat-value{font-size:26px;font-weight:800;line-height:1}
+.stat-card.hot .stat-value{color:var(--primary)}.stat-card.warn .stat-value{color:var(--amber)}
+.stat-card.vm .stat-value{color:var(--sky)}.stat-card.book .stat-value{color:var(--primary)}
+.stat-sub{font-size:11px;color:var(--text-muted);margin-top:5px}
+.searched-state-tag{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:14px;font-size:11.5px;font-weight:600;background:var(--primary-light);color:var(--primary-dark);border:1px solid #a7f3d0}
+.searched-state-tag .count{font-size:10px;background:rgba(255,255,255,.6);padding:1px 6px;border-radius:8px}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:14px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
+.modal-header{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.modal-title{font-size:17px;font-weight:800}
+.modal-subtitle{font-size:12px;color:var(--text-secondary);margin-top:2px}
+.modal-close{background:none;border:none;width:30px;height:30px;border-radius:6px;cursor:pointer;color:var(--text-muted);font-size:20px}
+.modal-close:hover{background:var(--bg);color:var(--text)}
+.modal-body{padding:20px 24px}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+
+/* ── TOAST / EMPTY ── */
+.toast-container{position:fixed;bottom:24px;right:24px;z-index:400;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:#0f172a;color:#f8fafc;padding:11px 18px;border-radius:8px;font-size:13px;font-weight:500;box-shadow:var(--shadow-lg);animation:slideUp .2s ease;max-width:320px}
+.toast.ok{background:#065f46}.toast.err{background:#991b1b}
+@keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.empty{text-align:center;padding:48px 24px;color:var(--text-muted);background:var(--surface);border:1px dashed var(--border-strong);border-radius:var(--radius)}
+.empty-icon{font-size:36px;margin-bottom:10px;opacity:.55}
+.empty h3{font-size:15px;color:var(--text-secondary);margin-bottom:4px;font-weight:700}
+.empty p{font-size:13px}
+.spinner{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .65s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.setup-banner{background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius);padding:14px 18px;display:flex;align-items:center;gap:12px;margin-bottom:20px;font-size:13px;color:#92400e}
+
+/* ── MOBILE ── */
+#mobileMenuBtn{position:fixed;top:12px;left:12px;z-index:200;background:#1e293b;color:#fff;border:none;border-radius:8px;padding:10px 14px;font-size:18px;cursor:pointer;display:none}
+#sidebarBackdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:90;display:none}
+.hunt-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.search-grid{display:grid;grid-template-columns:2fr 2fr 1fr;gap:14px;align-items:end}
+.search-grid-bulk{display:grid;grid-template-columns:1fr 2fr 1fr;gap:14px;align-items:start}
+@media(max-width:900px){.settings-grid{grid-template-columns:1fr}.stats-grid{grid-template-columns:1fr 1fr}
+  .sidebar{position:fixed;top:0;left:0;height:100vh;transform:translateX(-100%);transition:transform .22s ease;z-index:100;box-shadow:4px 0 16px rgba(0,0,0,.2)}
+  .sidebar.open{transform:translateX(0)}
+  #mobileMenuBtn{display:flex}.main{padding-top:56px}
+  .page-header{padding-left:64px}
+  .hunt-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.stats-grid{grid-template-columns:1fr 1fr}.dial-count .big{font-size:38px}.page-body{padding:18px 16px}
+  .hunt-grid{grid-template-columns:1fr}
+  .search-grid{grid-template-columns:1fr}
+  .search-grid-bulk{grid-template-columns:1fr}
+  .search-grid .btn,.search-grid-bulk .btn{height:auto!important;width:100%;justify-content:center;padding:11px}
+  .dlead-actions .btn,.dlead-actions .call-btn{flex:1 1 auto;justify-content:center;padding:11px 12px;font-size:13px}
+  .dlead-since{text-align:left}
+  .page-header{padding:14px 16px 14px 64px}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div class="brand">
-      <h1>TRAIN<span class="acc">.</span></h1>
-      <div class="todaytag">5-day split<b id="todayName">—</b></div>
-    </div>
-    <div class="tabs" id="tabs"></div>
-  </header>
-  <main id="view"></main>
-  <div class="save">data saved locally on this device</div>
+
+<!-- PW GATE -->
+<div id="pwGate">
+  <div class="pw-box">
+    <div class="pw-logo">LF</div>
+    <div class="pw-title">LeadFlow Dialer</div>
+    <div class="pw-sub">Enter password to continue</div>
+    <input class="pw-input" id="pwInput" type="password" placeholder="••••••••••••" autocomplete="off" onkeydown="if(event.key==='Enter')checkPw()" />
+    <button class="pw-btn" onclick="checkPw()">Unlock →</button>
+    <div class="pw-err" id="pwErr"></div>
+  </div>
 </div>
-<div class="toast" id="toast">Logged</div>
+<script>
+(function(){
+  const PW=atob('TWlsbGlvbmFpcmVCNDE5'), SK='lf_unlocked_v1';
+  if(sessionStorage.getItem(SK)==='1'){document.getElementById('pwGate').classList.add('hidden');return;}
+  document.getElementById('pwInput').focus();
+  window.checkPw=function(){
+    const v=document.getElementById('pwInput').value, err=document.getElementById('pwErr');
+    if(v===PW){sessionStorage.setItem(SK,'1');document.getElementById('pwGate').classList.add('hidden');}
+    else{err.textContent='Incorrect password.';const i=document.getElementById('pwInput');i.classList.remove('shake');void i.offsetWidth;i.classList.add('shake');i.value='';i.focus();}
+  };
+})();
+</script>
+
+<!-- SETUP -->
+<div id="setup">
+  <div class="setup-box">
+    <div class="setup-brand">LeadFlow Dialer</div>
+    <div class="setup-tag">Find leads, then call straight down the list.</div>
+    <div class="step-h">Google Places API Key</div>
+    <div class="step-p">Used to find local business leads. Enable <strong>Places API (New)</strong> at <a href="https://console.cloud.google.com/apis/library/places-backend.googleapis.com" target="_blank">Google Cloud Console</a>. Stored only in this browser.</div>
+    <input class="setup-input" id="sPlacesKey" type="password" placeholder="AIza…" />
+    <input class="setup-input" id="sUser_business" type="text" placeholder="Business name (optional)" />
+    <button class="btn btn-primary" onclick="finishSetup()">Start →</button>
+    <button class="setup-skip" onclick="document.getElementById('sPlacesKey').value='';finishSetup()">Skip — I'll add the key in Settings</button>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-row"><div class="logo-mark">LF</div><div class="logo-name">LeadFlow</div></div>
+    <div class="logo-tag">Find · Call · Book</div>
+    <div class="logo-date" id="sb-date"></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">Calling</div>
+    <button class="nav-item active" data-page="dialer" onclick="navigate('dialer')"><span class="nav-icon">&#9742;</span>Dialer<span class="nav-badge warn" id="dialBadge">0</span></button>
+    <button class="nav-item" data-page="search" onclick="navigate('search')"><span class="nav-icon">&#8981;</span>Find Leads</button>
+    <button class="nav-item" data-page="coverage" onclick="navigate('coverage')"><span class="nav-icon">&#8982;</span>Coverage</button>
+    <div class="nav-label">Setup</div>
+    <button class="nav-item" data-page="settings" onclick="navigate('settings')"><span class="nav-icon">&#9881;</span>Settings</button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="api-status"><div class="dot" id="apiDot"></div><span id="apiTxt">Places API: not set</span></div>
+  </div>
+</aside>
+
+<main class="main">
+
+  <!-- ── DIALER ── -->
+  <div id="page-dialer" class="page active">
+    <div class="page-header"><div><h1>Dialer</h1><p>Call straight down the list. Tap an outcome after each call.</p></div><button class="btn btn-secondary btn-sm" onclick="exportCSV()">&darr; Export CSV</button></div>
+    <div class="page-body">
+
+      <div class="dial-hero">
+        <div class="dial-hero-top">
+          <div class="dial-count"><span class="big" id="dhToday">0</span><span class="goal" id="dhGoal">/ 500</span><span class="lbl">dials today</span></div>
+          <div class="dial-mini">
+            <div class="m"><div class="n" id="dhWeek">0</div><div class="t">this week</div></div>
+            <div class="m"><div class="n" id="dhAll">0</div><div class="t">all time</div></div>
+            <div class="m"><div class="n" id="dhBooked">0</div><div class="t">booked</div></div>
+          </div>
+        </div>
+        <div class="dial-bar-bg"><div class="dial-bar-fill" id="dhBar" style="width:0%"></div></div>
+        <div class="dial-hero-foot">
+          <span class="pct" id="dhPct">0%</span>
+          <span class="remain" id="dhRemain"></span>
+          <button class="goal-btn" onclick="setGoal()">Edit goal</button>
+        </div>
+      </div>
+
+      <div class="script-bar" id="scriptBar">
+        <div class="script-head" onclick="document.getElementById('scriptBar').classList.toggle('open')">&#128221; Call script &amp; openers <span class="chev">&rsaquo;</span></div>
+        <div class="script-body"><textarea id="scriptPad" placeholder="Paste your cold-call opener, objection responses, and voicemail script here. Saves automatically."></textarea></div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card warn"><div class="stat-label">To Call</div><div class="stat-value" id="stToCall">0</div><div class="stat-sub">In queue</div></div>
+        <div class="stat-card vm"><div class="stat-label">Voicemail</div><div class="stat-value" id="stVM">0</div><div class="stat-sub">Awaiting callback</div></div>
+        <div class="stat-card"><div class="stat-label">Texted</div><div class="stat-value" id="stTexted">0</div><div class="stat-sub">Follow up</div></div>
+        <div class="stat-card book"><div class="stat-label">Booked</div><div class="stat-value" id="stBooked">0</div><div class="stat-sub">Appointments</div></div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+        <button class="mode-tab active" data-lf="new" onclick="setDialFilter('new')">To Call</button>
+        <button class="mode-tab" data-lf="voicemail" onclick="setDialFilter('voicemail')">Voicemail</button>
+        <button class="mode-tab" data-lf="texted" onclick="setDialFilter('texted')">Texted</button>
+        <button class="mode-tab" data-lf="called" onclick="setDialFilter('called')">Called</button>
+        <button class="mode-tab" data-lf="booked" onclick="setDialFilter('booked')">Booked</button>
+        <button class="mode-tab" data-lf="dead" onclick="setDialFilter('dead')">Dead</button>
+        <button class="mode-tab" data-lf="all" onclick="setDialFilter('all')">All</button>
+        <input type="text" id="dialSearch" placeholder="Search name / city…" oninput="renderDialer()" style="max-width:200px;margin-left:auto" />
+      </div>
+
+      <div id="dialerBody"></div>
+    </div>
+  </div>
+
+  <!-- ── FIND LEADS ── -->
+  <div id="page-search" class="page">
+    <div class="page-header"><div><h1>Find Leads</h1><p>Search Google Places. Results drop straight into your call list.</p></div></div>
+    <div class="page-body">
+      <div id="setupBanner" class="setup-banner" style="display:none">&#9888;&#65039; No Google Places API key set. <button class="btn btn-ghost btn-sm" onclick="navigate('settings')" style="text-decoration:underline">Settings &rarr;</button></div>
+      <div class="hunt-grid">
+        <label class="hunt-toggle" for="autoAddList"><input type="checkbox" id="autoAddList" checked /><div><div class="hunt-toggle-title">&#9742; Auto-add to Call List</div><div class="hunt-toggle-desc">Every result saved to the dialer.</div></div></label>
+        <label class="hunt-toggle" for="useSynonyms"><input type="checkbox" id="useSynonyms" checked /><div><div class="hunt-toggle-title">&#128269; Synonyms</div><div class="hunt-toggle-desc">"dentist" also queries "dental clinic".</div></div></label>
+        <label class="hunt-toggle" for="noWebsiteOnly"><input type="checkbox" id="noWebsiteOnly" /><div><div class="hunt-toggle-title">&#127968; No-Website Only</div><div class="hunt-toggle-desc">Only keep businesses with no site.</div></div></label>
+        <label class="hunt-toggle" for="nearbyCities"><input type="checkbox" id="nearbyCities" /><div><div class="hunt-toggle-title">&#128506;&#65039; Nearby Towns</div><div class="hunt-toggle-desc">Also search towns within ~25 mi.</div></div></label>
+      </div>
+
+      <div class="state-picker">
+        <div class="state-picker-header"><span class="state-picker-title">&#128506;&#65039; Quick State &amp; City Picker</span>
+          <div class="state-select"><select id="statePick" onchange="onStatePicked()"><option value="">Choose a state…</option></select></div>
+        </div>
+        <div id="cityPickerBody" style="display:none">
+          <div class="cities-grid" id="citiesGrid"></div>
+          <div class="cities-actions">
+            <button class="btn btn-ghost btn-sm" onclick="selectAllCities()">Select all</button>
+            <button class="btn btn-ghost btn-sm" onclick="clearCitySelection()">Clear</button>
+            <span style="margin-left:auto" id="citiesPickedCount">0 cities selected</span>
+            <button class="btn btn-primary btn-sm" onclick="applyPickedCities()" id="applyCitiesBtn" disabled>Apply &rarr;</button>
+          </div>
+        </div>
+        <div id="cityPickerEmpty" style="font-size:12px;color:var(--text-muted);text-align:center;padding:8px 0">Pick a state to see its cities. Cities with &#10003; have already been searched.</div>
+      </div>
+
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header"><span class="card-title">Search</span><div style="display:flex;gap:6px"><button class="mode-tab active" id="tabSingle" onclick="setMode('single')">Single City</button><button class="mode-tab" id="tabBulk" onclick="setMode('bulk')">&#128640; Bulk Cities</button></div></div>
+        <div class="card-body">
+          <div id="modeSingle">
+            <div class="search-grid">
+              <div class="field"><label>Business Type</label><input type="text" id="bizType" placeholder="drywall, detailer, gym…" list="bizSuggestions" /><datalist id="bizSuggestions"></datalist></div>
+              <div class="field"><label>City / Area</label><input type="text" id="location" placeholder="e.g. Appleton WI" /></div>
+              <button class="btn btn-primary" id="searchBtn" onclick="runSearch()" style="height:38px">Search</button>
+            </div>
+          </div>
+          <div id="modeBulk" style="display:none">
+            <div class="search-grid-bulk">
+              <div class="field"><label>Business Type</label><input type="text" id="bizTypeBulk" placeholder="drywall, detailer…" list="bizSuggestions2" /><datalist id="bizSuggestions2"></datalist></div>
+              <div class="field"><label>Cities — one per line or comma-separated</label><textarea id="bulkCities" style="height:90px;font-size:13px" placeholder="Appleton WI&#10;Green Bay WI"></textarea></div>
+              <div class="field" style="margin-top:22px"><button class="btn btn-primary" id="searchBtnBulk" onclick="runSearch()" style="width:100%;justify-content:center">&#128640; Search All</button></div>
+            </div>
+          </div>
+          <div class="filter-row">
+            <label class="filter-chip"><input type="checkbox" id="fNoSite" onchange="renderResults()" /> No website only</label>
+            <label class="filter-chip"><input type="checkbox" id="fHasPhone" onchange="renderResults()" checked /> Has phone</label>
+            <label class="filter-chip"><input type="checkbox" id="fShowCity" onchange="renderResults()" checked /> City column</label>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:8px"><span style="font-size:12px;color:var(--text-muted)">Sort</span><select id="sortBy" style="width:auto;padding:6px 10px;font-size:12px" onchange="renderResults()"><option value="default">As found</option><option value="name">Name A–Z</option><option value="city">City</option></select></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="progressWrap" style="display:none" class="progress-wrap">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><div class="progress-label" id="progLabel">Searching…</div><button class="btn btn-ghost btn-sm" onclick="cancelFlag=true" style="font-size:11px;color:#dc2626">&times; Cancel</button></div>
+        <div class="progress-sub" id="progSub">Fetching from Google Places</div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="progBar" style="width:0%"></div></div>
+        <div class="progress-stats"><div>Found: <strong id="progFound">0</strong></div><div>No website: <strong id="progNoSite" style="color:var(--primary)">0</strong></div></div>
+      </div>
+
+      <div id="searchResults"><div class="empty"><div class="empty-icon">&#128269;</div><h3>Ready to search</h3><p>Enter a business type and city — or use the picker above.</p></div></div>
+    </div>
+  </div>
+
+  <!-- ── COVERAGE ── -->
+  <div id="page-coverage" class="page">
+    <div class="page-header"><div><h1>Coverage</h1><p>States &amp; cities you've already searched</p></div><button class="btn btn-ghost btn-sm" onclick="if(confirm('Reset all search history?')){searchedStates={};persistSearched();renderCoverage();toast('Cleared')}">Reset</button></div>
+    <div class="page-body"><div id="coverageBody"></div></div>
+  </div>
+
+  <!-- ── SETTINGS ── -->
+  <div id="page-settings" class="page">
+    <div class="page-header"><div><h1>Settings</h1><p>API key, daily goal, text template, backup</p></div><button class="btn btn-primary btn-sm" onclick="saveSettings()">Save Changes</button></div>
+    <div class="page-body">
+      <div class="card" style="max-width:680px"><div class="card-header"><span class="card-title">Profile &amp; Goal</span></div>
+        <div class="card-body settings-grid">
+          <div class="field"><label>Your Name</label><input type="text" id="sName" placeholder="Jony" /></div>
+          <div class="field"><label>Business Name</label><input type="text" id="sBusiness" /></div>
+          <div class="field"><label>Daily Call Goal</label><input type="number" id="sGoal" min="1" placeholder="500" /></div>
+        </div></div>
+      <div class="card" style="max-width:680px;margin-top:16px"><div class="card-header"><span class="card-title">API Key</span></div>
+        <div class="card-body"><div class="field"><label>Google Places API Key</label><input type="password" id="sPlaces" placeholder="AIza…" autocomplete="off" /><p style="font-size:12px;color:var(--text-muted);margin-top:5px">Used for lead searches. <a href="https://console.cloud.google.com/apis/library/places-backend.googleapis.com" target="_blank" style="color:var(--primary)">Enable Places API (New) &rarr;</a></p></div></div></div>
+      <div class="card" style="max-width:680px;margin-top:16px"><div class="card-header"><span class="card-title">Text Message Template</span></div>
+        <div class="card-body"><div class="field"><label>Sent when you tap "Text" on a lead — use {name} for the business name</label><textarea id="sTextTpl" placeholder="Hi {name}, this is Jony with ZMS — I help local businesses get more booked jobs. Got a quick minute?"></textarea></div></div></div>
+      <div class="card" style="max-width:680px;margin-top:16px"><div class="card-header"><span class="card-title">Search Settings</span></div>
+        <div class="card-body settings-grid">
+          <div class="field"><label>Max Pages per Query</label><select id="sPages"><option value="1">1 page (20)</option><option value="2">2 pages (40)</option><option value="3" selected>3 pages (60)</option></select></div>
+          <div class="field"><label>Max Synonym Queries</label><select id="sSynonyms"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="5">5 (broad)</option></select></div>
+        </div></div>
+      <div class="card" style="max-width:680px;margin-top:16px"><div class="card-header"><span class="card-title">Backup &amp; Restore</span></div>
+        <div class="card-body"><p style="font-size:12.5px;color:var(--text-muted);margin-bottom:14px;line-height:1.55">All data lives in this browser. Export a JSON backup so you don't lose your call list. Importing REPLACES current data.</p>
+          <button class="btn btn-blue btn-sm" onclick="exportBackup()">⬇ Download Backup</button>
+          <label class="btn btn-secondary btn-sm" style="margin-left:8px;cursor:pointer">⬆ Restore<input type="file" accept="application/json,.json" style="display:none" onchange="importBackup(this)" /></label></div></div>
+      <div class="card" style="max-width:680px;margin-top:16px"><div class="card-header"><span class="card-title">Danger Zone</span></div>
+        <div class="card-body" style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-secondary btn-sm" onclick="if(confirm('Clear all leads from the call list? (keeps settings + call history)')){leads=[];persist();renderDialer();updateDialBadge();toast('Call list cleared')}">Clear Call List</button>
+          <button class="btn btn-danger btn-sm" onclick="if(confirm('DELETE ALL DATA?')){localStorage.clear();location.reload();}">Reset Everything</button></div></div>
+    </div>
+  </div>
+
+</main>
+
+<button id="mobileMenuBtn" onclick="document.querySelector('.sidebar').classList.add('open');document.getElementById('sidebarBackdrop').style.display='block'">☰</button>
+<div id="sidebarBackdrop" onclick="document.querySelector('.sidebar').classList.remove('open');this.style.display='none'"></div>
+
+<!-- LEAD MODAL -->
+<div class="modal-overlay" id="leadModal">
+  <div class="modal">
+    <div class="modal-header"><div><div class="modal-title" id="mName">Business</div><div class="modal-subtitle" id="mAddr"></div><div id="mBadges" style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap"></div></div><button class="modal-close" onclick="closeLeadModal()">&times;</button></div>
+    <div class="modal-body">
+      <div id="mInfo"></div>
+      <div style="margin-top:14px"><div class="section-label" style="margin-bottom:6px">Find Online</div><div id="mSocial" style="display:flex;gap:6px;flex-wrap:wrap"></div></div>
+      <div style="margin-top:16px"><div class="section-label" style="margin-bottom:6px">Notes</div><textarea id="mNotes" placeholder="Call notes, gatekeeper name, callback time…" onblur="saveLeadNotes()"></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-danger btn-sm" onclick="deleteLead()">Delete</button><div style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm" onclick="closeLeadModal()">Close</button></div></div>
+  </div>
+</div>
+
+<div class="toast-container" id="toasts"></div>
 
 <script>
-/* ---------- PLAN ---------- */
-const REST_COMP="2–3 min", REST_SS="45–60s", REST_CORE="45–60s";
-
-// loggable kinds: 'w'=weight×reps, 'br'=bodyweight reps, 'time'=hold seconds
-const PLAN = {
-  mon:{day:"Mon",label:"Push",core:"A",jog:25,jogOpt:false,
-    main:[
-      {id:"incline_bb",name:"Incline barbell bench",scheme:"4×6–8",rest:REST_COMP,kind:"w",inc:5,lo:6,hi:8},
-      {id:"flat_db",name:"Flat DB press",scheme:"3×8–10",rest:REST_COMP,kind:"w",inc:5,lo:8,hi:10},
-      {id:"seated_ohp",name:"Seated shoulder press",scheme:"3×8–10",rest:REST_COMP,kind:"w",inc:5,lo:8,hi:10},
-      {ss:true,scheme:"3×12–15",rest:REST_SS,a:{id:"lat_raise",name:"Lateral raises",kind:"w",inc:2.5,lo:12,hi:15},
-        b:{id:"tri_pushdown",name:"Tricep pushdown",kind:"w",inc:5,lo:12,hi:15}},
-    ]},
-  tue:{day:"Tue",label:"Pull",core:"B",jog:25,jogOpt:false,
-    main:[
-      {id:"pullup",name:"Pull-ups",scheme:"4×6–8",rest:REST_COMP,kind:"w",inc:5,lo:6,hi:8,bwAdd:true},
-      {id:"bb_row",name:"Barbell row",scheme:"4×8",rest:REST_COMP,kind:"w",inc:5,lo:8,hi:8},
-      {id:"lat_pulldown",name:"Lat pulldown",scheme:"3×10",rest:REST_COMP,kind:"w",inc:5,lo:10,hi:10},
-      {ss:true,scheme:"3×12–15",rest:REST_SS,a:{id:"face_pull",name:"Face pulls",kind:"w",inc:5,lo:12,hi:15},
-        b:{id:"db_curl",name:"DB curls",kind:"w",inc:2.5,lo:12,hi:15}},
-    ]},
-  wed:{day:"Wed",label:"Legs",core:"C",jog:10,jogOpt:true,
-    main:[
-      {id:"back_squat",name:"Back squat",scheme:"4×6–8",rest:REST_COMP,kind:"w",inc:10,lo:6,hi:8},
-      {id:"rdl",name:"Romanian deadlift",scheme:"3×8",rest:REST_COMP,kind:"w",inc:10,lo:8,hi:8},
-      {id:"bulg_split",name:"Bulgarian split squat",scheme:"3×10/leg",rest:REST_COMP,kind:"w",inc:5,lo:10,hi:10},
-      {ss:true,scheme:"3×12–15",rest:REST_SS,a:{id:"leg_curl",name:"Leg curl",kind:"w",inc:5,lo:12,hi:15},
-        b:{id:"calf_raise",name:"Calf raise",kind:"w",inc:10,lo:12,hi:15}},
-    ]},
-  thu:{day:"Thu",label:"Upper",sub:"lighter pump",pump:true,core:"A",jog:25,jogOpt:false,
-    main:[
-      {ss:true,scheme:"3×12",rest:REST_SS,a:{id:"incl_db_p",name:"Incline DB press",kind:"w",inc:5,lo:12,hi:12},
-        b:{id:"cs_row",name:"Chest-supported row",kind:"w",inc:5,lo:12,hi:12}},
-      {ss:true,scheme:"3×12–15",rest:REST_SS,a:{id:"db_ohp_t",name:"DB shoulder press",kind:"w",inc:5,lo:12,hi:15},
-        b:{id:"lat_raise_t",name:"Lateral raise",kind:"w",inc:2.5,lo:12,hi:15}},
-      {ss:true,scheme:"3×15",rest:REST_SS,a:{id:"cable_curl_t",name:"Cable curl",kind:"w",inc:5,lo:15,hi:15},
-        b:{id:"pushdown_t",name:"Pushdown",kind:"w",inc:5,lo:15,hi:15}},
-    ]},
-  fri:{day:"Fri",label:"Arms",core:"B",jog:25,jogOpt:false,
-    main:[
-      {id:"cgbp",name:"Close-grip bench",scheme:"4×8",rest:REST_COMP,kind:"w",inc:5,lo:8,hi:8},
-      {ss:true,scheme:"3×10–12",rest:REST_SS,a:{id:"bb_curl",name:"Barbell curl",kind:"w",inc:5,lo:10,hi:12},
-        b:{id:"skullcrush",name:"Skull crushers",kind:"w",inc:5,lo:10,hi:12}},
-      {ss:true,scheme:"3×12–15",rest:REST_SS,a:{id:"hammer",name:"Hammer curls",kind:"w",inc:2.5,lo:12,hi:15},
-        b:{id:"rope_pd",name:"Rope pushdown",kind:"w",inc:5,lo:12,hi:15}},
-      {id:"wrist_curl",name:"Wrist curls",scheme:"3×15",rest:REST_SS,kind:"w",inc:2.5,lo:15,hi:15},
-    ]},
+/* ═══ SYNONYMS + CITIES ═══ */
+const SYNONYMS={
+  'dentist':['dentist','dental clinic','dental office','orthodontist'],'restaurant':['restaurant','cafe','diner','eatery'],
+  'gym':['gym','fitness center','personal trainer','crossfit'],'plumber':['plumber','plumbing service','plumbing contractor'],
+  'electrician':['electrician','electrical contractor','electrical service'],'lawyer':['lawyer','law firm','attorney'],
+  'accountant':['accountant','accounting firm','bookkeeper','CPA'],'salon':['hair salon','beauty salon','barbershop','nail salon'],
+  'mechanic':['auto mechanic','car repair','auto repair shop'],'contractor':['contractor','home renovation','construction company','builder'],
+  'cleaner':['cleaning service','house cleaner','maid service'],'landscaper':['landscaper','lawn care','lawn service'],
+  'photographer':['photographer','photography studio'],'chiropractor':['chiropractor','chiropractic clinic'],
+  'vet':['veterinarian','animal hospital','pet clinic'],'roofer':['roofer','roofing contractor','roof repair'],
+  'hvac':['hvac','heating cooling','air conditioning'],'realtor':['realtor','real estate agent','realty'],
+  'spa':['spa','day spa','massage'],'bakery':['bakery','pastry shop'],
+  'drywall':['drywall','drywaller','drywall contractor','plastering'],'detailer':['auto detailing','car detailing','mobile detailing','auto spa'],
 };
-
-const CORE = {
-  A:{tag:"Pack A",moves:[
-    {id:"crunch_a",name:"Crunches",scheme:"3×20",kind:"br"},
-    {id:"plank_a",name:"Plank",scheme:"3×45–60s",kind:"time"},
-    {id:"rtwist_a",name:"Russian twists",scheme:"3×20",kind:"br"}]},
-  B:{tag:"Pack B",moves:[
-    {id:"cable_crunch_b",name:"Cable crunch",scheme:"4×15",kind:"w",inc:5,lo:15,hi:15},
-    {id:"abwheel_b",name:"Ab-wheel rollout",scheme:"3×8–10",kind:"br"},
-    {id:"wtwist_b",name:"Weighted Russian twists",scheme:"3×20",kind:"w",inc:2.5,lo:20,hi:20}]},
-  C:{tag:"Pack C · leg-friendly",moves:[
-    {id:"plank_c",name:"Plank",scheme:"3×60s",kind:"time"},
-    {id:"side_plank_c",name:"Side plank",scheme:"3×40s/side",kind:"time"},
-    {id:"rtwist_c",name:"Russian twists",scheme:"3×20",kind:"br"}]},
+const US_CITIES={
+  'AL':{name:'Alabama',cities:['Birmingham','Montgomery','Huntsville','Mobile','Tuscaloosa','Hoover','Dothan','Auburn','Decatur','Madison']},
+  'AK':{name:'Alaska',cities:['Anchorage','Fairbanks','Juneau','Sitka','Ketchikan','Wasilla','Kenai','Kodiak']},
+  'AZ':{name:'Arizona',cities:['Phoenix','Tucson','Mesa','Chandler','Scottsdale','Glendale','Gilbert','Tempe','Peoria','Surprise','Yuma','Flagstaff']},
+  'AR':{name:'Arkansas',cities:['Little Rock','Fort Smith','Fayetteville','Springdale','Jonesboro','Conway','Rogers','Bentonville','Hot Springs']},
+  'CA':{name:'California',cities:['Los Angeles','San Diego','San Jose','San Francisco','Fresno','Sacramento','Long Beach','Oakland','Bakersfield','Anaheim','Stockton','Riverside','Santa Ana','Irvine','Chula Vista','Fremont','San Bernardino','Modesto','Fontana','Oxnard','Moreno Valley','Glendale','Huntington Beach','Santa Clarita','Garden Grove','Oceanside','Rancho Cucamonga','Santa Rosa','Ontario','Elk Grove','Corona','Lancaster','Palmdale','Salinas','Hayward','Pomona','Escondido','Sunnyvale','Torrance','Pasadena']},
+  'CO':{name:'Colorado',cities:['Denver','Colorado Springs','Aurora','Fort Collins','Lakewood','Thornton','Arvada','Westminster','Pueblo','Boulder','Greeley','Longmont','Loveland','Broomfield','Castle Rock']},
+  'CT':{name:'Connecticut',cities:['Bridgeport','New Haven','Stamford','Hartford','Waterbury','Norwalk','Danbury','New Britain','Greenwich','Hamden']},
+  'DE':{name:'Delaware',cities:['Wilmington','Dover','Newark','Middletown','Smyrna','Milford','Seaford','Georgetown']},
+  'FL':{name:'Florida',cities:['Jacksonville','Miami','Tampa','Orlando','St. Petersburg','Hialeah','Port St. Lucie','Cape Coral','Tallahassee','Fort Lauderdale','Pembroke Pines','Hollywood','Gainesville','Miramar','Coral Springs','Palm Bay','West Palm Beach','Clearwater','Lakeland','Pompano Beach','Brandon','Spring Hill','Riverview','Davie','Boca Raton','Sunrise','Plantation','Fort Myers','Largo','Melbourne','Palm Coast','Deerfield Beach','Boynton Beach','Kissimmee','Homestead','Daytona Beach','Jupiter','Sanford']},
+  'GA':{name:'Georgia',cities:['Atlanta','Augusta','Columbus','Macon','Savannah','Athens','Sandy Springs','Roswell','Johns Creek','Albany','Warner Robins','Alpharetta','Marietta','Valdosta','Smyrna','Dunwoody','Gainesville','Newnan']},
+  'HI':{name:'Hawaii',cities:['Honolulu','East Honolulu','Pearl City','Hilo','Kailua','Waipahu','Kaneohe','Kahului','Kihei','Kapolei']},
+  'ID':{name:'Idaho',cities:['Boise','Meridian','Nampa','Idaho Falls','Caldwell','Pocatello',"Coeur d'Alene",'Twin Falls','Post Falls','Eagle']},
+  'IL':{name:'Illinois',cities:['Chicago','Aurora','Joliet','Naperville','Rockford','Elgin','Springfield','Peoria','Champaign','Waukegan','Cicero','Bloomington','Arlington Heights','Evanston','Schaumburg','Bolingbrook','Palatine','Skokie','Des Plaines','Orland Park','Tinley Park','Oak Lawn','Wheaton','Normal']},
+  'IN':{name:'Indiana',cities:['Indianapolis','Fort Wayne','Evansville','South Bend','Carmel','Fishers','Bloomington','Hammond','Gary','Lafayette','Muncie','Noblesville','Greenwood','Terre Haute','Kokomo','Anderson','Elkhart','Mishawaka']},
+  'IA':{name:'Iowa',cities:['Des Moines','Cedar Rapids','Davenport','Sioux City','Iowa City','Waterloo','Ames','West Des Moines','Council Bluffs','Ankeny','Urbandale']},
+  'KS':{name:'Kansas',cities:['Wichita','Overland Park','Kansas City','Olathe','Topeka','Lawrence','Shawnee','Manhattan','Lenexa','Salina','Hutchinson']},
+  'KY':{name:'Kentucky',cities:['Louisville','Lexington','Bowling Green','Owensboro','Covington','Hopkinsville','Richmond','Florence','Georgetown','Elizabethtown']},
+  'LA':{name:'Louisiana',cities:['New Orleans','Baton Rouge','Shreveport','Lafayette','Lake Charles','Kenner','Bossier City','Monroe','Alexandria','Houma','Slidell']},
+  'ME':{name:'Maine',cities:['Portland','Lewiston','Bangor','South Portland','Auburn','Biddeford','Sanford','Saco','Augusta','Westbrook']},
+  'MD':{name:'Maryland',cities:['Baltimore','Frederick','Rockville','Gaithersburg','Bowie','Hagerstown','Annapolis','College Park','Salisbury','Laurel']},
+  'MA':{name:'Massachusetts',cities:['Boston','Worcester','Springfield','Cambridge','Lowell','Brockton','New Bedford','Quincy','Lynn','Fall River','Newton','Lawrence','Somerville','Framingham','Haverhill','Waltham','Malden','Brookline','Plymouth','Medford']},
+  'MI':{name:'Michigan',cities:['Detroit','Grand Rapids','Warren','Sterling Heights','Ann Arbor','Lansing','Flint','Dearborn','Livonia','Troy','Westland','Farmington Hills','Kalamazoo','Wyoming','Southfield','Rochester Hills','Taylor','Pontiac','Royal Oak','Novi','Battle Creek','Saginaw']},
+  'MN':{name:'Minnesota',cities:['Minneapolis','Saint Paul','Rochester','Duluth','Bloomington','Brooklyn Park','Plymouth','Maple Grove','Woodbury','St. Cloud','Eagan','Eden Prairie','Coon Rapids','Burnsville','Blaine','Lakeville','Minnetonka','Apple Valley']},
+  'MS':{name:'Mississippi',cities:['Jackson','Gulfport','Southaven','Hattiesburg','Biloxi','Olive Branch','Tupelo','Meridian','Greenville','Pearl','Madison']},
+  'MO':{name:'Missouri',cities:['Kansas City','Saint Louis','Springfield','Independence','Columbia',"Lee's Summit","O'Fallon",'St. Joseph','St. Charles','Blue Springs','St. Peters','Florissant','Joplin','Chesterfield']},
+  'MT':{name:'Montana',cities:['Billings','Missoula','Great Falls','Bozeman','Butte','Helena','Kalispell','Havre','Belgrade','Livingston']},
+  'NE':{name:'Nebraska',cities:['Omaha','Lincoln','Bellevue','Grand Island','Kearney','Fremont','Hastings','Norfolk','North Platte','Columbus','Papillion']},
+  'NV':{name:'Nevada',cities:['Las Vegas','Henderson','Reno','North Las Vegas','Sparks','Carson City','Fernley','Elko','Mesquite']},
+  'NH':{name:'New Hampshire',cities:['Manchester','Nashua','Concord','Derry','Dover','Rochester','Salem','Merrimack','Hudson','Keene','Portsmouth']},
+  'NJ':{name:'New Jersey',cities:['Newark','Jersey City','Paterson','Elizabeth','Edison','Woodbridge','Lakewood','Toms River','Hamilton','Trenton','Clifton','Camden','Brick','Cherry Hill','Passaic','Bayonne','Vineland','Union','New Brunswick','Hoboken']},
+  'NM':{name:'New Mexico',cities:['Albuquerque','Las Cruces','Rio Rancho','Santa Fe','Roswell','Farmington','Clovis','Hobbs','Alamogordo','Carlsbad']},
+  'NY':{name:'New York',cities:['New York City','Buffalo','Rochester','Yonkers','Syracuse','Albany','New Rochelle','Mount Vernon','Schenectady','Utica','White Plains','Hempstead','Troy','Niagara Falls','Binghamton','Freeport','Valley Stream','Long Beach','Rome','Ithaca','Poughkeepsie','Saratoga Springs','Kingston']},
+  'NC':{name:'North Carolina',cities:['Charlotte','Raleigh','Greensboro','Durham','Winston-Salem','Fayetteville','Cary','Wilmington','High Point','Greenville','Asheville','Concord','Gastonia','Jacksonville','Chapel Hill','Burlington','Huntersville','Kannapolis','Apex','Hickory','Wake Forest','Mooresville','Monroe']},
+  'ND':{name:'North Dakota',cities:['Fargo','Bismarck','Grand Forks','Minot','West Fargo','Williston','Dickinson','Mandan','Jamestown']},
+  'OH':{name:'Ohio',cities:['Columbus','Cleveland','Cincinnati','Toledo','Akron','Dayton','Parma','Canton','Youngstown','Lorain','Hamilton','Springfield','Kettering','Elyria','Lakewood','Cuyahoga Falls','Middletown','Euclid','Newark','Mansfield','Mentor','Beavercreek','Strongsville','Dublin']},
+  'OK':{name:'Oklahoma',cities:['Oklahoma City','Tulsa','Norman','Broken Arrow','Lawton','Edmond','Moore','Midwest City','Enid','Stillwater','Muskogee','Owasso','Yukon']},
+  'OR':{name:'Oregon',cities:['Portland','Salem','Eugene','Gresham','Hillsboro','Beaverton','Bend','Medford','Springfield','Corvallis','Albany','Tigard','Lake Oswego','Keizer','Grants Pass','Oregon City','Redmond']},
+  'PA':{name:'Pennsylvania',cities:['Philadelphia','Pittsburgh','Allentown','Reading','Erie','Upper Darby','Scranton','Bethlehem','Lancaster','Levittown','Harrisburg','Altoona','York','State College','Wilkes-Barre','Norristown','Chester','Williamsport','Easton','Lebanon','Hazleton','New Castle']},
+  'RI':{name:'Rhode Island',cities:['Providence','Warwick','Cranston','Pawtucket','East Providence','Woonsocket','Coventry','Cumberland','North Providence']},
+  'SC':{name:'South Carolina',cities:['Charleston','Columbia','North Charleston','Mount Pleasant','Rock Hill','Greenville','Summerville','Sumter','Goose Creek','Hilton Head Island','Florence','Spartanburg','Myrtle Beach','Aiken','Anderson','Greer']},
+  'SD':{name:'South Dakota',cities:['Sioux Falls','Rapid City','Aberdeen','Brookings','Watertown','Mitchell','Yankton','Pierre','Huron','Spearfish']},
+  'TN':{name:'Tennessee',cities:['Nashville','Memphis','Knoxville','Chattanooga','Clarksville','Murfreesboro','Franklin','Jackson','Johnson City','Bartlett','Hendersonville','Kingsport','Smyrna','Collierville','Cleveland','Brentwood','Germantown','Columbia']},
+  'TX':{name:'Texas',cities:['Houston','San Antonio','Dallas','Austin','Fort Worth','El Paso','Arlington','Corpus Christi','Plano','Laredo','Lubbock','Garland','Irving','Amarillo','Grand Prairie','Brownsville','McKinney','Frisco','Pasadena','Mesquite','Killeen','McAllen','Carrollton','Midland','Waco','Denton','Abilene','Beaumont','Round Rock','Odessa','Wichita Falls','Richardson','Tyler','Lewisville','College Station','Pearland','San Angelo','Allen','League City','Sugar Land','Longview','Edinburg','Mission','Bryan','Baytown','Temple','Flower Mound','New Braunfels']},
+  'UT':{name:'Utah',cities:['Salt Lake City','West Valley City','West Jordan','Provo','Orem','Sandy','Ogden','St. George','Layton','Taylorsville','South Jordan','Lehi','Logan','Murray','Draper','Bountiful','Riverton']},
+  'VT':{name:'Vermont',cities:['Burlington','Essex','South Burlington','Colchester','Rutland','Bennington','Brattleboro','Milton','Williston','Barre','Montpelier']},
+  'VA':{name:'Virginia',cities:['Virginia Beach','Chesapeake','Norfolk','Richmond','Newport News','Alexandria','Hampton','Roanoke','Portsmouth','Suffolk','Lynchburg','Harrisonburg','Charlottesville','Danville','Manassas','Fredericksburg','Winchester','Salem','Staunton','Fairfax']},
+  'WA':{name:'Washington',cities:['Seattle','Spokane','Tacoma','Vancouver','Bellevue','Kent','Everett','Renton','Spokane Valley','Federal Way','Yakima','Kirkland','Bellingham','Kennewick','Auburn','Pasco','Marysville','Lakewood','Redmond','Shoreline','Richland','Sammamish','Olympia','Lacey','Edmonds','Bremerton','Puyallup','Lynnwood','Bothell']},
+  'WV':{name:'West Virginia',cities:['Charleston','Huntington','Morgantown','Parkersburg','Wheeling','Weirton','Fairmont','Martinsburg','Beckley','Clarksburg']},
+  'WI':{name:'Wisconsin',cities:['Milwaukee','Madison','Green Bay','Kenosha','Racine','Appleton','Waukesha','Eau Claire','Oshkosh','Janesville','West Allis','La Crosse','Sheboygan','Wauwatosa','Fond du Lac','New Berlin','Brookfield','Beloit','Greenfield','Franklin','Manitowoc','Oak Creek','West Bend','Sun Prairie','Superior','Stevens Point','Neenah','Fitchburg','Watertown','Mequon']},
+  'WY':{name:'Wyoming',cities:['Cheyenne','Casper','Laramie','Gillette','Rock Springs','Sheridan','Green River','Evanston','Riverton','Jackson','Cody']},
+  'DC':{name:'District of Columbia',cities:['Washington']},
 };
+</script>
 
-const ORDER=["mon","tue","wed","thu","fri","sat","sun"];
-const JS_TO_KEY={1:"mon",2:"tue",3:"wed",4:"thu",5:"fri",6:"sat",0:"sun"};
+<script>
+/* ═══ STATE + STORAGE ═══ */
+const LS={CFG:'lf_cfg',LEADS:'lf_leads',SEARCHED:'lf_searched',SCRIPT:'lf_script',CALLLOG:'lf_calllog'};
+let cfg={ready:false,user:{name:'',business:''},placesKey:'',maxPages:3,maxSynonyms:3,callGoal:500,textTpl:''};
+let leads=[],searchedStates={},scriptText='',callLog=[];
+let allResults=[],cancelFlag=false,searchMode='single',dialFilter='new',activeLeadId=null;
+let currentPickedState='',pickedCities=new Set();
 
-/* ---------- STORAGE ---------- */
-const DB_KEY="train_log_v1";
-function loadDB(){try{return JSON.parse(localStorage.getItem(DB_KEY))||{}}catch(e){return{}}}
-function saveDB(d){try{localStorage.setItem(DB_KEY,JSON.stringify(d))}catch(e){}}
-let DB=loadDB();
-function exHist(id){return DB[id]||[]}
-function logEx(id,entry){ (DB[id]=DB[id]||[]).push({...entry,t:Date.now()}); if(DB[id].length>40)DB[id]=DB[id].slice(-40); saveDB(DB); }
-function bestOf(id){
-  const h=exHist(id); if(!h.length)return null;
-  return h.reduce((b,e)=>{ const s=(e.w||0)*1000+(e.r||e.s||0); const bs=(b.w||0)*1000+(b.r||b.s||0); return s>bs?e:b; });
-}
+const lsGet=(k,d=null)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){console.warn(e);}};
+function persist(){lsSet(LS.LEADS,leads);}
+function persistSearched(){lsSet(LS.SEARCHED,searchedStates);}
+function persistScript(){lsSet(LS.SCRIPT,scriptText);}
+function persistCallLog(){lsSet(LS.CALLLOG,callLog);}
+function persistCfg(){lsSet(LS.CFG,cfg);}
 
-/* ---------- OVERLOAD ESTIMATOR ---------- */
-function suggest(ex){
-  const h=exHist(ex.id); if(!h.length) return null;
-  const last=h[h.length-1];
-  const w=last.w||0, r=last.r||0;
-  // double progression: hit top of range on logged top set -> add load, reset to bottom
-  if(ex.hi && r>=ex.hi){
-    const nw=w+ (ex.inc||5);
-    return {action:"up",text:`Hit top of range → <span class="up">${fmt(nw)} for ${ex.lo} reps</span>`,last:`last: ${fmt(w)}×${r}`};
-  }
-  if(w===0){ return {action:"hold",text:`Add 1–2 reps, then add load`,last:`last: ${r} reps`}; }
-  return {action:"hold",text:`Same <b>${fmt(w)}</b> → beat <span class="up">${Math.min(r+1,ex.hi||r+1)} reps</span>`,last:`last: ${fmt(w)}×${r}`};
-}
-function fmt(n){ return (Math.round(n*10)/10).toString().replace(/\.0$/,""); }
-
-/* ---------- RENDER ---------- */
-const todayKey=JS_TO_KEY[new Date().getDay()];
-let activeKey=todayKey;
-
-function renderTabs(){
-  const t=document.getElementById("tabs"); t.innerHTML="";
-  ORDER.forEach(k=>{
-    const isRest=!PLAN[k];
-    const lbl=isRest?"Rest":PLAN[k].label;
-    const d=isRest?(k==="sat"?"SAT":"SUN"):PLAN[k].day.toUpperCase();
-    const el=document.createElement("button");
-    el.className="tab"+(isRest?" rest":"")+(k===activeKey?" active":"")+(k===todayKey?" today":"");
-    el.innerHTML=`<small>${d}</small>${lbl}`;
-    el.onclick=()=>{activeKey=k;renderTabs();renderDay();window.scrollTo({top:0,behavior:"smooth"});};
-    t.appendChild(el);
+function loadAll(){
+  const c=lsGet(LS.CFG); if(c)cfg={...cfg,...c,user:{...cfg.user,...(c.user||{})}};
+  if(!cfg.callGoal)cfg.callGoal=500;
+  leads=lsGet(LS.LEADS,[])||[]; searchedStates=lsGet(LS.SEARCHED,{})||{};
+  scriptText=lsGet(LS.SCRIPT,'')||''; callLog=lsGet(LS.CALLLOG,[])||[];
+  // migrate any prior lead shape → dialer status model
+  leads.forEach(l=>{
+    if(l.callCount===undefined)l.callCount=l.lastCalledAt?1:0;
+    if(l.vmCount===undefined)l.vmCount=0;
+    if(l.textCount===undefined)l.textCount=0;
+    if(l.notes===undefined)l.notes='';
+    if(l.lastTouchAt===undefined)l.lastTouchAt=l.lastCalledAt||l.contactedAt||0;
+    if(l.status===undefined){
+      const fs=l.followStatus;
+      l.status = fs==='done'?'dead' : fs==='followup'?'called' : (fs||'new');
+    }
   });
-  document.getElementById("todayName").textContent =
-    PLAN[todayKey]?`${PLAN[todayKey].day} · ${PLAN[todayKey].label}`:"Rest day";
 }
 
-function loggable(m){
-  // returns input row html for a movement
-  if(m.kind==="time"){
-    return `<div class="logrow" data-id="${m.id}" data-kind="time">
-      <input type="number" placeholder="sec" inputmode="numeric" data-f="s"><span class="unit">sec hold</span>
-      <button onclick="doLog('${m.id}')">Log</button></div>`;
+/* ═══ UTILS ═══ */
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const csv=v=>'"'+String(v||'').replace(/"/g,'""')+'"';
+const cleanUrl=u=>String(u).replace(/^https?:\/\/(www\.)?/,'').replace(/\/$/,'').slice(0,40);
+const delay=ms=>new Promise(r=>setTimeout(r,ms));
+const telHref=p=>'tel:'+String(p||'').replace(/[^\d+]/g,'');
+function smsHref(p,body){return 'sms:'+String(p||'').replace(/[^\d+]/g,'')+'?body='+encodeURIComponent(body||'');}
+function toast(m,ms=2600,k=''){const t=document.createElement('div');t.className='toast '+k;t.textContent=m;document.getElementById('toasts').appendChild(t);setTimeout(()=>t.remove(),ms);}
+function daysUntil(d){const n=new Date();n.setHours(0,0,0,0);return Math.round((new Date(d+'T00:00:00')-n)/86400000);}
+function todayISO(){return new Date().toISOString().slice(0,10);}
+function daysSince(ts){if(!ts)return null;return Math.floor((Date.now()-ts)/86400000);}
+function sinceLabel(ts){if(!ts)return'New';const d=daysSince(ts);return d===0?'Today':d===1?'1d':d+'d';}
+function startOfToday(){const d=new Date();d.setHours(0,0,0,0);return d.getTime();}
+function startOfWeek(){const d=new Date();d.setHours(0,0,0,0);const day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);return d.getTime();}
+
+/* ═══ BOOT ═══ */
+document.addEventListener('DOMContentLoaded',()=>{
+  loadAll();
+  document.getElementById('sb-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  if(!cfg.ready){document.getElementById('setup').classList.add('show');return;}
+  boot();
+});
+function boot(){
+  populateStateDropdown(); populateSuggestions(); loadSettingsUI(); updateApiStatus();
+  document.getElementById('scriptPad').value=scriptText;
+  navigate('dialer');
+}
+function finishSetup(){
+  cfg.placesKey=document.getElementById('sPlacesKey').value.trim();
+  cfg.user.business=document.getElementById('sUser_business').value.trim();
+  cfg.ready=true; persistCfg();
+  document.getElementById('setup').classList.remove('show');
+  boot(); toast('Ready to dial',3000,'ok');
+}
+
+/* ═══ NAV ═══ */
+function navigate(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelector(`[data-page="${id}"]`)?.classList.add('active');
+  document.querySelector('.sidebar').classList.remove('open');
+  document.getElementById('sidebarBackdrop').style.display='none';
+  if(id==='dialer'){renderDialer();updateDialStats();}
+  if(id==='coverage')renderCoverage();
+  if(id==='search'){updateApiStatus();refreshStateLabels();}
+}
+
+/* ═══ SETTINGS ═══ */
+function loadSettingsUI(){
+  document.getElementById('sName').value=cfg.user.name||'';
+  document.getElementById('sBusiness').value=cfg.user.business||'';
+  document.getElementById('sGoal').value=cfg.callGoal||500;
+  document.getElementById('sPlaces').value=cfg.placesKey||'';
+  document.getElementById('sTextTpl').value=cfg.textTpl||'';
+  document.getElementById('sPages').value=cfg.maxPages||3;
+  document.getElementById('sSynonyms').value=cfg.maxSynonyms||3;
+}
+function saveSettings(){
+  cfg.user.name=document.getElementById('sName').value.trim();
+  cfg.user.business=document.getElementById('sBusiness').value.trim();
+  const g=parseInt(document.getElementById('sGoal').value);cfg.callGoal=isNaN(g)||g<=0?500:g;
+  cfg.placesKey=document.getElementById('sPlaces').value.trim();
+  cfg.textTpl=document.getElementById('sTextTpl').value.trim();
+  cfg.maxPages=parseInt(document.getElementById('sPages').value)||3;
+  cfg.maxSynonyms=parseInt(document.getElementById('sSynonyms').value)||3;
+  persistCfg(); updateApiStatus(); loadSettingsUI(); updateDialStats(); toast('Settings saved',2000,'ok');
+}
+function updateApiStatus(){
+  const ok=!!cfg.placesKey,dot=document.getElementById('apiDot');if(!dot)return;
+  dot.className='dot '+(ok?'ok':'warn');
+  document.getElementById('apiTxt').textContent=ok?'Places API: ready':'Places API: not set';
+  const b=document.getElementById('setupBanner');if(b)b.style.display=ok?'none':'flex';
+}
+
+/* ═══ SCRIPT PAD (autosave) ═══ */
+let scriptTimer=null;
+document.addEventListener('input',e=>{
+  if(e.target&&e.target.id==='scriptPad'){
+    scriptText=e.target.value;clearTimeout(scriptTimer);
+    scriptTimer=setTimeout(()=>persistScript(),500);
   }
-  if(m.kind==="br"){
-    return `<div class="logrow" data-id="${m.id}" data-kind="br">
-      <input type="number" placeholder="reps" inputmode="numeric" data-f="r"><span class="unit">reps</span>
-      <button onclick="doLog('${m.id}')">Log</button></div>`;
-  }
-  // weighted
-  return `<div class="logrow" data-id="${m.id}" data-kind="w">
-    <input type="number" placeholder="lb" inputmode="decimal" data-f="w"><span class="x">×</span>
-    <input type="number" placeholder="reps" inputmode="numeric" data-f="r"><span class="unit">top set</span>
-    <button onclick="doLog('${m.id}')">Log</button></div>`;
+});
+
+/* ═══ STATE/CITY PICKER ═══ */
+function populateSuggestions(){
+  ['bizSuggestions','bizSuggestions2'].forEach(id=>{const dl=document.getElementById(id);if(!dl)return;Object.keys(SYNONYMS).forEach(k=>{const o=document.createElement('option');o.value=k;dl.appendChild(o);});});
 }
-function hintBox(m){ return `<div class="hint" id="hint_${m.id}"></div>`; }
-
-function exBlock(item){
-  if(item.ss){
-    const a=item.a,b=item.b;
-    return `<div class="ex">
-      <div class="ex-top">
-        <div class="ex-name">Superset
-          <span class="sup"><b>${a.name}</b> + <b>${b.name}</b></span></div>
-        <div class="ex-scheme">${item.scheme}</div>
-      </div>
-      ${loggable(a)}${hintBox(a)}
-      ${loggable(b)}${hintBox(b)}
-    </div>`;
-  }
-  const extra=item.bwAdd?` <span class="sup">log added weight (0 = bodyweight)</span>`:"";
-  return `<div class="ex">
-    <div class="ex-top">
-      <div class="ex-name">${item.name}${extra}</div>
-      <div class="ex-scheme">${item.scheme}</div>
-    </div>
-    ${loggable(item)}${hintBox(item)}
-  </div>`;
-}
-
-function renderDay(){
-  const v=document.getElementById("view");
-  const p=PLAN[activeKey];
-  if(!p){
-    v.innerHTML=`<div class="restday"><div class="em">🛌</div>
-      <h2>Rest day</h2>
-      <p>Full recovery. Walk, hydrate, sleep 7–9h. Muscle is built between sessions, not during them.</p></div>`;
-    return;
-  }
-  const core=CORE[p.core];
-  let html=`<div class="dayhead">
-    <h2>${p.day} · ${p.label}</h2>
-    <div class="focus">${p.sub?p.sub:p.label} day</div></div>`;
-
-  // warmup
-  html+=`<div class="section">
-    <div class="sechead"><span class="ico">🔥</span>Warmup<span class="rest">easy pace</span></div>
-    <div class="ex"><div class="ex-top"><div class="ex-name">Easy cardio
-      <span class="sup">bike / row / incline walk — raise temp, no fatigue</span></div>
-      <div class="ex-scheme">5 min</div></div></div></div>`;
-
-  // main
-  html+=`<div class="section">
-    <div class="sechead"><span class="ico">🏋️</span>Main lifts<span class="rest">${REST_COMP} · SS ${REST_SS}</span></div>
-    ${p.main.map(exBlock).join("")}</div>`;
-
-  // core
-  html+=`<div class="section">
-    <div class="sechead"><span class="ico">🎯</span>Core — ${core.tag}<span class="rest">${REST_CORE}</span></div>
-    ${core.moves.map(m=>exBlock(m)).join("")}</div>`;
-
-  // jog
-  html+=`<div class="section">
-    <div class="sechead"><span class="ico">🏃</span>Jog <span class="rest">after the lift</span></div>
-    <div class="jog ${p.jogOpt?"opt":""}">
-      <div class="big">${p.jog}'</div>
-      <div class="lbl">${p.jogOpt?"Optional / short — legs already cooked. Skip if drained.":"Steady conversational pace. Conditioning, not a race."}</div>
-    </div></div>`;
-
-  // estimators
-  html+=burnCard(p);
-  html+=trackerCard(p);
-
-  v.innerHTML=html;
-  refreshHints(p);
-}
-
-/* burn estimator */
-function burnCard(p){
-  const liftMin = 42; // est working time main+core
-  return `<div class="card">
-    <h3><span class="ico">🔥</span>Calorie burn — ${p.day}</h3>
-    <div class="field"><label>Bodyweight</label>
-      <input type="number" id="bw" inputmode="decimal" value="${getBW()}" onchange="onBW()"><span class="unit" style="font-family:var(--mono);color:var(--muted);font-size:11px">lb</span></div>
-    <div class="field"><label>Jog this session</label>
-      <input type="number" id="jogmin" inputmode="numeric" value="${p.jog}" onchange="calcBurn()"><span class="unit" style="font-family:var(--mono);color:var(--muted);font-size:11px">min</span></div>
-    <div class="burnout" id="burnout"></div>
-  </div>`;
-}
-function getBW(){ return localStorage.getItem("train_bw")||180; }
-function onBW(){ const v=document.getElementById("bw").value; if(v)localStorage.setItem("train_bw",v); calcBurn(); }
-function calcBurn(){
-  const out=document.getElementById("burnout"); if(!out)return;
-  const lb=parseFloat(document.getElementById("bw").value)||180;
-  const kg=lb*0.4536;
-  const jog=parseFloat(document.getElementById("jogmin").value)||0;
-  // MET: warmup 4, lifting (incl core, with supersets) 5, jog ~9
-  const parts=[
-    {n:"Warmup (5 min)",met:4,min:5},
-    {n:"Lifting + core (~42 min)",met:5,min:42},
-    {n:`Jog (${jog} min)`,met:9,min:jog},
-  ];
-  let tot=0,rows="";
-  parts.forEach(pt=>{ const c=Math.round(pt.met*kg*(pt.min/60)); tot+=c;
-    rows+=`<div class="brow"><span>${pt.n}</span><span>${c} kcal</span></div>`; });
-  out.innerHTML=rows+`<div class="btot"><span>Session total</span><span>${tot} kcal</span></div>`;
-}
-
-/* progress tracker */
-function trackerCard(p){
-  const ids=[];
-  p.main.forEach(it=> it.ss?ids.push(it.a,it.b):ids.push(it));
-  let body="";
-  ids.forEach(m=>{
-    const h=exHist(m.id);
-    if(!h.length){ return; }
-    const best=bestOf(m.id);
-    const series=h.slice(-8).map(e=> (e.w||0)>0?(e.w*(1+ (e.r||1)/30)) : (e.r||e.s||0) ); // epley-ish est 1rm or reps
-    const max=Math.max(...series,1);
-    const bars=series.map((s,i)=>`<div class="bar ${i===series.length-1?"last":""}" style="height:${Math.max(8,(s/max)*100)}%"></div>`).join("");
-    const last=h[h.length-1];
-    const lastTxt = (last.w||0)>0?`${fmt(last.w)}×${last.r}`:(last.s!=null?`${last.s}s`:`${last.r} reps`);
-    const bestTxt = best?((best.w||0)>0?`${fmt(best.w)}×${best.r}`:(best.s!=null?`${best.s}s`:`${best.r}`)):"—";
-    body+=`<div class="trk-ex">
-      <div class="nm"><span>${m.name}</span><span class="best">PR ${bestTxt}</span></div>
-      <div class="spark">${bars}</div>
-      <div class="trk-meta"><span>${h.length} session${h.length>1?"s":""}</span><span>last ${lastTxt}</span></div>
-    </div>`;
+function populateStateDropdown(){
+  const sel=document.getElementById('statePick');if(!sel)return;
+  sel.innerHTML='<option value="">Choose a state…</option>';
+  Object.entries(US_CITIES).sort((a,b)=>a[1].name.localeCompare(b[1].name)).forEach(([ab,d])=>{
+    const o=document.createElement('option');o.value=ab;o.textContent=`${d.name} (${ab})${searchedStates[ab]?' ✓':''}`;sel.appendChild(o);
   });
-  if(!body) body=`<div class="trk-empty">Log a set above and your progression shows up here.</div>`;
-  return `<div class="card">
-    <h3><span class="ico">📈</span>Progress — ${p.label}</h3>
-    ${body}
-    <button class="clearbtn" onclick="clearDay()">Reset this day's history</button>
-  </div>`;
 }
-function clearDay(){
-  if(!confirm("Delete logged history for this day's exercises?"))return;
-  const p=PLAN[activeKey]; const ids=[];
-  p.main.forEach(it=> it.ss?ids.push(it.a.id,it.b.id):ids.push(it.id));
-  ids.forEach(id=>delete DB[id]); saveDB(DB); renderDay();
+function refreshStateLabels(){
+  const sel=document.getElementById('statePick');if(!sel)return;
+  Array.from(sel.options).forEach(o=>{if(!o.value)return;const d=US_CITIES[o.value];if(d)o.textContent=`${d.name} (${o.value})${searchedStates[o.value]?' ✓':''}`;});
 }
-
-/* logging action */
-function findMove(id){
-  for(const k in PLAN){ for(const it of PLAN[k].main){
-    if(it.ss){ if(it.a.id===id)return{...it.a,hi:it.a.hi,lo:it.a.lo}; if(it.b.id===id)return{...it.b}; }
-    else if(it.id===id)return it;
-  }}
-  for(const c in CORE){ for(const m of CORE[c].moves){ if(m.id===id)return m; } }
+function onStatePicked(){
+  const ab=document.getElementById('statePick').value;currentPickedState=ab;pickedCities=new Set();
+  const body=document.getElementById('cityPickerBody'),empty=document.getElementById('cityPickerEmpty');
+  if(!ab){body.style.display='none';empty.style.display='block';return;}
+  empty.style.display='none';body.style.display='block';
+  const searched=searchedStates[ab]?.cities||{};
+  document.getElementById('citiesGrid').innerHTML=US_CITIES[ab].cities.map(c=>{const s=c.replace(/'/g,"\\'");return `<span class="city-chip ${searched[c]?'searched':''}" onclick="toggleCityPick(this,'${s}')">${esc(c)}</span>`;}).join('');
+  updatePickedCount();
+}
+function toggleCityPick(el,c){if(pickedCities.has(c)){pickedCities.delete(c);el.classList.remove('selected');}else{pickedCities.add(c);el.classList.add('selected');}updatePickedCount();}
+function selectAllCities(){if(!currentPickedState)return;US_CITIES[currentPickedState].cities.forEach(c=>pickedCities.add(c));document.querySelectorAll('#citiesGrid .city-chip').forEach(e=>e.classList.add('selected'));updatePickedCount();}
+function clearCitySelection(){pickedCities.clear();document.querySelectorAll('#citiesGrid .city-chip').forEach(e=>e.classList.remove('selected'));updatePickedCount();}
+function updatePickedCount(){const n=pickedCities.size;document.getElementById('citiesPickedCount').textContent=`${n} ${n===1?'city':'cities'} selected`;document.getElementById('applyCitiesBtn').disabled=n===0;}
+function applyPickedCities(){
+  if(!pickedCities.size||!currentPickedState)return;
+  const list=Array.from(pickedCities).map(c=>`${c} ${currentPickedState}`);
+  if(list.length===1){setMode('single');document.getElementById('location').value=list[0];}
+  else{setMode('bulk');document.getElementById('bulkCities').value=list.join('\n');}
+  toast(`Applied ${list.length} ${list.length===1?'city':'cities'}`);
+  document.querySelector('#page-search .card').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function recordSearch(ab,city,n){
+  if(!ab)return;
+  if(!searchedStates[ab])searchedStates[ab]={name:US_CITIES[ab]?.name||ab,cities:{}};
+  const cur=searchedStates[ab].cities[city]||{count:0,ts:0};
+  searchedStates[ab].cities[city]={count:(cur.count||0)+(n||0),ts:Date.now()};
+  persistSearched();
+}
+function detectState(s){
+  if(!s)return null;const t=s.trim().split(/[\s,]+/).filter(Boolean);const last=t[t.length-1];
+  if(last&&last.length===2&&US_CITIES[last.toUpperCase()])return last.toUpperCase();
+  const lo=s.trim().toLowerCase();
+  for(const[ab,d]of Object.entries(US_CITIES))if(lo.endsWith(' '+d.name.toLowerCase())||lo===d.name.toLowerCase())return ab;
   return null;
 }
-function doLog(id){
-  const row=document.querySelector(`.logrow[data-id="${id}"]`);
-  const kind=row.dataset.kind;
-  const get=f=>{const el=row.querySelector(`[data-f="${f}"]`);return el?parseFloat(el.value):null;};
-  let entry={};
-  if(kind==="w"){ const w=get("w"),r=get("r"); if(r==null||isNaN(r)){flash("Enter reps");return;} entry={w:isNaN(w)?0:w,r}; }
-  else if(kind==="br"){ const r=get("r"); if(r==null||isNaN(r)){flash("Enter reps");return;} entry={r}; }
-  else { const s=get("s"); if(s==null||isNaN(s)){flash("Enter seconds");return;} entry={s}; }
-  logEx(id,entry);
-  row.querySelectorAll("input").forEach(i=>i.value="");
-  flash("Logged ✓");
-  const p=PLAN[activeKey];
-  refreshHints(p);
-  // re-render tracker portion
-  renderDay();
+function cityOnly(s){
+  const t=s.trim().split(/[\s,]+/).filter(Boolean);const last=t[t.length-1];
+  if(last&&last.length===2&&US_CITIES[last.toUpperCase()])return t.slice(0,-1).join(' ').replace(/,$/,'').trim();
+  return s.trim();
 }
-function refreshHints(p){
-  const all=[];
-  p.main.forEach(it=> it.ss?all.push(it.a,it.b):all.push(it));
-  all.forEach(m=>{
-    const box=document.getElementById("hint_"+m.id); if(!box)return;
-    const s=suggest(m);
-    if(!s){ box.classList.remove("show"); return; }
-    box.classList.add("show");
-    box.innerHTML=`<span class="lvl">▲ next:</span> ${s.text} &nbsp;<span class="last">${s.last}</span>`;
+
+/* ═══ COVERAGE ═══ */
+function renderCoverage(){
+  const entries=Object.entries(searchedStates).sort((a,b)=>a[1].name.localeCompare(b[1].name));
+  if(!entries.length){document.getElementById('coverageBody').innerHTML=`<div class="empty"><div class="empty-icon">🗺️</div><h3>No searches yet</h3><p>Run a few searches to build your coverage map.</p></div>`;return;}
+  document.getElementById('coverageBody').innerHTML=entries.map(([ab,d])=>{
+    const cities=Object.entries(d.cities||{}).sort((a,b)=>b[1].ts-a[1].ts);
+    const total=cities.reduce((s,[,c])=>s+(c.count||0),0);
+    return `<div class="card" style="margin-bottom:14px"><div class="card-body">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+        <strong style="font-size:15px">${esc(d.name)}</strong>
+        <span class="badge badge-open">${cities.length} cit${cities.length===1?'y':'ies'}</span>
+        <span style="font-size:12px;color:var(--text-muted)">${total} leads found</span></div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">${cities.map(([c,info])=>`<span class="searched-state-tag" title="${info.count} leads · ${sinceLabel(info.ts)} ago">${esc(c)} <span class="count">${info.count}</span></span>`).join('')}</div>
+    </div></div>`;
+  }).join('');
+}
+
+/* ═══ SEARCH ═══ */
+function setMode(m){searchMode=m;document.getElementById('modeSingle').style.display=m==='single'?'block':'none';document.getElementById('modeBulk').style.display=m==='bulk'?'block':'none';document.getElementById('tabSingle').classList.toggle('active',m==='single');document.getElementById('tabBulk').classList.toggle('active',m==='bulk');}
+function parseCities(raw){return raw.split(/[\n,]+/).map(c=>c.trim()).filter(Boolean);}
+
+async function geocodeCity(city){
+  try{const r=await fetch('https://places.googleapis.com/v1/places:searchText',{method:'POST',headers:{'Content-Type':'application/json','X-Goog-Api-Key':cfg.placesKey,'X-Goog-FieldMask':'places.location'},body:JSON.stringify({textQuery:city,maxResultCount:1})});if(!r.ok)return null;const d=await r.json();const p=d.places?.[0];return p?.location?{lat:p.location.latitude,lng:p.location.longitude}:null;}catch(e){return null;}
+}
+async function findNearby(lat,lng,radius=40000){
+  try{const r=await fetch('https://places.googleapis.com/v1/places:searchNearby',{method:'POST',headers:{'Content-Type':'application/json','X-Goog-Api-Key':cfg.placesKey,'X-Goog-FieldMask':'places.displayName,places.formattedAddress'},body:JSON.stringify({includedTypes:['locality'],maxResultCount:20,locationRestriction:{circle:{center:{latitude:lat,longitude:lng},radius}}})});if(!r.ok)return[];const d=await r.json();return(d.places||[]).map(p=>({name:p.displayName?.text||'',addr:p.formattedAddress||''})).filter(c=>c.name);}catch(e){return[];}
+}
+
+async function runSearch(){
+  if(!cfg.placesKey){toast('Set your Google Places API key in Settings',3000,'err');navigate('settings');return;}
+  const useSyns=document.getElementById('useSynonyms').checked;
+  const nearbyOn=document.getElementById('nearbyCities').checked;
+  const maxPages=cfg.maxPages||3,maxSyns=cfg.maxSynonyms||3;
+  let bizType,cityList;
+  if(searchMode==='bulk'){bizType=document.getElementById('bizTypeBulk').value.trim();cityList=parseCities(document.getElementById('bulkCities').value);if(!bizType)return toast('Enter a business type',2500,'err');if(!cityList.length)return toast('Enter at least one city',2500,'err');}
+  else{bizType=document.getElementById('bizType').value.trim();const loc=document.getElementById('location').value.trim();if(!bizType||!loc)return toast('Enter business type and city',2500,'err');cityList=[loc];}
+
+  if(nearbyOn){
+    const expanded=[],seen=new Set();
+    for(const oc of cityList){
+      if(!seen.has(oc.toLowerCase())){expanded.push(oc);seen.add(oc.toLowerCase());}
+      const c=await geocodeCity(oc);if(!c)continue;
+      const towns=await findNearby(c.lat,c.lng);const st=detectState(oc);
+      towns.forEach(t=>{let cand=st?`${t.name} ${st}`:t.name;const m=(t.addr||'').match(/,\s*([A-Z]{2})\s+\d/);if(m)cand=`${t.name} ${m[1]}`;if(!seen.has(cand.toLowerCase())){expanded.push(cand);seen.add(cand.toLowerCase());}});
+    }
+    if(expanded.length>cityList.length)toast(`Expanded to ${expanded.length} cities`,2800,'ok');
+    cityList=expanded;
+  }
+
+  const syns=SYNONYMS[bizType.toLowerCase()];
+  const queries=(useSyns&&syns)?[...new Set([...syns,bizType])].slice(0,maxSyns):[bizType];
+
+  ['searchBtn','searchBtnBulk'].forEach(id=>{const b=document.getElementById(id);if(b){b.disabled=true;b.innerHTML='<span class="spinner"></span>';}});
+  cancelFlag=false;allResults=[];const seen=new Set();const cityCounts={};
+  const totalCalls=cityList.length*queries.length*maxPages;let done=0;
+  document.getElementById('progressWrap').style.display='block';
+  document.getElementById('searchResults').innerHTML='';
+
+  function prog(label,sub){document.getElementById('progLabel').textContent=label;document.getElementById('progSub').textContent=sub;document.getElementById('progBar').style.width=Math.round(done/totalCalls*100)+'%';document.getElementById('progFound').textContent=allResults.length;document.getElementById('progNoSite').textContent=allResults.filter(l=>!l.website).length;}
+
+  async function fetchPage(query,city,token){
+    const body={textQuery:`${query} in ${city}`,maxResultCount:20,languageCode:'en'};if(token)body.pageToken=token;
+    const r=await fetch('https://places.googleapis.com/v1/places:searchText',{method:'POST',headers:{'Content-Type':'application/json','X-Goog-Api-Key':cfg.placesKey,'X-Goog-FieldMask':['places.id','places.displayName','places.formattedAddress','places.nationalPhoneNumber','places.websiteUri','places.rating','places.userRatingCount','places.googleMapsUri','nextPageToken'].join(',')},body:JSON.stringify(body)});
+    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e?.error?.message||'API '+r.status);}
+    return r.json();
+  }
+
+  try{
+    for(let ci=0;ci<cityList.length;ci++){
+      if(cancelFlag)break;const city=cityList[ci];cityCounts[city]=0;
+      for(const query of queries){
+        if(cancelFlag)break;let token=null;
+        for(let p=0;p<maxPages;p++){
+          if(cancelFlag)break;
+          prog(`"${query}" in ${city} (page ${p+1})`,`City ${ci+1} of ${cityList.length}`);
+          try{
+            const data=await fetchPage(query,city,token);done++;
+            (data.places||[]).forEach(pl=>{
+              const id=pl.id||pl.formattedAddress;if(seen.has(id))return;seen.add(id);
+              allResults.push({id,placeId:pl.id||'',name:pl.displayName?.text||'Unknown',address:pl.formattedAddress||'',phone:pl.nationalPhoneNumber||'',website:pl.websiteUri||'',rating:pl.rating||null,reviews:pl.userRatingCount||0,city,googleMapsUri:pl.googleMapsUri||'',bizType});
+              cityCounts[city]++;
+            });
+            prog(`"${query}" in ${city}`,`${allResults.length} found`);
+            token=data.nextPageToken||null;if(!token)break;if(p<maxPages-1)await delay(600);
+          }catch(err){done++;console.warn(query,city,err.message);}
+        }
+      }
+      const st=detectState(city);if(st)recordSearch(st,cityOnly(city),cityCounts[city]);
+    }
+    prog('Search complete ✓',`${allResults.length} leads found`);
+    refreshStateLabels();if(currentPickedState)onStatePicked();
+    if(!allResults.length){document.getElementById('progressWrap').style.display='none';document.getElementById('searchResults').innerHTML=`<div class="empty"><div class="empty-icon">😐</div><h3>No results</h3><p>Try a different business type or location.</p></div>`;return;}
+    // AUTO-ADD to call list
+    if(document.getElementById('autoAddList').checked) autoAddResults();
+    renderResults();
+  }catch(err){document.getElementById('progressWrap').style.display='none';document.getElementById('searchResults').innerHTML=`<div class="empty"><div class="empty-icon">❌</div><h3>Error</h3><p>${esc(err.message)}</p></div>`;}
+  finally{['searchBtn','searchBtnBulk'].forEach(id=>{const b=document.getElementById(id);if(b){b.disabled=false;b.textContent=id==='searchBtnBulk'?'🚀 Search All':'Search';}});}
+}
+
+function newLeadFrom(l){return {...l,savedAt:Date.now(),status:'new',lastTouchAt:0,callCount:0,vmCount:0,textCount:0,notes:''};}
+function autoAddResults(){
+  const ids=new Set(leads.map(l=>l.id));
+  const noSiteGate=document.getElementById('noWebsiteOnly').checked;
+  let added=0;
+  allResults.forEach(l=>{
+    if(ids.has(l.id))return;
+    if(noSiteGate&&l.website)return;
+    leads.unshift(newLeadFrom(l));ids.add(l.id);added++;
   });
+  if(added){persist();updateDialBadge();toast(`${added} new lead${added!==1?'s':''} added to call list`,2800,'ok');}
 }
 
-let toastT;
-function flash(msg){
-  const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show");
-  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),1400);
+function renderResults(){
+  if(!allResults.length)return;
+  const noSite=document.getElementById('fNoSite').checked;
+  const hasP=document.getElementById('fHasPhone').checked;
+  const showCity=document.getElementById('fShowCity').checked;
+  const sort=document.getElementById('sortBy').value;
+  let list=allResults.filter(l=>{if(noSite&&l.website)return false;if(hasP&&!l.phone)return false;return true;});
+  if(sort==='name')list=[...list].sort((a,b)=>a.name.localeCompare(b.name));
+  if(sort==='city')list=[...list].sort((a,b)=>(a.city||'').localeCompare(b.city||''));
+  const savedIds=new Set(leads.map(l=>l.id));
+  const noSiteCount=allResults.filter(l=>!l.website).length;
+  const cities=[...new Set(allResults.map(l=>l.city).filter(Boolean))];
+  const inListCount=allResults.filter(l=>savedIds.has(l.id)).length;
+  const toolbar=`<div class="results-toolbar">
+    <span class="badge badge-open">${noSiteCount} with no website</span>
+    <span class="badge badge-cold">${inListCount} in call list</span>
+    <button class="btn btn-primary btn-sm" onclick="saveAll()">+ Add all ${list.length} to list</button>
+    <button class="btn btn-secondary btn-sm" onclick="navigate('dialer')">Go to Dialer →</button>
+    ${cities.length>1?`<span style="font-size:12px;color:var(--text-muted)">${cities.length} cities</span>`:''}
+    <span class="results-count">${list.length} lead${list.length!==1?'s':''}</span></div>`;
+  const rows=list.map(l=>{
+    const saved=savedIds.has(l.id);
+    const gmaps=l.googleMapsUri||(l.placeId?`https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(l.placeId)}`:'');
+    return `<tr>
+      <td><div class="lead-name">${esc(l.name)}</div><div class="lead-addr">${esc(l.address)}</div></td>
+      ${showCity?`<td><span style="font-size:11.5px;color:var(--text-secondary)">${esc(l.city||'')}</span></td>`:''}
+      <td>${l.website?`<span class="badge badge-has-site">Has site</span>`:`<span class="badge badge-no-site">No website</span>`}</td>
+      <td><span style="font-size:12px;color:var(--text-secondary)">${l.phone||'—'}</span></td>
+      <td>${l.rating?`<span style="color:#f59e0b">★</span> ${l.rating.toFixed(1)} <span style="font-size:11px;color:var(--text-muted)">(${l.reviews})</span>`:'<span style="color:var(--text-muted);font-size:12px">—</span>'}</td>
+      <td>${gmaps?`<a href="${esc(gmaps)}" target="_blank" class="btn btn-ghost btn-xs">📍</a>`:'—'}</td>
+      <td><button class="btn btn-xs ${saved?'btn-ghost':'btn-primary'}" onclick="toggleSave('${esc(l.id)}')">${saved?'✓ In list':'+ Add'}</button></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('searchResults').innerHTML=toolbar+`<div class="table-wrap"><table>
+    <thead><tr><th>Business</th>${showCity?'<th>City</th>':''}<th>Website</th><th>Phone</th><th>Rating</th><th>Maps</th><th>List</th></tr></thead>
+    <tbody>${rows}</tbody></table></div>`;
+}
+function toggleSave(id){
+  const idx=leads.findIndex(l=>l.id===id);
+  if(idx>=0){leads.splice(idx,1);toast('Removed from list');}
+  else{const l=allResults.find(x=>x.id===id);if(l){leads.unshift(newLeadFrom(l));toast('Added to call list',2000,'ok');}}
+  persist();renderResults();updateDialBadge();
+}
+function saveAll(){
+  const ids=new Set(leads.map(l=>l.id));
+  const noSite=document.getElementById('fNoSite').checked;
+  let list=allResults.filter(l=>!ids.has(l.id));if(noSite)list=list.filter(l=>!l.website);
+  list.forEach(l=>leads.unshift(newLeadFrom(l)));
+  persist();renderResults();updateDialBadge();toast(`Added ${list.length} to call list`,2500,'ok');
 }
 
-/* init */
-renderTabs(); renderDay(); calcBurn();
+/* ═══ DIALER ═══ */
+function setDialFilter(f){dialFilter=f;document.querySelectorAll('[data-lf]').forEach(b=>b.classList.toggle('active',b.dataset.lf===f));renderDialer();}
+function updateDialBadge(){const n=leads.filter(l=>l.status==='new').length;const b=document.getElementById('dialBadge');if(b){b.textContent=n;b.className='nav-badge warn'+(n>0?' show':'');}updateDialStats();}
+
+function dialsToday(){const t=startOfToday();return callLog.filter(c=>c.ts>=t&&c.type!=='text').length;}
+function dialsWeek(){const w=startOfWeek();return callLog.filter(c=>c.ts>=w&&c.type!=='text').length;}
+function dialsAll(){return callLog.filter(c=>c.type!=='text').length;}
+
+function updateDialStats(){
+  const se=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  const goal=cfg.callGoal||500;
+  const today=dialsToday();
+  se('dhToday',today); se('dhGoal','/ '+goal); se('dhWeek',dialsWeek()); se('dhAll',dialsAll());
+  se('dhBooked',leads.filter(l=>l.status==='booked').length);
+  const pct=Math.min(100,Math.round(today/goal*100));
+  const bar=document.getElementById('dhBar');if(bar)bar.style.width=pct+'%';
+  se('dhPct',pct+'% of goal');
+  const remain=Math.max(0,goal-today);
+  se('dhRemain',remain>0?`${remain} to go`:'🎯 Goal hit — keep dialing');
+  se('stToCall',leads.filter(l=>l.status==='new').length);
+  se('stVM',leads.filter(l=>l.status==='voicemail').length);
+  se('stTexted',leads.filter(l=>l.status==='texted').length);
+  se('stBooked',leads.filter(l=>l.status==='booked').length);
+}
+function setGoal(){
+  const g=prompt('Daily dial goal:',cfg.callGoal||500);if(g===null)return;
+  const n=parseInt(g);cfg.callGoal=isNaN(n)||n<=0?500:n;persistCfg();updateDialStats();
+  toast('Goal set to '+cfg.callGoal,2000,'ok');
+}
+
+function renderDialer(){
+  const q=(document.getElementById('dialSearch')?.value||'').toLowerCase();
+  let list=leads.filter(l=>{
+    if(dialFilter!=='all'&&l.status!==dialFilter)return false;
+    if(q&&!l.name.toLowerCase().includes(q)&&!(l.address||'').toLowerCase().includes(q)&&!(l.city||'').toLowerCase().includes(q))return false;
+    return true;
+  });
+  // To-call: oldest saved first (work the backlog). Others: most-recently-touched first.
+  if(dialFilter==='new')list.sort((a,b)=>a.savedAt-b.savedAt);
+  else list.sort((a,b)=>(b.lastTouchAt||0)-(a.lastTouchAt||0));
+
+  const body=document.getElementById('dialerBody');
+  if(!list.length){
+    const msg=leads.length===0?['Your call list is empty','Go to Find Leads — results auto-drop here so you can start dialing.','Find Leads →',"navigate('search')"]:['Nothing in this view','Switch tabs or run another search.','',''];
+    body.innerHTML=`<div class="empty"><div class="empty-icon">📞</div><h3>${msg[0]}</h3><p>${msg[1]}</p>${msg[2]?`<button class="btn btn-primary btn-sm" style="margin-top:14px" onclick="${msg[3]}">${msg[2]}</button>`:''}</div>`;
+    return;
+  }
+  const sm={new:'s-new',called:'s-called',texted:'s-texted',voicemail:'s-voicemail',booked:'s-booked',dead:'s-dead'};
+  const sl={new:'To call',called:'Called',texted:'Texted',voicemail:'Voicemail',booked:'Booked',dead:'Dead'};
+  body.innerHTML=list.map(l=>{
+    const gmaps=l.googleMapsUri||(l.placeId?`https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(l.placeId)}`:'');
+    const meta=[l.city||l.address||'',l.callCount?`called ${l.callCount}×`:'',l.vmCount?`${l.vmCount} VM`:'',l.textCount?`${l.textCount} text`:''].filter(Boolean).join(' · ');
+    const callBtn=l.phone
+      ? `<a class="call-btn" href="${telHref(l.phone)}" onclick="logDial('${esc(l.id)}')">📞 Call <span class="num">${esc(l.phone)}</span></a>`
+      : `<span class="call-btn nophone">No phone number</span>`;
+    return `<div class="dlead ${l.status}">
+      <div class="dlead-top">
+        <div class="dlead-id">
+          <div class="dlead-name">${esc(l.name)} <span class="status-pill ${sm[l.status]}">${sl[l.status]}</span>${l.website?'<span class="badge badge-has-site">Has site</span>':'<span class="badge badge-no-site">No website</span>'}</div>
+          <div class="dlead-meta">${esc(meta)}</div>
+        </div>
+        <div class="dlead-since"><div class="n" style="color:${l.lastTouchAt&&daysSince(l.lastTouchAt)>=7?'var(--red)':'var(--text)'}">${sinceLabel(l.lastTouchAt)}</div><div class="l">last touch</div></div>
+      </div>
+      ${l.notes?`<div class="dlead-note">${esc(l.notes)}</div>`:''}
+      <div class="dlead-actions">
+        ${callBtn}
+        <button class="btn btn-sky btn-sm" onclick="markVoicemail('${esc(l.id)}')">📩 Voicemail</button>
+        <button class="btn btn-purple btn-sm" onclick="sendText('${esc(l.id)}')">💬 Text</button>
+        <button class="btn btn-green btn-sm" onclick="markBooked('${esc(l.id)}')">📅 Booked</button>
+        <button class="btn btn-amber btn-sm" onclick="markNoAnswer('${esc(l.id)}')">↻ No answer</button>
+        <button class="btn btn-ghost btn-sm" onclick="openLeadModal('${esc(l.id)}')">📝 Notes</button>
+        <button class="btn btn-ghost btn-sm" onclick="markDead('${esc(l.id)}')">✕ Dead</button>
+        ${gmaps?`<a href="${esc(gmaps)}" target="_blank" class="btn btn-ghost btn-sm" style="text-decoration:none">📍 Google</a>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function leadIdx(id){return leads.findIndex(l=>l.id===id);}
+function logDial(id){ /* fired when tapping the tel: Call link — counts the dial, marks called */
+  const i=leadIdx(id);if(i<0)return;
+  leads[i].callCount=(leads[i].callCount||0)+1;leads[i].lastTouchAt=Date.now();
+  if(leads[i].status==='new')leads[i].status='called';
+  callLog.push({ts:Date.now(),leadId:id,type:'call'});persistCallLog();persist();
+  // brief delay so the tel: handler fires first, then refresh UI
+  setTimeout(()=>{renderDialer();updateDialBadge();},400);
+}
+function markNoAnswer(id){
+  const i=leadIdx(id);if(i<0)return;
+  leads[i].callCount=(leads[i].callCount||0)+1;leads[i].lastTouchAt=Date.now();
+  if(leads[i].status==='new')leads[i].status='called';
+  callLog.push({ts:Date.now(),leadId:id,type:'call'});persistCallLog();persist();
+  renderDialer();updateDialBadge();toast('Logged dial — no answer',1600,'ok');
+}
+function markVoicemail(id){
+  const i=leadIdx(id);if(i<0)return;
+  leads[i].vmCount=(leads[i].vmCount||0)+1;leads[i].lastTouchAt=Date.now();leads[i].status='voicemail';
+  callLog.push({ts:Date.now(),leadId:id,type:'voicemail'});persistCallLog();persist();
+  renderDialer();updateDialBadge();toast('Voicemail logged (counts as a dial)',2000,'ok');
+}
+function markBooked(id){
+  const i=leadIdx(id);if(i<0)return;
+  const wasCounted=leads[i].status==='called'||leads[i].status==='voicemail';
+  leads[i].lastTouchAt=Date.now();leads[i].status='booked';
+  // count as a dial only if this lead hadn't already logged one in this session flow
+  if(!wasCounted){leads[i].callCount=(leads[i].callCount||0)+1;callLog.push({ts:Date.now(),leadId:id,type:'booked'});persistCallLog();}
+  persist();renderDialer();updateDialBadge();toast('📅 Appointment booked — nice',2600,'ok');
+}
+function sendText(id){
+  const i=leadIdx(id);if(i<0)return;const l=leads[i];
+  if(!l.phone){toast('No phone number for this lead',2200,'err');return;}
+  const tpl=(cfg.textTpl||'Hi {name}, ').replace(/\{name\}/g,l.name||'there');
+  leads[i].textCount=(leads[i].textCount||0)+1;leads[i].lastTouchAt=Date.now();
+  if(leads[i].status==='new'||leads[i].status==='called')leads[i].status='texted';
+  callLog.push({ts:Date.now(),leadId:id,type:'text'});persistCallLog();persist();
+  window.location.href=smsHref(l.phone,tpl);
+  setTimeout(()=>{renderDialer();updateDialBadge();},400);
+  toast('Opening text…',1600,'ok');
+}
+function markDead(id){
+  const i=leadIdx(id);if(i<0)return;
+  leads[i].status='dead';leads[i].lastTouchAt=Date.now();persist();renderDialer();updateDialBadge();toast('Marked dead');
+}
+
+/* ═══ LEAD MODAL ═══ */
+function openLeadModal(id){
+  const l=leads.find(x=>x.id===id);if(!l)return;activeLeadId=id;
+  const sm={new:'s-new',called:'s-called',texted:'s-texted',voicemail:'s-voicemail',booked:'s-booked',dead:'s-dead'};
+  const sl={new:'To call',called:'Called',texted:'Texted',voicemail:'Voicemail',booked:'Booked',dead:'Dead'};
+  document.getElementById('mName').textContent=l.name;
+  document.getElementById('mAddr').textContent=l.address||'';
+  document.getElementById('mBadges').innerHTML=`${l.website?'<span class="badge badge-has-site">Has site</span>':'<span class="badge badge-no-site">No website</span>'}<span class="status-pill ${sm[l.status]}">${sl[l.status]}</span>`;
+  document.getElementById('mInfo').innerHTML=[
+    ['Phone',l.phone?`<a href="${telHref(l.phone)}" style="color:var(--primary)">${esc(l.phone)}</a>`:'—'],
+    ['Website',l.website?`<a href="${esc(l.website)}" target="_blank" style="color:var(--primary)">${esc(cleanUrl(l.website))}</a>`:'<span class="badge badge-no-site">No website</span>'],
+    ['Rating',l.rating?`${l.rating.toFixed(1)} ★ (${l.reviews} reviews)`:'No rating'],
+    ['Last touch',l.lastTouchAt?`${new Date(l.lastTouchAt).toLocaleDateString()} · ${sinceLabel(l.lastTouchAt)} ago`:'Never'],
+    ['Calls / VMs / Texts',`${l.callCount||0} / ${l.vmCount||0} / ${l.textCount||0}`],
+    ['Saved',new Date(l.savedAt).toLocaleDateString()],
+  ].map(([a,b])=>`<div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px"><span style="color:var(--text-muted);min-width:120px;font-size:12px">${a}</span><span style="flex:1">${b}</span></div>`).join('');
+  const qq=encodeURIComponent((l.name||'')+' '+(l.city||''));
+  const gmaps=l.googleMapsUri||(l.placeId?`https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(l.placeId)}`:`https://www.google.com/search?q=${qq}`);
+  document.getElementById('mSocial').innerHTML=[
+    ['📍 Google',gmaps],['📷 Instagram',`https://www.google.com/search?q=site:instagram.com+${qq}`],
+    ['f Facebook',`https://www.facebook.com/search/top/?q=${qq}`],...(l.website?[['🌐 Website',l.website]]:[]),
+  ].map(([t,u])=>`<a class="btn btn-secondary btn-xs" href="${esc(u)}" target="_blank">${t}</a>`).join('');
+  document.getElementById('mNotes').value=l.notes||'';
+  document.getElementById('leadModal').classList.add('open');
+}
+function saveLeadNotes(){const i=leadIdx(activeLeadId);if(i<0)return;leads[i].notes=document.getElementById('mNotes').value;persist();renderDialer();}
+function closeLeadModal(){document.getElementById('leadModal').classList.remove('open');activeLeadId=null;renderDialer();}
+function deleteLead(){if(!activeLeadId||!confirm('Remove this lead?'))return;leads=leads.filter(l=>l.id!==activeLeadId);persist();closeLeadModal();updateDialBadge();toast('Removed');}
+
+function exportCSV(){
+  if(!leads.length)return toast('No leads to export',2500,'err');
+  const h=['Name','Address','Phone','Website','HasWebsite','Rating','Reviews','City','Status','Calls','Voicemails','Texts','LastTouch','DaysSinceTouch','Notes','Saved'];
+  const rows=leads.map(l=>[l.name,l.address,l.phone,l.website,l.website?'yes':'no',l.rating||'',l.reviews||'',l.city||'',l.status,l.callCount||0,l.vmCount||0,l.textCount||0,l.lastTouchAt?new Date(l.lastTouchAt).toISOString().slice(0,10):'',l.lastTouchAt?daysSince(l.lastTouchAt):'',l.notes||'',new Date(l.savedAt).toISOString().slice(0,10)].map(csv).join(','));
+  const blob=new Blob([h.join(',')+'\n'+rows.join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`leadflow-${todayISO()}.csv`;a.click();toast('Exported CSV',2000,'ok');
+}
+
+/* ═══ BACKUP ═══ */
+function exportBackup(){
+  const data={};Object.values(LS).forEach(k=>{const v=localStorage.getItem(k);if(v!==null)data[k]=v;});
+  const dump={app:'LeadFlow Dialer',version:'dialer',exportedAt:new Date().toISOString(),data};
+  const blob=new Blob([JSON.stringify(dump,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`leadflow-backup-${todayISO()}.json`;document.body.appendChild(a);a.click();a.remove();toast('Backup downloaded',2000,'ok');
+}
+function importBackup(input){
+  const f=input.files[0];if(!f)return;const r=new FileReader();
+  r.onload=e=>{try{const d=JSON.parse(e.target.result);if(!d.data)throw new Error('Invalid backup');if(!confirm(`Replace all current data with backup from ${d.exportedAt||'unknown'}?`)){input.value='';return;}Object.entries(d.data).forEach(([k,v])=>localStorage.setItem(k,v));toast('Restored — reloading…',2200,'ok');setTimeout(()=>location.reload(),1400);}catch(err){toast('Import failed: '+err.message,4000,'err');}};
+  r.readAsText(f);input.value='';
+}
 </script>
 </body>
 </html>
