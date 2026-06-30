@@ -371,7 +371,7 @@ tbody td{padding:11px 14px;vertical-align:middle}
         <button class="mode-tab" data-lf="booked" onclick="setDialFilter('booked')">Booked</button>
         <button class="mode-tab" data-lf="dead" onclick="setDialFilter('dead')">Dead</button>
         <button class="mode-tab" data-lf="all" onclick="setDialFilter('all')">All</button>
-        <input type="text" id="dialSearch" placeholder="Search name / city…" oninput="renderDialer()" style="max-width:200px;margin-left:auto" />
+        <input type="text" id="dialSearch" placeholder="Search name / city / phone…" oninput="renderDialer()" style="max-width:200px;margin-left:auto" />
       </div>
 
       <div id="dialerBody"></div>
@@ -1011,11 +1011,18 @@ function setGoal(){
 
 function renderDialer(){
   renderNicheFilters();
-  const q=(document.getElementById('dialSearch')?.value||'').toLowerCase();
+  const qraw=(document.getElementById('dialSearch')?.value||'').trim();
+  const q=qraw.toLowerCase();
+  const qDigits=qraw.replace(/\D/g,'');
   let list=leads.filter(l=>{
     if(dialFilter!=='all'&&l.status!==dialFilter)return false;
     if(nicheFilter!=='all'&&(l.bizType||'').trim().toLowerCase()!==nicheFilter)return false;
-    if(q&&!l.name.toLowerCase().includes(q)&&!(l.address||'').toLowerCase().includes(q)&&!(l.city||'').toLowerCase().includes(q))return false;
+    if(q){
+      const phoneDigits=(l.phone||'').replace(/\D/g,'');
+      const textHit=l.name.toLowerCase().includes(q)||(l.address||'').toLowerCase().includes(q)||(l.city||'').toLowerCase().includes(q);
+      const phoneHit=qDigits.length>=3&&phoneDigits.includes(qDigits);
+      if(!textHit&&!phoneHit)return false;
+    }
     return true;
   });
   // To-call: oldest saved first (work the backlog). Others: most-recently-touched first.
