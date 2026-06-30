@@ -358,6 +358,8 @@ tbody td{padding:11px 14px;vertical-align:middle}
         <div class="stat-card book"><div class="stat-label">Booked</div><div class="stat-value" id="stBooked">0</div><div class="stat-sub">Appointments</div></div>
       </div>
 
+      <div id="nicheFilters" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center"></div>
+
       <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
         <button class="mode-tab active" data-lf="new" onclick="setDialFilter('new')">To Call</button>
         <button class="mode-tab" data-lf="voicemail" onclick="setDialFilter('voicemail')">Voicemail</button>
@@ -905,6 +907,35 @@ function saveAll(){
 
 /* ═══ DIALER ═══ */
 function setDialFilter(f){dialFilter=f;document.querySelectorAll('[data-lf]').forEach(b=>b.classList.toggle('active',b.dataset.lf===f));renderDialer();}
+
+let nicheFilter='all';
+function nicheKey(l){return (l.bizType||'').trim().toLowerCase();}
+function renderNicheFilters(){
+  const el=document.getElementById('nicheFilters');if(!el)return;
+  const counts={};
+  leads.forEach(l=>{const k=nicheKey(l);if(k)counts[k]=(counts[k]||0)+1;});
+  const niches=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]||a.localeCompare(b));
+  let html=`<span style="font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text-muted)">Niche</span>`;
+  html+=`<button class="mode-tab ${nicheFilter==='all'?'active':''}" onclick='setNiche("all")'>All (${leads.length})</button>`;
+  niches.forEach(n=>{
+    html+=`<button class="mode-tab ${nicheFilter===n?'active':''}" onclick='setNiche(${JSON.stringify(n)})'>${esc(n)} (${counts[n]})</button>`;
+  });
+  const label=nicheFilter==='all'?`🗑 Clear all`:`🗑 Clear ${esc(nicheFilter)}`;
+  html+=`<button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="clearList()">${label}</button>`;
+  el.innerHTML=html;
+}
+function setNiche(n){nicheFilter=n;renderNicheFilters();renderDialer();}
+function clearList(){
+  let target,desc;
+  if(nicheFilter==='all'){target=leads.slice();desc=`all ${leads.length} leads`;}
+  else{target=leads.filter(l=>nicheKey(l)===nicheFilter);desc=`${target.length} "${nicheFilter}" lead${target.length!==1?'s':''}`;}
+  if(!target.length){toast('Nothing to clear');return;}
+  if(!confirm(`Delete ${desc} from your call list? This can't be undone.`))return;
+  const ids=new Set(target.map(l=>l.id));
+  leads=leads.filter(l=>!ids.has(l.id));
+  nicheFilter='all';persist();
+  renderNicheFilters();renderDialer();updateDialBadge();toast('Cleared',2000,'ok');
+}
 function updateDialBadge(){const n=leads.filter(l=>l.status==='new').length;const b=document.getElementById('dialBadge');if(b){b.textContent=n;b.className='nav-badge warn'+(n>0?' show':'');}updateDialStats();}
 
 function dialsToday(){const t=startOfToday();return callLog.filter(c=>c.ts>=t&&c.type!=='text').length;}
@@ -936,9 +967,11 @@ function setGoal(){
 }
 
 function renderDialer(){
+  renderNicheFilters();
   const q=(document.getElementById('dialSearch')?.value||'').toLowerCase();
   let list=leads.filter(l=>{
     if(dialFilter!=='all'&&l.status!==dialFilter)return false;
+    if(nicheFilter!=='all'&&(l.bizType||'').trim().toLowerCase()!==nicheFilter)return false;
     if(q&&!l.name.toLowerCase().includes(q)&&!(l.address||'').toLowerCase().includes(q)&&!(l.city||'').toLowerCase().includes(q))return false;
     return true;
   });
