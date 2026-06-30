@@ -113,6 +113,9 @@ textarea{resize:vertical;min-height:80px;line-height:1.55}
 /* ── BADGES ── */
 .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
 .badge-no-site{background:var(--primary-light);color:var(--primary-dark);border:1px solid #a7f3d0}
+.badge-strong{background:#ffedd5;color:#9a3412;border:1px solid #fdba74}
+.badge-thin{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb}
+.badge-mobile{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb}
 .badge-has-site{background:#f3f4f6;color:#9ca3af}
 .badge-openhrs{background:#dcfce7;color:#166534;border:1px solid #86efac}
 .badge-closedhrs{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
@@ -380,6 +383,36 @@ tbody td{padding:11px 14px;vertical-align:middle}
     <div class="page-header"><div><h1>Find Leads</h1><p>Search Google Places. Results drop straight into your call list.</p></div></div>
     <div class="page-body">
       <div id="setupBanner" class="setup-banner" style="display:none">&#9888;&#65039; No Google Places API key set. <button class="btn btn-ghost btn-sm" onclick="navigate('settings')" style="text-decoration:underline">Settings &rarr;</button></div>
+
+      <div class="script-bar" id="nichePanel" style="margin-bottom:16px">
+        <div class="script-head" onclick="this.parentElement.classList.toggle('open')">&#127919; Recommended niches — tap one to fill the search <span class="chev">&rsaquo;</span></div>
+        <div class="script-body">
+          <div style="font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#065f46;margin:4px 0 6px">Tier 1 · call first (high ticket, lead-hungry)</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+            <span class="city-chip" onclick='pickNiche("roofing contractor")'>Roofing</span>
+            <span class="city-chip" onclick='pickNiche("hvac")'>HVAC</span>
+            <span class="city-chip" onclick='pickNiche("tree service")'>Tree Service</span>
+          </div>
+          <div style="font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#92400e;margin:4px 0 6px">Tier 2 · less agency competition</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+            <span class="city-chip" onclick='pickNiche("concrete contractor")'>Concrete</span>
+            <span class="city-chip" onclick='pickNiche("hardscaping")'>Hardscaping</span>
+            <span class="city-chip" onclick='pickNiche("fence contractor")'>Fencing</span>
+            <span class="city-chip" onclick='pickNiche("deck builder")'>Deck Builder</span>
+            <span class="city-chip" onclick='pickNiche("epoxy flooring")'>Epoxy Floors</span>
+            <span class="city-chip" onclick='pickNiche("painting contractor")'>Painting</span>
+          </div>
+          <div style="font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#6d28d9;margin:4px 0 6px">Tier 3 · your picks (use the high-ticket term)</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+            <span class="city-chip" onclick='pickNiche("landscape design")'>Landscape Design</span>
+            <span class="city-chip" onclick='pickNiche("ceramic coating")'>Detailing · Ceramic/PPF</span>
+          </div>
+          <div style="font-size:11.5px;color:#92400e;background:#fff;border:1px solid #fde68a;border-radius:8px;padding:9px 11px;line-height:1.5">
+            <b>Skip a niche if</b> one job is under $500, customers only find them by word-of-mouth, or they're booked solid (that's what killed drywall).
+            <br><b>Detailers:</b> use "ceramic coating" / "auto spa" — never "car wash" or "mobile detailing." Skip anything under ~8 reviews or with no fixed address (flagged on each lead).
+          </div>
+        </div>
+      </div>
       <div class="hunt-grid">
         <label class="hunt-toggle" for="autoAddList"><input type="checkbox" id="autoAddList" checked /><div><div class="hunt-toggle-title">&#9742; Auto-add to Call List</div><div class="hunt-toggle-desc">Every result saved to the dialer.</div></div></label>
         <label class="hunt-toggle" for="useSynonyms"><input type="checkbox" id="useSynonyms" checked /><div><div class="hunt-toggle-title">&#128269; Synonyms</div><div class="hunt-toggle-desc">"dentist" also queries "dental clinic".</div></div></label>
@@ -510,6 +543,16 @@ const SYNONYMS={
   'hvac':['hvac','heating cooling','air conditioning'],'realtor':['realtor','real estate agent','realty'],
   'spa':['spa','day spa','massage'],'bakery':['bakery','pastry shop'],
   'drywall':['drywall','drywaller','drywall contractor','plastering'],'detailer':['auto detailing','car detailing','mobile detailing','auto spa'],
+  'roofing contractor':['roofing contractor','roof repair','roofer','roof replacement'],
+  'tree service':['tree service','tree removal','arborist','tree trimming'],
+  'concrete contractor':['concrete contractor','concrete driveway','foundation contractor','concrete'],
+  'hardscaping':['hardscaping','paver patio','retaining wall','hardscape contractor'],
+  'fence contractor':['fence contractor','fence installation','fencing','fence company'],
+  'deck builder':['deck builder','deck contractor','deck installation','deck building'],
+  'epoxy flooring':['epoxy flooring','garage floor coating','epoxy garage floor','concrete coating'],
+  'painting contractor':['painting contractor','house painter','painters','painting company'],
+  'landscape design':['landscape design','landscaping installation','landscape contractor','hardscaping'],
+  'ceramic coating':['ceramic coating','paint protection film','auto spa','car detailing'],
 };
 const US_CITIES={
   'AL':{name:'Alabama',cities:['Birmingham','Montgomery','Huntsville','Mobile','Tuscaloosa','Hoover','Dothan','Auburn','Decatur','Madison']},
@@ -878,7 +921,7 @@ function renderResults(){
     const saved=savedIds.has(l.id);
     const gmaps=l.googleMapsUri||(l.placeId?`https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(l.placeId)}`:'');
     return `<tr>
-      <td><div class="lead-name">${esc(l.name)}</div><div class="lead-addr">${esc(l.address)}</div>${openBadge(l)?`<div style="margin-top:4px">${openBadge(l)}</div>`:''}</td>
+      <td><div class="lead-name">${esc(l.name)}</div><div class="lead-addr">${esc(l.address)}</div>${(openBadge(l)||qualityBadges(l))?`<div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap">${openBadge(l)}${qualityBadges(l)}</div>`:''}</td>
       ${showCity?`<td><span style="font-size:11.5px;color:var(--text-secondary)">${esc(l.city||'')}</span></td>`:''}
       <td>${l.website?`<span class="badge badge-has-site">Has site</span>`:`<span class="badge badge-no-site">No website</span>`}</td>
       <td><span style="font-size:12px;color:var(--text-secondary)">${l.phone||'—'}</span></td>
@@ -979,6 +1022,8 @@ function renderDialer(){
   list.sort((a,b)=>{
     const aw=a.website?1:0, bw=b.website?1:0;
     if(aw!==bw)return aw-bw; // no-website (0) before has-website (1)
+    const at=leadQuality(a).s==='thin'?1:0, bt=leadQuality(b).s==='thin'?1:0;
+    if(at!==bt)return at-bt; // thin/shitbox sinks within the group
     if(dialFilter==='new')return a.savedAt-b.savedAt;
     return (b.lastTouchAt||0)-(a.lastTouchAt||0);
   });
@@ -1000,7 +1045,7 @@ function renderDialer(){
     return `<div class="dlead ${l.status}">
       <div class="dlead-top">
         <div class="dlead-id">
-          <div class="dlead-name">${esc(l.name)} <span class="status-pill ${sm[l.status]}">${sl[l.status]}</span>${l.website?'<span class="badge badge-has-site">Has site</span>':'<span class="badge badge-no-site">No website</span>'}${openBadge(l)}</div>
+          <div class="dlead-name">${esc(l.name)} <span class="status-pill ${sm[l.status]}">${sl[l.status]}</span>${l.website?'<span class="badge badge-has-site">Has site</span>':'<span class="badge badge-no-site">No website</span>'}${openBadge(l)}${qualityBadges(l)}</div>
           <div class="dlead-meta">${esc(meta)}</div>
         </div>
         <div class="dlead-since"><div class="n" style="color:${l.lastTouchAt&&daysSince(l.lastTouchAt)>=7?'var(--red)':'var(--text)'}">${sinceLabel(l.lastTouchAt)}</div><div class="l">last touch</div></div>
@@ -1021,6 +1066,25 @@ function renderDialer(){
 }
 
 function leadIdx(id){return leads.findIndex(l=>l.id===id);}
+/* shitbox / quality flags from data we already capture */
+function leadQuality(l){
+  const rv=l.reviews||0, rt=l.rating||0;
+  if(rv>0&&rv<8)return {s:'thin',html:'<span class="badge badge-thin">⚠️ Thin (' +rv+ ' rev)</span>'};
+  if(rv>=40&&rt>=4.4)return {s:'strong',html:'<span class="badge badge-strong">🔥 Established</span>'};
+  return {s:'ok',html:''};
+}
+function mobileFlag(l){
+  if(l.address&&!/\d/.test(l.address))return '<span class="badge badge-mobile">🚚 No fixed address</span>';
+  return '';
+}
+function qualityBadges(l){return leadQuality(l).html+mobileFlag(l);}
+function pickNiche(term){
+  const a=document.getElementById('bizType');if(a)a.value=term;
+  const b=document.getElementById('bizTypeBulk');if(b)b.value=term;
+  toast('Search set to "'+term+'"',1800,'ok');
+  const loc=searchMode==='bulk'?document.getElementById('bulkCities'):document.getElementById('location');
+  if(loc)loc.focus();
+}
 /* live open/closed against the business's own timezone (utcOffset). returns open|closed|unknown */
 function openStatus(l){
   const periods=l&&l.hours;
