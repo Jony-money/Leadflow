@@ -531,6 +531,9 @@ tbody td{padding:11px 14px;vertical-align:middle}
 
       <div class="card" style="max-width:680px;margin-top:16px"><div class="card-header"><span class="card-title">Text Message Template</span></div>
         <div class="card-body"><div class="field"><label>Sent when you tap "Text" on a lead — use {name} for the business name</label><textarea id="sTextTpl" placeholder="Hi {name}, this is Jony with ZMS — I help local businesses get more booked jobs. Got a quick minute?"></textarea></div></div></div>
+
+      <div class="card" style="max-width:680px;margin-top:16px"><div class="card-header"><span class="card-title">Call Opener Script</span></div>
+        <div class="card-body"><div class="field"><label>Auto-fills into a lead's Notes the moment it's added, and again on first open for older leads. Tokens: {name} saved Contact Name or a [Their Name] placeholder, {yourname} your name above, {source} where you found them (FB page / GBP / website), {problem} the strongest issue auto-detected from their data, {consequence} what it costs them, {business} business name. Anything you type below the "your notes below" divider is never touched by regenerating.</label><textarea id="sScriptTemplate" style="min-height:220px;font-size:13px;line-height:1.6"></textarea></div></div></div>
       <div class="card" style="max-width:680px;margin-top:16px"><div class="card-header"><span class="card-title">Search Settings</span></div>
         <div class="card-body settings-grid">
           <div class="field"><label>Max Pages per Query</label><select id="sPages"><option value="1">1 page (20)</option><option value="2">2 pages (40)</option><option value="3" selected>3 pages (60)</option></select></div>
@@ -561,7 +564,14 @@ tbody td{padding:11px 14px;vertical-align:middle}
     <div class="modal-body">
       <div id="mInfo"></div>
       <div style="margin-top:14px"><div class="section-label" style="margin-bottom:6px">Find Online</div><div id="mSocial" style="display:flex;gap:6px;flex-wrap:wrap"></div></div>
-      <div style="margin-top:16px"><div class="section-label" style="margin-bottom:6px">Notes</div><textarea id="mNotes" placeholder="Call notes, gatekeeper name, callback time…" onblur="saveLeadNotes()"></textarea></div>
+      <div style="margin-top:16px"><div class="section-label" style="margin-bottom:6px">Contact Name (if known)</div><input type="text" id="mContactName" placeholder="e.g. Mike — leave blank to keep the [Their Name] placeholder" onblur="saveContactName()"></div>
+      <div style="margin-top:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <div class="section-label" style="margin-bottom:0">Notes — auto-fills a call script based on their weakest signal</div>
+          <button class="btn btn-ghost btn-xs" onclick="regenerateScript()">↻ Regenerate script</button>
+        </div>
+        <textarea id="mNotes" style="min-height:220px" placeholder="Call notes, gatekeeper name, callback time…" onblur="saveLeadNotes()"></textarea>
+      </div>
     </div>
     <div class="modal-footer"><button class="btn btn-danger btn-sm" onclick="deleteLead()">Delete</button><div style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm" onclick="closeLeadModal()">Close</button></div></div>
   </div>
@@ -610,6 +620,7 @@ tbody td{padding:11px 14px;vertical-align:middle}
     <div class="modal-header"><div><div class="modal-title">Add Lead Manually</div></div><button class="modal-close" onclick="closeManualAdd()">&times;</button></div>
     <div class="modal-body">
       <div class="field" style="margin-bottom:10px"><label>Business Name *</label><input type="text" id="manName"></div>
+      <div class="field" style="margin-bottom:10px"><label>Contact Name (if known)</label><input type="text" id="manContactName" placeholder="e.g. Mike"></div>
       <div class="field" style="margin-bottom:10px"><label>Phone</label><input type="tel" id="manPhone"></div>
       <div class="field" style="margin-bottom:10px"><label>Niche / Business Type</label><input type="text" id="manNiche" placeholder="drywall, detailer…"></div>
       <div class="field" style="margin-bottom:10px"><label>City</label><input type="text" id="manCity"></div>
@@ -707,7 +718,24 @@ const US_CITIES={
 /* ═══ STATE + STORAGE ═══ */
 const LS={CFG:'lf_cfg',LEADS:'lf_leads',SEARCHED:'lf_searched',SCRIPT:'lf_script',CALLLOG:'lf_calllog',ARCHIVE:'lf_archive',BACKLOG:'lf_backlog'};
 const CAP_MAX=100, CAP_REFILL_BELOW=40;
-let cfg={ready:false,user:{name:'',business:''},placesKey:'',metaAdsKey:'',hunterKey:'',neverBounceKey:'',maxPages:3,maxSynonyms:3,callGoal:50,textTpl:''};
+const DEFAULT_SCRIPT_TEMPLATE=`Hey {name}?
+
+Hey, this is {yourname}.
+
+I was taking a look at your {source} and you guys do some great work, but I noticed {problem}.
+
+What's been going on with that?
+
+Okay — and the only reason I'm bringing it up is {consequence}
+
+Is that something you've looked into getting fixed, or tried yourself?
+
+Alright, I hear you.
+
+Would you be opposed to just taking a look at what it'd look like for your business?
+
+I've got mornings and afternoons open — what works better for you?`;
+let cfg={ready:false,user:{name:'',business:''},placesKey:'',metaAdsKey:'',hunterKey:'',neverBounceKey:'',maxPages:3,maxSynonyms:3,callGoal:50,textTpl:'',scriptTemplate:''};
 let leads=[],searchedStates={},scriptText='',callLog=[],archivedLeads=[],backlogLeads=[];
 let allResults=[],cancelFlag=false,searchMode='single',dialFilter='new',activeLeadId=null,adLeadId=null,emailLeadId=null;
 let currentPickedState='',pickedCities=new Set();
@@ -725,6 +753,7 @@ function persistBacklog(){lsSet(LS.BACKLOG,backlogLeads);}
 function loadAll(){
   const c=lsGet(LS.CFG); if(c)cfg={...cfg,...c,user:{...cfg.user,...(c.user||{})}};
   if(!cfg.callGoal)cfg.callGoal=50;
+  if(!cfg.scriptTemplate)cfg.scriptTemplate=DEFAULT_SCRIPT_TEMPLATE;
   leads=lsGet(LS.LEADS,[])||[]; searchedStates=lsGet(LS.SEARCHED,{})||{};
   scriptText=lsGet(LS.SCRIPT,'')||''; callLog=lsGet(LS.CALLLOG,[])||[];
   archivedLeads=lsGet(LS.ARCHIVE,[])||[]; backlogLeads=lsGet(LS.BACKLOG,[])||[];
@@ -751,6 +780,8 @@ function loadAll(){
     if(l.email===undefined)l.email='';
     if(l.emailStatus===undefined)l.emailStatus='';
     if(l.source===undefined)l.source='places';
+    if(l.contactName===undefined)l.contactName='';
+    if(l.scriptGenerated===undefined)l.scriptGenerated=false;
   }));
 }
 
@@ -813,6 +844,7 @@ function loadSettingsUI(){
   document.getElementById('sHunterKey').value=cfg.hunterKey||'';
   document.getElementById('sNeverBounceKey').value=cfg.neverBounceKey||'';
   document.getElementById('sTextTpl').value=cfg.textTpl||'';
+  document.getElementById('sScriptTemplate').value=cfg.scriptTemplate||DEFAULT_SCRIPT_TEMPLATE;
   document.getElementById('sPages').value=cfg.maxPages||3;
   document.getElementById('sSynonyms').value=cfg.maxSynonyms||3;
 }
@@ -825,6 +857,7 @@ function saveSettings(){
   cfg.hunterKey=document.getElementById('sHunterKey').value.trim();
   cfg.neverBounceKey=document.getElementById('sNeverBounceKey').value.trim();
   cfg.textTpl=document.getElementById('sTextTpl').value.trim();
+  cfg.scriptTemplate=document.getElementById('sScriptTemplate').value||DEFAULT_SCRIPT_TEMPLATE;
   cfg.maxPages=parseInt(document.getElementById('sPages').value)||3;
   cfg.maxSynonyms=parseInt(document.getElementById('sSynonyms').value)||3;
   persistCfg(); updateApiStatus(); loadSettingsUI(); updateDialStats(); toast('Settings saved',2000,'ok');
@@ -1000,7 +1033,11 @@ async function runSearch(){
   finally{['searchBtn','searchBtnBulk'].forEach(id=>{const b=document.getElementById(id);if(b){b.disabled=false;b.textContent=id==='searchBtnBulk'?'🚀 Search All':'Search';}});}
 }
 
-function newLeadFrom(l){return {...l,savedAt:Date.now(),status:'new',lastTouchAt:0,callCount:0,vmCount:0,textCount:0,notes:'',everReached:false,noAnswerDays:0,lastNoAnswerDate:'',noAnswerAttemptsToday:0,callbackDate:'',adQualityScore:null,adQualityFlags:null,adStaleDays:null,fbPageUrl:'',email:'',emailStatus:'',source:'places'};}
+function newLeadFrom(l){
+  const base={...l,savedAt:Date.now(),status:'new',lastTouchAt:0,callCount:0,vmCount:0,textCount:0,notes:'',everReached:false,noAnswerDays:0,lastNoAnswerDate:'',noAnswerAttemptsToday:0,callbackDate:'',adQualityScore:null,adQualityFlags:null,adStaleDays:null,fbPageUrl:'',email:'',emailStatus:'',source:'places',contactName:''};
+  refreshScriptPreservingNotes(base); // auto-filled — shows up in Notes the moment you open the lead
+  return base;
+}
 
 // HARD FILTER: no-website-only for anything sourced from Google Maps/Places. Not a toggle.
 function autoAddResults(){
@@ -1265,7 +1302,7 @@ function renderDialer(){
         </div>
         <div class="dlead-since"><div class="n" style="color:${l.lastTouchAt&&daysSince(l.lastTouchAt)>=7?'var(--red)':'var(--text)'}">${sinceLabel(l.lastTouchAt)}</div><div class="l">last touch</div></div>
       </div>
-      ${l.notes?`<div class="dlead-note">${esc(l.notes)}</div>`:''}
+      ${l.notes?`<div class="dlead-note">${notePreview(l)}</div>`:''}
       <div class="dlead-actions">
         ${callBtn}
         <button class="btn btn-sky btn-sm" onclick="markVoicemail('${esc(l.id)}')">📩 Voicemail</button>
@@ -1299,6 +1336,97 @@ function leadQuality(l){
 function mobileFlag(l){
   if(l.address&&!/\d/.test(l.address))return '<span class="badge badge-mobile">🚚 No fixed address</span>';
   return '';
+}
+
+/* ═══ COLD-CALL SCRIPT GENERATOR ═══
+   Finds the strongest, most defensible reason this specific lead isn't getting jobs from
+   whatever data we've already collected on them — no extra API, no AI call. Priority order
+   matters: no-website beats everything (it's the loudest signal and the whole reason this
+   lead is in the pipeline), then weak-ad specifics (only if you've run the Ad Quality check),
+   then thin reviews, then no-fixed-address. First one that's true wins — don't stack them,
+   one clean problem is more persuasive on a cold call than a list of complaints. */
+function detectProblem(lead){
+  if(!lead.website){
+    return {problem:"you don't have a website up anywhere I could find",
+      consequence:"most people check online before they ever pick up the phone — if you're not there when someone searches your trade in the area, you're losing that job to whoever does show up."};
+  }
+  if(lead.adQualityScore!=null && lead.adQualityScore<50 && lead.adQualityFlags){
+    const f=lead.adQualityFlags;
+    if(!f.hook)return {problem:"the ads you're running don't really grab attention in the first couple seconds",
+      consequence:"people are scrolling right past before they even register what you do, so you're paying for impressions that never turn into a call."};
+    if(!f.cta)return {problem:"your ads don't really give someone a clear next step to take",
+      consequence:"a person can be interested and still not know what to do next, so they just keep scrolling instead of reaching out."};
+    if(!f.realWork)return {problem:"the ads are running stock photos instead of your actual work",
+      consequence:"people can't tell it's really you behind it, so it doesn't build enough trust for them to reach out — especially up against someone showing real jobs."};
+    if(!f.match)return {problem:"what the ad says doesn't quite match what you guys actually do",
+      consequence:"you're probably getting the wrong kind of calls, or not enough of them, because it's not clear what you're actually offering."};
+  }
+  const q=leadQuality(lead);
+  if(q.s==='thin'){
+    return {problem:`you've only got ${lead.reviews||0} reviews up`,
+      consequence:"most people cross-check review count before they call anyone, so you're probably getting passed over for someone sitting at 40+ reviews even if your work is just as good."};
+  }
+  if(mobileFlag(lead)){
+    return {problem:"I couldn't find a fixed business address listed for you",
+      consequence:"some people read that as 'not a real, established operation' and skip calling, even if you've been doing this for years."};
+  }
+  return {problem:"your online presence didn't really stand out when I looked you up",
+    consequence:"when someone's comparing a few options side by side, you're just not in the running if you're hard to find."};
+}
+function sourceLabelFor(lead){
+  if(lead.fbPageUrl)return 'Facebook page';
+  if(lead.googleMapsUri||lead.placeId)return 'Google Business Profile';
+  if(lead.website)return 'website';
+  return 'business online';
+}
+// {name} resolves to a saved Contact Name if you've got one (see the modal), otherwise a
+// literal [Their Name] placeholder — none of our sources (Places, Ad Library, manual entry)
+// hand us the owner's personal name up front, so you fill it in live once they answer or a
+// gatekeeper gives it to you, then it's remembered for next time. Wording itself lives in
+// Settings → Call Opener Script, so you can tune it without touching code.
+function buildColdCallScript(lead){
+  const yourName=(cfg.user.name||'').trim()||'[Your Name]';
+  const src=sourceLabelFor(lead);
+  const {problem,consequence}=detectProblem(lead);
+  const nameToken=(lead.contactName||'').trim()||'[Their Name]';
+  const tpl=cfg.scriptTemplate||DEFAULT_SCRIPT_TEMPLATE;
+  return tpl.split('{name}').join(nameToken)
+    .split('{yourname}').join(yourName)
+    .split('{source}').join(src)
+    .split('{problem}').join(problem)
+    .split('{consequence}').join(consequence)
+    .split('{business}').join(lead.name||'');
+}
+// Everything below this line in Notes is yours — regenerating the script only ever
+// touches the part above the divider, so gatekeeper names, callback times, whatever
+// you type during the call never gets clobbered.
+const NOTES_DIVIDER='\n\n— your notes below —\n';
+function refreshScriptPreservingNotes(l){
+  const idx=(l.notes||'').indexOf(NOTES_DIVIDER);
+  let manual;
+  if(idx!==-1)manual=l.notes.slice(idx+NOTES_DIVIDER.length);
+  else manual=(l.notes&&!l.notes.startsWith('Hey [Their Name]?'))?l.notes:''; // legacy/freeform notes get kept, not eaten
+  l.notes=buildColdCallScript(l)+NOTES_DIVIDER+manual;
+}
+function regenerateScript(){
+  if(!activeLeadId)return;
+  const i=leadIdx(activeLeadId);if(i<0)return;
+  refreshScriptPreservingNotes(leads[i]);
+  persist();
+  document.getElementById('mNotes').value=leads[i].notes;
+  renderDialer();
+  toast('Script regenerated — your notes below the divider were kept',2600,'ok');
+}
+function notePreview(l){
+  if(!l.notes)return '';
+  const idx=l.notes.indexOf(NOTES_DIVIDER);
+  const manual=(idx!==-1?l.notes.slice(idx+NOTES_DIVIDER.length):'').trim();
+  if(manual){
+    const short=manual.split('\n').filter(Boolean).slice(0,2).join(' · ');
+    return esc(short.length>140?short.slice(0,140)+'…':short);
+  }
+  const {problem}=detectProblem(l);
+  return `📜 Script ready — flags "${esc(problem)}" (tap 📝 Notes for the full opener)`;
 }
 function qualityBadges(l){return leadQuality(l).html+mobileFlag(l);}
 function adBadge(l){
@@ -1456,8 +1584,18 @@ function openLeadModal(id){
     ['📍 Google',gmaps],['📷 Instagram',`https://www.google.com/search?q=site:instagram.com+${qq}`],
     ['f Facebook',l.fbPageUrl||`https://www.facebook.com/search/top/?q=${qq}`],...(l.website?[['🌐 Website',l.website]]:[]),
   ].map(([t,u])=>`<a class="btn btn-secondary btn-xs" href="${esc(u)}" target="_blank">${t}</a>`).join('');
+  document.getElementById('mContactName').value=l.contactName||'';
+  // Auto-fill: leads created before this feature (or anything that slipped through) get their
+  // script generated the first time you open them. Once the divider's present, this is a no-op —
+  // regenerating after that is only ever manual, via the button above.
+  if(!(l.notes||'').includes(NOTES_DIVIDER)){refreshScriptPreservingNotes(l);persist();}
   document.getElementById('mNotes').value=l.notes||'';
   document.getElementById('leadModal').classList.add('open');
+}
+function saveContactName(){
+  const i=leadIdx(activeLeadId);if(i<0)return;
+  leads[i].contactName=document.getElementById('mContactName').value.trim();
+  persist();
 }
 function saveLeadNotes(){const i=leadIdx(activeLeadId);if(i<0)return;leads[i].notes=document.getElementById('mNotes').value;persist();renderDialer();}
 function closeLeadModal(){document.getElementById('leadModal').classList.remove('open');activeLeadId=null;renderDialer();}
@@ -1537,7 +1675,10 @@ function saveAdScore(){
   leads[i].adQualityFlags=flags;
   leads[i].adStaleDays=staleDays===''?null:Number(staleDays);
   leads[i].adQualityScore=computeAdScore(flags,staleDays);
-  persist();closeAdModal();renderDialer();toast('Ad score saved',2000,'ok');
+  refreshScriptPreservingNotes(leads[i]); // now that we know the actual ad problem, the script gets specific instead of defaulting to "no website"
+  persist();closeAdModal();renderDialer();
+  if(activeLeadId===leads[i].id)document.getElementById('mNotes').value=leads[i].notes;
+  toast('Ad score saved — script updated to match',2400,'ok');
 }
 
 /* ═══ EMAIL MODAL ═══
@@ -1593,7 +1734,7 @@ function saveEmail(){
 
 /* ═══ MANUAL LEAD ENTRY ═══ */
 function openManualAdd(){
-  ['manName','manPhone','manNiche','manCity','manWebsite','manEmail','manNotes'].forEach(id=>document.getElementById(id).value='');
+  ['manName','manContactName','manPhone','manNiche','manCity','manWebsite','manEmail','manNotes'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('manualModal').classList.add('open');
 }
 function closeManualAdd(){document.getElementById('manualModal').classList.remove('open');}
@@ -1601,7 +1742,7 @@ function submitManualLead(){
   const name=document.getElementById('manName').value.trim();
   if(!name){toast('Business name is required',2400,'err');return;}
   const lead={
-    id:uid(),placeId:'',name,address:'',city:document.getElementById('manCity').value.trim(),
+    id:uid(),placeId:'',name,contactName:document.getElementById('manContactName').value.trim(),address:'',city:document.getElementById('manCity').value.trim(),
     phone:document.getElementById('manPhone').value.trim(),website:document.getElementById('manWebsite').value.trim(),
     email:document.getElementById('manEmail').value.trim(),rating:null,reviews:0,googleMapsUri:'',
     bizType:document.getElementById('manNiche').value.trim(),hours:null,utcOffset:null,
@@ -1610,6 +1751,7 @@ function submitManualLead(){
     lastNoAnswerDate:'',noAnswerAttemptsToday:0,callbackDate:'',adQualityScore:null,adQualityFlags:null,
     adStaleDays:null,fbPageUrl:'',emailStatus:'',source:'manual',
   };
+  refreshScriptPreservingNotes(lead); // lead.notes currently holds whatever was typed in the form — becomes the "your notes" section
   admitOrBacklog(lead);
   closeManualAdd();renderDialer();updateDialBadge();
   toast(activeCount()>=CAP_MAX&&leads.findIndex(l=>l.id===lead.id)<0?'Pipeline full — queued in backlog':'Added to pipeline',2400,'ok');
