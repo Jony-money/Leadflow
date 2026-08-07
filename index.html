@@ -414,7 +414,7 @@ tbody td{padding:11px 14px;vertical-align:middle}
         </div>
       </div>
       <div class="hunt-grid">
-        <div class="hunt-fixed"><div><div class="hunt-fixed-title">&#128274; No-Website Only (fixed)</div><div class="hunt-fixed-desc">Maps leads only enter your call list if they have no website. Not optional — see Settings for why.</div></div></div>
+        <div class="hunt-fixed"><div><div class="hunt-fixed-title">&#9989; Add Anybody</div><div class="hunt-fixed-desc">Website or no website — every search result can go into your pipeline. Cap stays at 100 active.</div></div></div>
         <label class="hunt-toggle" for="useSynonyms"><input type="checkbox" id="useSynonyms" checked /><div><div class="hunt-toggle-title">&#128269; Synonyms</div><div class="hunt-toggle-desc">"dentist" also queries "dental clinic".</div></div></label>
         <label class="hunt-toggle" for="autoAddList"><input type="checkbox" id="autoAddList" checked /><div><div class="hunt-toggle-title">&#9742; Auto-add to Call List</div><div class="hunt-toggle-desc">No-website results saved to the dialer.</div></div></label>
         <label class="hunt-toggle" for="nearbyCities"><input type="checkbox" id="nearbyCities" /><div><div class="hunt-toggle-title">&#128506;&#65039; Nearby Towns</div><div class="hunt-toggle-desc">Also search towns within ~25 mi.</div></div></label>
@@ -1067,17 +1067,14 @@ function newLeadFrom(l){
 
 function autoAddResults(){
   const existingIds=new Set([...leads,...backlogLeads].map(l=>l.id));
-  let added=0,skippedHasSite=0;
+  let added=0;
   allResults.forEach(l=>{
     if(existingIds.has(l.id))return;
-    if(l.website){skippedHasSite++;return;}
     admitOrBacklog(newLeadFrom(l));existingIds.add(l.id);added++;
   });
-  if(added||skippedHasSite){
+  if(added){
     updateDialBadge();
-    let msg=`${added} new no-website lead${added!==1?'s':''} added to pipeline`;
-    if(skippedHasSite)msg+=` (${skippedHasSite} with a website skipped — hard filter)`;
-    toast(msg,3200,'ok');
+    toast(`${added} new lead${added!==1?'s':''} added to pipeline`,3200,'ok');
   }
 }
 
@@ -1095,21 +1092,19 @@ function renderResults(){
   const cities=[...new Set(allResults.map(l=>l.city).filter(Boolean))];
   const inListCount=allResults.filter(l=>savedIds.has(l.id)).length;
   const toolbar=`<div class="results-toolbar">
-    <span class="badge badge-open">${noSiteCount} with no website (pipeline-eligible)</span>
-    <span class="badge badge-has-site">${allResults.length-noSiteCount} with a website (view only)</span>
+    <span class="badge badge-open">${noSiteCount} with no website</span>
+    <span class="badge badge-has-site">${allResults.length-noSiteCount} with a website</span>
     <span class="badge badge-cold">${inListCount} in pipeline</span>
-    <button class="btn btn-primary btn-sm" onclick="saveAll()">+ Add all no-website (${list.filter(l=>!l.website).length})</button>
+    <button class="btn btn-primary btn-sm" onclick="saveAll()">+ Add all (${list.length})</button>
     <button class="btn btn-secondary btn-sm" onclick="navigate('dialer')">Go to Dialer →</button>
     ${cities.length>1?`<span style="font-size:12px;color:var(--text-muted)">${cities.length} cities</span>`:''}
     <span class="results-count">${list.length} lead${list.length!==1?'s':''}</span></div>`;
   const rows=list.map(l=>{
     const saved=savedIds.has(l.id);
-    const eligible=!l.website;
     const gmaps=l.googleMapsUri||(l.placeId?`https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(l.placeId)}`:'');
     let addBtn;
     if(saved)addBtn=`<button class="btn btn-xs btn-ghost" onclick="toggleSave('${esc(l.id)}')">✓ In pipeline</button>`;
-    else if(eligible)addBtn=`<button class="btn btn-xs btn-primary" onclick="toggleSave('${esc(l.id)}')">+ Add</button>`;
-    else addBtn=`<button class="btn btn-xs disabled" disabled title="Has a website — excluded by the no-website hard filter">Has site</button>`;
+    else addBtn=`<button class="btn btn-xs btn-primary" onclick="toggleSave('${esc(l.id)}')">+ Add</button>`;
     return `<tr>
       <td><div class="lead-name">${esc(l.name)}</div><div class="lead-addr">${esc(l.address)}</div>${(openBadge(l)||qualityBadges(l))?`<div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap">${openBadge(l)}${qualityBadges(l)}</div>`:''}</td>
       ${showCity?`<td><span style="font-size:11.5px;color:var(--text-secondary)">${esc(l.city||'')}</span></td>`:''}
@@ -1131,16 +1126,15 @@ function toggleSave(id){
   else{
     const l=allResults.find(x=>x.id===id);
     if(!l)return;
-    if(l.website){toast('Has a website — excluded by the no-website hard filter',2800,'err');return;}
     admitOrBacklog(newLeadFrom(l));toast('Added to pipeline',2000,'ok');
   }
   renderResults();updateDialBadge();
 }
 function saveAll(){
   const existingIds=new Set([...leads,...backlogLeads].map(l=>l.id));
-  const list=allResults.filter(l=>!existingIds.has(l.id)&&!l.website);
+  const list=allResults.filter(l=>!existingIds.has(l.id));
   list.forEach(l=>admitOrBacklog(newLeadFrom(l)));
-  renderResults();updateDialBadge();toast(`Added ${list.length} no-website leads to pipeline`,2600,'ok');
+  renderResults();updateDialBadge();toast(`Added ${list.length} leads to pipeline`,2600,'ok');
 }
 
 function activeCount(){return leads.length;}
