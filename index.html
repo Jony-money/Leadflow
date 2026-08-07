@@ -311,6 +311,7 @@ tbody td{padding:11px 14px;vertical-align:middle}
     <div class="page-header"><div><h1>Dialer</h1><p>Call straight down the list. Tap an outcome after each call.</p></div>
       <div style="display:flex;gap:8px">
         <button class="btn btn-secondary btn-sm" onclick="openManualAdd()">&#43; Add Lead</button>
+        <button class="btn btn-secondary btn-sm" onclick="openImportModal()">&uarr; Import CSV</button>
         <button class="btn btn-secondary btn-sm" onclick="exportCSV()">&darr; Export CSV</button>
       </div>
     </div>
@@ -541,6 +542,10 @@ tbody td{padding:11px 14px;vertical-align:middle}
       <div style="margin-top:14px"><div class="section-label" style="margin-bottom:6px">Find Online</div><div id="mSocial" style="display:flex;gap:6px;flex-wrap:wrap"></div></div>
       <div style="margin-top:16px"><div class="section-label" style="margin-bottom:6px">Contact Name (if known)</div><input type="text" id="mContactName" placeholder="e.g. Mike — leave blank to keep the [Their Name] placeholder" onblur="saveContactName()"></div>
       <div style="margin-top:16px">
+        <div class="section-label" style="margin-bottom:6px">Activity Timeline</div>
+        <div id="mActivity" style="max-height:180px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:4px 12px;background:#f9fafb"></div>
+      </div>
+      <div style="margin-top:16px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
           <div class="section-label" style="margin-bottom:0">Notes — auto-fills a call script based on their weakest signal</div>
           <button class="btn btn-ghost btn-xs" onclick="regenerateScript()">↻ Regenerate script</button>
@@ -604,6 +609,30 @@ tbody td{padding:11px 14px;vertical-align:middle}
       <div class="field"><label>Notes</label><textarea id="manNotes" placeholder="How you found them, context…"></textarea></div>
     </div>
     <div class="modal-footer"><span></span><button class="btn btn-primary btn-sm" onclick="submitManualLead()">Add to Pipeline</button></div>
+  </div>
+</div>
+
+<!-- IMPORT CSV MODAL -->
+<div class="modal-overlay" id="importModal">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-header"><div><div class="modal-title">Import Leads from CSV</div><div class="modal-subtitle">From Apollo, Clay, Cowork, or any spreadsheet export</div></div><button class="modal-close" onclick="closeImportModal()">&times;</button></div>
+    <div class="modal-body">
+      <div class="field" style="margin-bottom:14px">
+        <label>CSV File</label>
+        <input type="file" id="importFile" accept=".csv,text/csv" onchange="handleImportFile(this)" />
+        <p style="font-size:11.5px;color:var(--text-muted);margin-top:6px">First row should be headers. We'll try to auto-match columns like Name, Phone, Email, City, Website, Niche/Type, Notes — you can fix any mismatches below.</p>
+      </div>
+      <div id="importMapWrap" style="display:none">
+        <div class="section-label" style="margin-bottom:8px">Match your columns</div>
+        <div id="importMapFields" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px"></div>
+        <div id="importPreviewWrap">
+          <div class="section-label" style="margin-bottom:6px">Preview (<span id="importRowCount">0</span> rows)</div>
+          <div class="table-wrap" style="max-height:220px;overflow-y:auto"><table><thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>City</th></tr></thead><tbody id="importPreviewBody"></tbody></table></div>
+        </div>
+      </div>
+      <div id="importEmptyState" class="empty" style="padding:28px 20px"><div class="empty-icon">📄</div><h3>Choose a CSV to begin</h3><p>Duplicate businesses (matched on name + phone) are skipped automatically.</p></div>
+    </div>
+    <div class="modal-footer"><span id="importStatusLine" style="font-size:12px;color:var(--text-muted)"></span><button class="btn btn-primary btn-sm" id="importSubmitBtn" onclick="submitImport()" disabled>Import Leads</button></div>
   </div>
 </div>
 
@@ -759,7 +788,23 @@ function loadAll(){
     if(l.contactName===undefined)l.contactName='';
     if(l.scriptGenerated===undefined)l.scriptGenerated=false;
     if(l.pushedToGhl===undefined)l.pushedToGhl=false;
+    if(l.activity===undefined)l.activity=[];
   }));
+}
+function logActivity(id,type,detail){
+  const i=leadIdx(id);if(i<0)return;
+  const l=leads[i];
+  if(!l.activity)l.activity=[];
+  l.activity.unshift({ts:Date.now(),type,detail:detail||''});
+  if(l.activity.length>60)l.activity=l.activity.slice(0,60); // keep it tight, not a full audit log
+  persist();
+}
+function renderActivity(l){
+  const el=document.getElementById('mActivity');if(!el)return;
+  const items=l.activity||[];
+  if(!items.length){el.innerHTML=`<div style="padding:12px 0;font-size:12px;color:var(--text-muted)">No activity logged yet — call, text, or email outcomes will show up here.</div>`;return;}
+  const icons={call:'📞',voicemail:'📩',text:'💬',booked:'📅',no_answer:'🔁',callback:'🗓',dead:'✕',email:'📧',imported:'⬆',added:'＋'};
+  el.innerHTML=items.map(a=>`<div style="display:flex;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px"><span>${icons[a.type]||'•'}</span><span style="flex:1">${esc(a.detail||a.type)}</span><span style="color:var(--text-muted);font-size:11px;white-space:nowrap">${sinceLabel(a.ts)}</span></div>`).join('');
 }
 
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
@@ -1010,7 +1055,7 @@ async function runSearch(){
 }
 
 function newLeadFrom(l){
-  const base={...l,savedAt:Date.now(),status:'new',lastTouchAt:0,callCount:0,vmCount:0,textCount:0,notes:'',everReached:false,noAnswerDays:0,lastNoAnswerDate:'',noAnswerAttemptsToday:0,callbackDate:'',adQualityScore:null,adQualityFlags:null,adStaleDays:null,fbPageUrl:'',email:'',emailStatus:'',source:'places',contactName:'',pushedToGhl:false};
+  const base={...l,savedAt:Date.now(),status:'new',lastTouchAt:0,callCount:0,vmCount:0,textCount:0,notes:'',everReached:false,noAnswerDays:0,lastNoAnswerDate:'',noAnswerAttemptsToday:0,callbackDate:'',adQualityScore:null,adQualityFlags:null,adStaleDays:null,fbPageUrl:'',email:'',emailStatus:'',source:'places',contactName:'',pushedToGhl:false,activity:[]};
   refreshScriptPreservingNotes(base);
   return base;
 }
@@ -1460,12 +1505,14 @@ function markCalled(id){
   leads[i].everReached=true;
   if(leads[i].status==='new'||leads[i].status==='callback')leads[i].status='called';
   callLog.push({ts:Date.now(),leadId:id,type:'call'});persistCallLog();persist();
+  logActivity(id,'call','Reached — call #'+leads[i].callCount);
   renderDialer();updateDialBadge();toast('Marked reached',1600,'ok');
 }
 function markVoicemail(id){
   const i=leadIdx(id);if(i<0)return;
   leads[i].vmCount=(leads[i].vmCount||0)+1;leads[i].lastTouchAt=Date.now();leads[i].status='voicemail';
   callLog.push({ts:Date.now(),leadId:id,type:'voicemail'});persistCallLog();persist();
+  logActivity(id,'voicemail','Left voicemail #'+leads[i].vmCount);
   renderDialer();updateDialBadge();toast('Voicemail logged (counts as a dial)',2000,'ok');
 }
 function markBooked(id){
@@ -1473,7 +1520,7 @@ function markBooked(id){
   const wasCounted=leads[i].status==='called'||leads[i].status==='voicemail';
   leads[i].lastTouchAt=Date.now();leads[i].status='booked';leads[i].everReached=true;
   if(!wasCounted){leads[i].callCount=(leads[i].callCount||0)+1;callLog.push({ts:Date.now(),leadId:id,type:'booked'});persistCallLog();}
-  persist();renderDialer();updateDialBadge();toast('📅 Appointment booked — nice',2600,'ok');
+  persist();logActivity(id,'booked','Appointment booked');renderDialer();updateDialBadge();toast('📅 Appointment booked — nice',2600,'ok');
 }
 function sendText(id){
   const i=leadIdx(id);if(i<0)return;const l=leads[i];
@@ -1482,13 +1529,14 @@ function sendText(id){
   leads[i].textCount=(leads[i].textCount||0)+1;leads[i].lastTouchAt=Date.now();
   if(leads[i].status==='new'||leads[i].status==='called')leads[i].status='texted';
   callLog.push({ts:Date.now(),leadId:id,type:'text'});persistCallLog();persist();
+  logActivity(id,'text','Texted — attempt #'+leads[i].textCount);
   window.location.href=smsHref(l.phone,tpl);
   setTimeout(()=>{renderDialer();updateDialBadge();},400);
   toast('Opening text…',1600,'ok');
 }
 function markDead(id){
   const i=leadIdx(id);if(i<0)return;
-  leads[i].status='dead';leads[i].lastTouchAt=Date.now();leads[i].everReached=true;persist();renderDialer();updateDialBadge();toast('Marked dead');
+  leads[i].status='dead';leads[i].lastTouchAt=Date.now();leads[i].everReached=true;persist();logActivity(id,'dead','Marked dead');renderDialer();updateDialBadge();toast('Marked dead');
 }
 
 function markNoAnswer(id){
@@ -1504,6 +1552,7 @@ function markNoAnswer(id){
   }
   if(l.status==='new'||l.status==='callback')l.status='new';
   callLog.push({ts:Date.now(),leadId:id,type:'no_answer'});persistCallLog();persist();
+  logActivity(id,'no_answer','No answer — day '+l.noAnswerDays+' of 5');
   renderDialer();updateDialBadge();
   if(l.noAnswerDays>=5)toast(`Day 5 of 5 no-answer — mark Unreachable when you're ready to close it out`,3400,'err');
   else if(l.noAnswerAttemptsToday>=2)toast(`Still no answer today — moves to day ${l.noAnswerDays+1} tomorrow`,2600);
@@ -1519,7 +1568,7 @@ function markCallLater(id){
   leads[i].callbackDate=dateStr;
   leads[i].notes=(leads[i].notes?leads[i].notes+'\n':'')+`[Callback ${dateStr}] ${note}`;
   leads[i].lastTouchAt=Date.now();
-  persist();renderDialer();updateDialBadge();
+  persist();logActivity(id,'callback','Callback set for '+dateStr+(note?' — '+note:''));renderDialer();updateDialBadge();
   toast('Callback set for '+dateStr,2200,'ok');
 }
 
@@ -1549,6 +1598,7 @@ function openLeadModal(id){
     ['f Facebook',l.fbPageUrl||`https://www.facebook.com/search/top/?q=${qq}`],...(l.website?[['🌐 Website',l.website]]:[]),
   ].map(([t,u])=>`<a class="btn btn-secondary btn-xs" href="${esc(u)}" target="_blank">${t}</a>`).join('');
   document.getElementById('mContactName').value=l.contactName||'';
+  renderActivity(l);
   if(!(l.notes||'').includes(NOTES_DIVIDER)){refreshScriptPreservingNotes(l);persist();}
   document.getElementById('mNotes').value=l.notes||'';
   document.getElementById('leadModal').classList.add('open');
@@ -1721,6 +1771,7 @@ async function pushToGHL(){
     const i=leadIdx(l.id);
     if(i>=0){leads[i].pushedToGhl=true;leads[i].email=email;persist();}
     callLog.push({ts:Date.now(),leadId:l.id,type:'email'});persistCallLog();
+    logActivity(l.id,'email','Pushed to GHL — '+email);
     updateEmailStat();updateEmailCapLine();renderDialer();
     document.getElementById('emailStatusLine').textContent='Pushed to GHL ✓ — send from there.';
     toast('Pushed to GHL',2400,'ok');
@@ -1746,12 +1797,136 @@ function submitManualLead(){
     savedAt:Date.now(),status:'new',lastTouchAt:0,callCount:0,vmCount:0,textCount:0,
     notes:document.getElementById('manNotes').value.trim(),everReached:false,noAnswerDays:0,
     lastNoAnswerDate:'',noAnswerAttemptsToday:0,callbackDate:'',adQualityScore:null,adQualityFlags:null,
-    adStaleDays:null,fbPageUrl:'',emailStatus:'',source:'manual',pushedToGhl:false,
+    adStaleDays:null,fbPageUrl:'',emailStatus:'',source:'manual',pushedToGhl:false,activity:[{ts:Date.now(),type:'added',detail:'Added manually'}],
   };
   refreshScriptPreservingNotes(lead);
   admitOrBacklog(lead);
   closeManualAdd();renderDialer();updateDialBadge();
   toast(activeCount()>=CAP_MAX&&leads.findIndex(l=>l.id===lead.id)<0?'Pipeline full — queued in backlog':'Added to pipeline',2400,'ok');
+}
+
+/* ═══ CSV IMPORT ═══
+   Built for pasting in output from Apollo, Clay, Cowork research, or any spreadsheet —
+   not tied to one vendor's column names. Auto-guesses the mapping from header text,
+   lets you fix it, dedupes against your current pipeline + backlog on name+phone before
+   admitting, and drops each imported lead through the same admitOrBacklog + script-gen
+   path as every other source so it behaves identically in the dialer. */
+let importRows=[],importHeaders=[],importMapping={};
+const IMPORT_FIELDS=[
+  {key:'name',label:'Business Name',required:true,guesses:['name','business','company','businessname','business name']},
+  {key:'phone',label:'Phone',required:false,guesses:['phone','phone number','tel','telephone']},
+  {key:'email',label:'Email',required:false,guesses:['email','email address','e-mail']},
+  {key:'city',label:'City',required:false,guesses:['city','location']},
+  {key:'website',label:'Website',required:false,guesses:['website','url','domain']},
+  {key:'niche',label:'Niche / Type',required:false,guesses:['niche','type','category','industry','businesstype','business type']},
+  {key:'contactName',label:'Contact Name',required:false,guesses:['contact','contact name','owner','first name']},
+  {key:'notes',label:'Notes',required:false,guesses:['notes','note','comments']},
+];
+function parseCSV(text){
+  // Minimal RFC4180-ish parser: handles quoted fields, escaped quotes, commas inside quotes.
+  const rows=[];let row=[],field='',inQuotes=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(inQuotes){
+      if(c==='"'){ if(text[i+1]==='"'){field+='"';i++;} else inQuotes=false; }
+      else field+=c;
+    }else{
+      if(c==='"')inQuotes=true;
+      else if(c===','){row.push(field);field='';}
+      else if(c==='\n'){row.push(field);rows.push(row);row=[];field='';}
+      else if(c==='\r'){/* skip */}
+      else field+=c;
+    }
+  }
+  if(field.length||row.length){row.push(field);rows.push(row);}
+  return rows.filter(r=>r.some(f=>f.trim()!==''));
+}
+function guessMapping(headers){
+  const norm=h=>h.trim().toLowerCase();
+  const map={};
+  IMPORT_FIELDS.forEach(f=>{
+    const idx=headers.findIndex(h=>f.guesses.includes(norm(h)));
+    map[f.key]=idx>=0?idx:-1;
+  });
+  return map;
+}
+function handleImportFile(input){
+  const file=input.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    const rows=parseCSV(e.target.result);
+    if(rows.length<2){toast('CSV needs a header row plus at least one data row',3000,'err');return;}
+    importHeaders=rows[0];importRows=rows.slice(1);
+    importMapping=guessMapping(importHeaders);
+    renderImportMapUI();
+  };
+  r.onerror=()=>toast('Could not read that file',2600,'err');
+  r.readAsText(file);
+}
+function renderImportMapUI(){
+  document.getElementById('importEmptyState').style.display='none';
+  document.getElementById('importMapWrap').style.display='block';
+  const opts=['<option value="-1">— not in file —</option>'].concat(importHeaders.map((h,i)=>`<option value="${i}">${esc(h)}</option>`)).join('');
+  document.getElementById('importMapFields').innerHTML=IMPORT_FIELDS.map(f=>`
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="min-width:130px;font-size:12.5px;font-weight:600">${f.label}${f.required?' *':''}</span>
+      <select data-field="${f.key}" onchange="onImportMapChange('${f.key}',this.value)" style="flex:1">${opts.replace(`value="${importMapping[f.key]}"`,`value="${importMapping[f.key]}" selected`)}</select>
+    </div>`).join('');
+  renderImportPreview();
+}
+function onImportMapChange(key,val){importMapping[key]=parseInt(val);renderImportPreview();}
+function importGet(row,key){const idx=importMapping[key];return idx>=0&&idx<row.length?(row[idx]||'').trim():'';}
+function renderImportPreview(){
+  const nameIdx=importMapping.name;
+  document.getElementById('importRowCount').textContent=importRows.length;
+  document.getElementById('importPreviewBody').innerHTML=importRows.slice(0,8).map(row=>`<tr>
+    <td>${esc(importGet(row,'name'))||'<span style="color:var(--red)">missing</span>'}</td>
+    <td>${esc(importGet(row,'phone'))||'—'}</td>
+    <td>${esc(importGet(row,'email'))||'—'}</td>
+    <td>${esc(importGet(row,'city'))||'—'}</td>
+  </tr>`).join('')+(importRows.length>8?`<tr><td colspan="4" style="text-align:center;color:var(--text-muted);font-size:11.5px">+ ${importRows.length-8} more row(s) not shown</td></tr>`:'');
+  document.getElementById('importSubmitBtn').disabled=nameIdx<0;
+  document.getElementById('importStatusLine').textContent=nameIdx<0?'Map a Business Name column to continue.':`Ready to import ${importRows.length} row(s).`;
+}
+function openImportModal(){
+  importRows=[];importHeaders=[];importMapping={};
+  document.getElementById('importFile').value='';
+  document.getElementById('importMapWrap').style.display='none';
+  document.getElementById('importEmptyState').style.display='block';
+  document.getElementById('importSubmitBtn').disabled=true;
+  document.getElementById('importStatusLine').textContent='';
+  document.getElementById('importModal').classList.add('open');
+}
+function closeImportModal(){document.getElementById('importModal').classList.remove('open');}
+function submitImport(){
+  if(importMapping.name<0||!importRows.length)return;
+  const existingKey=new Set([...leads,...backlogLeads,...archivedLeads].map(l=>(l.name||'').trim().toLowerCase()+'|'+(l.phone||'').replace(/\D/g,'')));
+  let added=0,skippedDupe=0,skippedNoName=0;
+  importRows.forEach(row=>{
+    const name=importGet(row,'name');
+    if(!name){skippedNoName++;return;}
+    const phone=importGet(row,'phone');
+    const key=name.trim().toLowerCase()+'|'+phone.replace(/\D/g,'');
+    if(existingKey.has(key)){skippedDupe++;return;}
+    existingKey.add(key);
+    const lead={
+      id:uid(),placeId:'',name,contactName:importGet(row,'contactName'),address:'',city:importGet(row,'city'),
+      phone,website:importGet(row,'website'),email:importGet(row,'email'),rating:null,reviews:0,googleMapsUri:'',
+      bizType:importGet(row,'niche'),hours:null,utcOffset:null,
+      savedAt:Date.now(),status:'new',lastTouchAt:0,callCount:0,vmCount:0,textCount:0,
+      notes:importGet(row,'notes'),everReached:false,noAnswerDays:0,lastNoAnswerDate:'',noAnswerAttemptsToday:0,
+      callbackDate:'',adQualityScore:null,adQualityFlags:null,adStaleDays:null,fbPageUrl:'',emailStatus:'',
+      source:'import',pushedToGhl:false,activity:[{ts:Date.now(),type:'imported',detail:'Imported from CSV'}],
+    };
+    refreshScriptPreservingNotes(lead);
+    admitOrBacklog(lead);
+    added++;
+  });
+  closeImportModal();renderDialer();updateDialBadge();
+  let msg=`Imported ${added} lead${added!==1?'s':''}`;
+  if(skippedDupe)msg+=` — skipped ${skippedDupe} duplicate${skippedDupe!==1?'s':''}`;
+  if(skippedNoName)msg+=` — skipped ${skippedNoName} row(s) missing a name`;
+  toast(msg,3600,'ok');
 }
 
 function exportCSV(){
