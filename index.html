@@ -22,8 +22,6 @@
   --shadow-lg:0 10px 25px rgba(0,0,0,.12);
 }
 body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;height:100vh;overflow:hidden;font-size:14px;line-height:1.5}
-
-/* ── PW GATE ── */
 #pwGate{position:fixed;inset:0;background:#0f172a;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}
 #pwGate.hidden{display:none}
 .pw-box{background:#1e293b;border-radius:18px;padding:40px;width:360px;max-width:96vw;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.5)}
@@ -37,8 +35,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .pw-btn:hover{filter:brightness(1.08)}
 .pw-err{font-size:12px;color:#f87171;margin-top:8px;min-height:16px;font-weight:600}
 @keyframes pwShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
-
-/* ── SETUP ── */
 #setup{position:fixed;inset:0;background:rgba(10,14,35,.85);z-index:300;display:none;align-items:center;justify-content:center;padding:20px}
 #setup.show{display:flex}
 .setup-box{background:#fff;border-radius:18px;padding:36px;width:480px;max-width:96vw;box-shadow:0 24px 80px rgba(0,0,0,.3)}
@@ -51,8 +47,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .setup-input{width:100%;padding:11px 14px;border:1.5px solid var(--border-strong);border-radius:8px;font-size:14px;color:var(--text);background:#fafafa;margin-bottom:12px}
 .setup-input:focus{outline:none;border-color:var(--primary);background:#fff;box-shadow:0 0 0 3px rgba(5,150,105,.12)}
 .setup-skip{margin-top:10px;background:none;border:none;font-size:12px;color:var(--text-muted);cursor:pointer;text-decoration:underline}
-
-/* ── SIDEBAR ── */
 .sidebar{width:230px;min-width:230px;background:var(--sidebar-bg);display:flex;flex-direction:column;height:100vh;overflow:hidden}
 .sidebar-logo{padding:20px 18px 16px;border-bottom:1px solid #1e293b}
 .logo-row{display:flex;align-items:center;gap:10px}
@@ -73,16 +67,12 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .api-status{display:flex;align-items:center;gap:7px;font-size:11px;color:#64748b}
 .api-status .dot{width:6px;height:6px;border-radius:50%;background:#475569}
 .api-status .dot.ok{background:var(--primary)}.api-status .dot.warn{background:#f59e0b}
-
-/* ── MAIN ── */
 .main{flex:1;overflow-y:auto;height:100vh;display:flex;flex-direction:column}
 .page{display:none}.page.active{display:flex;flex-direction:column;flex:1}
 .page-header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;gap:12px;flex-wrap:wrap}
 .page-header h1{font-size:18px;font-weight:800}
 .page-header p{font-size:12px;color:var(--text-secondary);margin-top:1px}
 .page-body{padding:24px 28px;flex:1}
-
-/* ── CARDS / FIELDS ── */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
 .card-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px}
 .card-title{font-size:13px;font-weight:700}
@@ -95,8 +85,6 @@ input::placeholder,textarea::placeholder{color:var(--text-muted)}
 textarea{resize:vertical;min-height:80px;line-height:1.55}
 .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .section-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:14px}
-
-/* ── BUTTONS ── */
 .btn{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:600;font-family:inherit;cursor:pointer;border:none;white-space:nowrap;text-decoration:none;transition:all .15s}
 .btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{filter:brightness(1.08)}
 .btn-primary:disabled{opacity:.45;cursor:not-allowed;filter:none}
@@ -110,8 +98,6 @@ textarea{resize:vertical;min-height:80px;line-height:1.55}
 .btn-sky{background:var(--sky-dim);color:var(--sky);border:1px solid #bae6fd}
 .btn-sm{padding:6px 12px;font-size:12px}.btn-xs{padding:4px 10px;font-size:11px}
 .btn-primary:disabled,.btn.disabled{opacity:.4;cursor:not-allowed;pointer-events:none}
-
-/* ── BADGES ── */
 .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
 .badge-no-site{background:var(--primary-light);color:var(--primary-dark);border:1px solid #a7f3d0}
 .badge-strong{background:#ffedd5;color:#9a3412;border:1px solid #fdba74}
@@ -132,8 +118,6 @@ textarea{resize:vertical;min-height:80px;line-height:1.55}
 .s-texted{background:#ede9fe;color:#6d28d9}.s-voicemail{background:#e0f2fe;color:#0369a1}
 .s-booked{background:#d1fae5;color:#065f46}.s-dead{background:#f3f4f6;color:#6b7280}
 .s-callback{background:#fef9c3;color:#854d0e}
-
-/* ── TABLE ── */
 .table-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);box-shadow:var(--shadow)}
 table{width:100%;border-collapse:collapse;font-size:13px}
 thead th{padding:10px 14px;text-align:left;font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted);background:#fafafa;border-bottom:1px solid var(--border);white-space:nowrap}
@@ -143,8 +127,6 @@ tbody tr:hover{background:#f9fafb}
 tbody td{padding:11px 14px;vertical-align:middle}
 .lead-name{font-weight:600;font-size:13.5px}
 .lead-addr{font-size:11px;color:var(--text-muted);margin-top:1px;max-width:240px}
-
-/* ── PROGRESS / SEARCH ── */
 .progress-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 22px;margin-bottom:18px;box-shadow:var(--shadow)}
 .progress-label{font-size:13px;font-weight:600;margin-bottom:4px}
 .progress-sub{font-size:12px;color:var(--text-muted);margin-bottom:12px}
@@ -167,8 +149,6 @@ tbody td{padding:11px 14px;vertical-align:middle}
 .mode-tab.active{background:var(--primary);color:#fff;border-color:var(--primary)}
 .results-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
 .results-count{font-size:12px;color:var(--text-muted);margin-left:auto}
-
-/* ── STATE PICKER ── */
 .state-picker{background:#f9fafb;border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px}
 .state-picker-header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
 .state-picker-title{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text-secondary)}
@@ -180,8 +160,6 @@ tbody td{padding:11px 14px;vertical-align:middle}
 .city-chip.searched::after{content:'\2713';font-size:10px;color:#065f46;font-weight:800;margin-left:3px}
 .city-chip.selected.searched::after{color:#d1fae5}
 .cities-actions{display:flex;gap:8px;align-items:center;margin-top:8px;font-size:12px;color:var(--text-muted);flex-wrap:wrap}
-
-/* ── DIALER ── */
 .dial-hero{background:linear-gradient(135deg,#0f172a,#1e293b);border-radius:14px;padding:22px 24px;margin-bottom:18px;color:#f8fafc;box-shadow:var(--shadow)}
 .dial-hero-top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px}
 .dial-count{display:flex;align-items:baseline;gap:10px}
@@ -199,7 +177,6 @@ tbody td{padding:11px 14px;vertical-align:middle}
 .dial-hero-foot .remain{font-size:12px;color:#cbd5e1}
 .goal-btn{background:#1e293b;border:1px solid #334155;color:#94a3b8;font-size:11px;padding:5px 10px;border-radius:7px;cursor:pointer;font-family:inherit}
 .goal-btn:hover{color:#f8fafc}
-
 .script-bar{background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius);margin-bottom:16px;overflow:hidden}
 .script-head{display:flex;align-items:center;gap:8px;padding:11px 16px;cursor:pointer;font-size:13px;font-weight:700;color:#92400e;user-select:none}
 .script-head .chev{margin-left:auto;transition:transform .2s}
@@ -207,7 +184,6 @@ tbody td{padding:11px 14px;vertical-align:middle}
 .script-body{display:none;padding:0 16px 14px}
 .script-bar.open .script-body{display:block}
 .script-body textarea{min-height:120px;background:#fff;font-size:13.5px;line-height:1.6}
-
 .dlead{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px}
 .dlead.new{border-left:3px solid var(--accent)}
 .dlead.voicemail{border-left:3px solid var(--sky)}
@@ -229,10 +205,7 @@ tbody td{padding:11px 14px;vertical-align:middle}
 .dlead-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;border-top:1px solid var(--border);padding-top:12px}
 .dlead-actions2{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .dlead-note{font-size:12.5px;color:var(--text-secondary);background:#f9fafb;padding:8px 12px;border-radius:6px;margin-top:10px;white-space:pre-wrap}
-
-/* ── STATS ── */
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
-/* sticky dial progress bar */
 #page-dialer>.page-header{position:static}
 .dial-sticky{position:sticky;top:0;z-index:15;display:flex;align-items:center;gap:12px;background:#0f172a;color:#f8fafc;padding:9px 28px;box-shadow:0 3px 10px rgba(0,0,0,.18)}
 .dial-sticky .ds-num{font-family:ui-monospace,monospace;font-weight:800;font-size:14px;white-space:nowrap}
@@ -252,8 +225,6 @@ tbody td{padding:11px 14px;vertical-align:middle}
 .searched-state-tag{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:14px;font-size:11.5px;font-weight:600;background:var(--primary-light);color:var(--primary-dark);border:1px solid #a7f3d0}
 .searched-state-tag .count{font-size:10px;background:rgba(255,255,255,.6);padding:1px 6px;border-radius:8px}
 .backlog-banner{background:#eff3fe;border:1px solid #bfdbfe;border-radius:var(--radius);padding:10px 16px;margin-bottom:14px;font-size:12.5px;color:#1d4ed8;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-
-/* ── MODAL ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
 .modal-overlay.open{display:flex}
 .modal{background:var(--surface);border-radius:14px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
@@ -268,8 +239,6 @@ tbody td{padding:11px 14px;vertical-align:middle}
 .checklist-row input{width:16px;height:16px;accent-color:var(--primary)}
 .ad-item{background:#f9fafb;border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:12.5px}
 .ad-item .ad-meta{color:var(--text-muted);font-size:11px;margin-top:4px}
-
-/* ── TOAST / EMPTY ── */
 .toast-container{position:fixed;bottom:24px;right:24px;z-index:400;display:flex;flex-direction:column;gap:8px;pointer-events:none}
 .toast{background:#0f172a;color:#f8fafc;padding:11px 18px;border-radius:8px;font-size:13px;font-weight:500;box-shadow:var(--shadow-lg);animation:slideUp .2s ease;max-width:320px}
 .toast.ok{background:#065f46}.toast.err{background:#991b1b}
@@ -281,8 +250,6 @@ tbody td{padding:11px 14px;vertical-align:middle}
 .spinner{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .65s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .setup-banner{background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius);padding:14px 18px;display:flex;align-items:center;gap:12px;margin-bottom:20px;font-size:13px;color:#92400e}
-
-/* ── MOBILE ── */
 #mobileMenuBtn{position:fixed;top:12px;left:12px;z-index:200;background:#1e293b;color:#fff;border:none;border-radius:8px;padding:10px 14px;font-size:18px;cursor:pointer;display:none}
 #sidebarBackdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:90;display:none}
 .hunt-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
@@ -306,8 +273,6 @@ tbody td{padding:11px 14px;vertical-align:middle}
 </head>
 <body>
 
-
-<!-- SETUP -->
 <div id="setup">
   <div class="setup-box">
     <div class="setup-brand">LeadFlow Dialer</div>
@@ -321,7 +286,6 @@ tbody td{padding:11px 14px;vertical-align:middle}
   </div>
 </div>
 
-<!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="sidebar-logo">
     <div class="logo-row"><div class="logo-mark">LF</div><div class="logo-name">LeadFlow</div></div>
@@ -343,7 +307,6 @@ tbody td{padding:11px 14px;vertical-align:middle}
 
 <main class="main">
 
-  <!-- ── DIALER ── -->
   <div id="page-dialer" class="page active">
     <div class="page-header"><div><h1>Dialer</h1><p>Call straight down the list. Tap an outcome after each call.</p></div>
       <div style="display:flex;gap:8px">
@@ -386,6 +349,14 @@ tbody td{padding:11px 14px;vertical-align:middle}
         <div class="stat-card book"><div class="stat-label">Booked</div><div class="stat-value" id="stBooked">0</div><div class="stat-sub">Appointments</div></div>
       </div>
 
+      <div class="stats-grid" style="grid-template-columns:1fr">
+        <div class="stat-card">
+          <div class="stat-label">Emails Sent Today</div>
+          <div class="stat-value" id="stEmails">0</div>
+          <div class="stat-sub" id="stEmailCap">of 30 cap</div>
+        </div>
+      </div>
+
       <div id="nicheFilters" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center"></div>
 
       <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
@@ -404,7 +375,6 @@ tbody td{padding:11px 14px;vertical-align:middle}
     </div>
   </div>
 
-  <!-- ── FIND LEADS ── -->
   <div id="page-search" class="page">
     <div class="page-header"><div><h1>Find Leads</h1><p>Search Google Places. No-website results drop straight into your call list.</p></div></div>
     <div class="page-body">
@@ -499,13 +469,11 @@ tbody td{padding:11px 14px;vertical-align:middle}
     </div>
   </div>
 
-  <!-- ── COVERAGE ── -->
   <div id="page-coverage" class="page">
     <div class="page-header"><div><h1>Coverage</h1><p>States &amp; cities you've already searched</p></div><button class="btn btn-ghost btn-sm" onclick="if(confirm('Reset all search history?')){searchedStates={};persistSearched();renderCoverage();toast('Cleared')}">Reset</button></div>
     <div class="page-body"><div id="coverageBody"></div></div>
   </div>
 
-  <!-- ── SETTINGS ── -->
   <div id="page-settings" class="page">
     <div class="page-header"><div><h1>Settings</h1><p>API keys, daily goal, text template, backup</p></div><button class="btn btn-primary btn-sm" onclick="saveSettings()">Save Changes</button></div>
     <div class="page-body">
@@ -525,8 +493,16 @@ tbody td{padding:11px 14px;vertical-align:middle}
 
       <div class="card" style="max-width:680px;margin-top:16px"><div class="card-header"><span class="card-title">Email Finder &amp; Verification</span></div>
         <div class="card-body settings-grid">
-          <div class="field"><label>Hunter.io API Key</label><input type="password" id="sHunterKey" placeholder="" autocomplete="off" /><p style="font-size:11.5px;color:var(--text-muted);margin-top:5px">Domain-based finder — only works if the lead has a domain. <a href="https://hunter.io/api-keys" target="_blank" style="color:var(--primary)">Get key &rarr;</a></p></div>
+          <div class="field"><label>Hunter.io API Key</label><input type="password" id="sHunterKey" placeholder="" autocomplete="off" /><p style="font-size:11.5px;color:var(--text-muted);margin-top:5px">Domain-based finder — only works if the lead has a domain. Optional — organic finding (Facebook Page, etc.) works fine without it. <a href="https://hunter.io/api-keys" target="_blank" style="color:var(--primary)">Get key &rarr;</a></p></div>
           <div class="field"><label>NeverBounce API Key</label><input type="password" id="sNeverBounceKey" placeholder="" autocomplete="off" /><p style="font-size:11.5px;color:var(--text-muted);margin-top:5px">Verifies deliverability before you ever email a lead. <a href="https://app.neverbounce.com/settings/api" target="_blank" style="color:var(--primary)">Get key &rarr;</a></p></div>
+        </div></div>
+
+      <div class="card" style="max-width:680px;margin-top:16px"><div class="card-header"><span class="card-title">Email Sending &amp; Domain Warmup</span></div>
+        <div class="card-body settings-grid">
+          <div class="field"><label>Daily Email Send Cap</label><input type="number" id="sEmailGoal" min="1" placeholder="30" /><p style="font-size:11.5px;color:var(--text-muted);margin-top:5px">Manual ceiling — used if no warmup start date is set.</p></div>
+          <div class="field"><label>Domain Warmup Start Date</label><input type="date" id="sWarmupStart" /><p style="font-size:11.5px;color:var(--text-muted);margin-top:5px">Set to the day you started sending real cold email from this domain. Cap auto-ramps: 25/day (wk1) → 50/day (wk2) → 75+/day (wk3+).</p></div>
+          <div class="field"><label>GoHighLevel API Token</label><input type="password" id="sGhlToken" placeholder="pit-…" autocomplete="off" /><p style="font-size:11.5px;color:var(--text-muted);margin-top:5px">Private Integration Token from GHL Settings → API. Used by "Push to GHL" so a lead's email can be sent from there.</p></div>
+          <div class="field"><label>GoHighLevel Location ID</label><input type="text" id="sGhlLocation" placeholder="e.g. MJRCsFLtUaZU8YRi69Fy" autocomplete="off" /></div>
         </div></div>
 
       <div class="card" style="max-width:680px;margin-top:16px"><div class="card-header"><span class="card-title">Text Message Template</span></div>
@@ -557,7 +533,6 @@ tbody td{padding:11px 14px;vertical-align:middle}
 <button id="mobileMenuBtn" onclick="document.querySelector('.sidebar').classList.add('open');document.getElementById('sidebarBackdrop').style.display='block'">☰</button>
 <div id="sidebarBackdrop" onclick="document.querySelector('.sidebar').classList.remove('open');this.style.display='none'"></div>
 
-<!-- LEAD MODAL -->
 <div class="modal-overlay" id="leadModal">
   <div class="modal">
     <div class="modal-header"><div><div class="modal-title" id="mName">Business</div><div class="modal-subtitle" id="mAddr"></div><div id="mBadges" style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap"></div></div><button class="modal-close" onclick="closeLeadModal()">&times;</button></div>
@@ -577,7 +552,6 @@ tbody td{padding:11px 14px;vertical-align:middle}
   </div>
 </div>
 
-<!-- AD QUALITY MODAL -->
 <div class="modal-overlay" id="adModal">
   <div class="modal">
     <div class="modal-header"><div><div class="modal-title">Ad Quality Check</div><div class="modal-subtitle" id="adLeadName"></div></div><button class="modal-close" onclick="closeAdModal()">&times;</button></div>
@@ -598,23 +572,24 @@ tbody td{padding:11px 14px;vertical-align:middle}
   </div>
 </div>
 
-<!-- EMAIL MODAL -->
 <div class="modal-overlay" id="emailModal">
   <div class="modal">
     <div class="modal-header"><div><div class="modal-title">Email</div><div class="modal-subtitle" id="emailLeadName"></div></div><button class="modal-close" onclick="closeEmailModal()">&times;</button></div>
     <div class="modal-body">
       <div class="field"><label>Email address</label><input type="email" id="emailAddr" placeholder="owner@business.com"></div>
-      <div style="display:flex;gap:8px;margin-top:10px">
+      <p style="font-size:11.5px;color:var(--text-muted);margin-top:6px">Found it organically (Facebook Page "About", a card, etc.)? Just type it above and hit Save — Hunter isn't required.</p>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
         <button class="btn btn-secondary btn-sm" onclick="findEmail()">&#128269; Find via Hunter.io</button>
         <button class="btn btn-secondary btn-sm" onclick="verifyEmail()">&#10003; Verify via NeverBounce</button>
+        <button class="btn btn-purple btn-sm" onclick="pushToGHL()">&#8594; Push to GHL</button>
       </div>
       <div id="emailStatusLine" style="margin-top:12px;font-size:12.5px;color:var(--text-secondary)"></div>
+      <div id="emailCapLine" style="margin-top:6px;font-size:11.5px;color:var(--text-muted)"></div>
     </div>
     <div class="modal-footer"><span></span><button class="btn btn-primary btn-sm" onclick="saveEmail()">Save</button></div>
   </div>
 </div>
 
-<!-- MANUAL LEAD MODAL -->
 <div class="modal-overlay" id="manualModal">
   <div class="modal">
     <div class="modal-header"><div><div class="modal-title">Add Lead Manually</div></div><button class="modal-close" onclick="closeManualAdd()">&times;</button></div>
@@ -635,7 +610,6 @@ tbody td{padding:11px 14px;vertical-align:middle}
 <div class="toast-container" id="toasts"></div>
 
 <script>
-/* ═══ SYNONYMS + CITIES ═══ */
 const SYNONYMS={
   'dentist':['dentist','dental clinic','dental office','orthodontist'],'restaurant':['restaurant','cafe','diner','eatery'],
   'gym':['gym','fitness center','personal trainer','crossfit'],'plumber':['plumber','plumbing service','plumbing contractor'],
@@ -715,7 +689,6 @@ const US_CITIES={
 </script>
 
 <script>
-/* ═══ STATE + STORAGE ═══ */
 const LS={CFG:'lf_cfg',LEADS:'lf_leads',SEARCHED:'lf_searched',SCRIPT:'lf_script',CALLLOG:'lf_calllog',ARCHIVE:'lf_archive',BACKLOG:'lf_backlog'};
 const CAP_MAX=100, CAP_REFILL_BELOW=40;
 const DEFAULT_SCRIPT_TEMPLATE=`Hey {name}?
@@ -735,7 +708,7 @@ Alright, I hear you.
 Would you be opposed to just taking a look at what it'd look like for your business?
 
 I've got mornings and afternoons open — what works better for you?`;
-let cfg={ready:false,user:{name:'',business:''},placesKey:'',metaAdsKey:'',hunterKey:'',neverBounceKey:'',maxPages:3,maxSynonyms:3,callGoal:50,textTpl:'',scriptTemplate:''};
+let cfg={ready:false,user:{name:'',business:''},placesKey:'',metaAdsKey:'',hunterKey:'',neverBounceKey:'',maxPages:3,maxSynonyms:3,callGoal:50,emailGoal:30,warmupStart:'',ghlToken:'',ghlLocation:'',textTpl:'',scriptTemplate:''};
 let leads=[],searchedStates={},scriptText='',callLog=[],archivedLeads=[],backlogLeads=[];
 let allResults=[],cancelFlag=false,searchMode='single',dialFilter='new',activeLeadId=null,adLeadId=null,emailLeadId=null;
 let currentPickedState='',pickedCities=new Set();
@@ -753,11 +726,14 @@ function persistBacklog(){lsSet(LS.BACKLOG,backlogLeads);}
 function loadAll(){
   const c=lsGet(LS.CFG); if(c)cfg={...cfg,...c,user:{...cfg.user,...(c.user||{})}};
   if(!cfg.callGoal)cfg.callGoal=50;
+  if(!cfg.emailGoal)cfg.emailGoal=30;
+  if(cfg.warmupStart===undefined)cfg.warmupStart='';
+  if(cfg.ghlToken===undefined)cfg.ghlToken='';
+  if(cfg.ghlLocation===undefined)cfg.ghlLocation='';
   if(!cfg.scriptTemplate)cfg.scriptTemplate=DEFAULT_SCRIPT_TEMPLATE;
   leads=lsGet(LS.LEADS,[])||[]; searchedStates=lsGet(LS.SEARCHED,{})||{};
   scriptText=lsGet(LS.SCRIPT,'')||''; callLog=lsGet(LS.CALLLOG,[])||[];
   archivedLeads=lsGet(LS.ARCHIVE,[])||[]; backlogLeads=lsGet(LS.BACKLOG,[])||[];
-  // migrate any prior lead shape → dialer status model
   [leads,archivedLeads,backlogLeads].forEach(arr=>arr.forEach(l=>{
     if(l.callCount===undefined)l.callCount=l.lastCalledAt?1:0;
     if(l.vmCount===undefined)l.vmCount=0;
@@ -782,10 +758,10 @@ function loadAll(){
     if(l.source===undefined)l.source='places';
     if(l.contactName===undefined)l.contactName='';
     if(l.scriptGenerated===undefined)l.scriptGenerated=false;
+    if(l.pushedToGhl===undefined)l.pushedToGhl=false;
   }));
 }
 
-/* ═══ UTILS ═══ */
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
 const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 const csv=v=>'"'+String(v||'').replace(/"/g,'""')+'"';
@@ -801,7 +777,6 @@ function sinceLabel(ts){if(!ts)return'New';const d=daysSince(ts);return d===0?'T
 function startOfToday(){const d=new Date();d.setHours(0,0,0,0);return d.getTime();}
 function startOfWeek(){const d=new Date();d.setHours(0,0,0,0);const day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);return d.getTime();}
 
-/* ═══ BOOT ═══ */
 document.addEventListener('DOMContentLoaded',()=>{
   loadAll();
   document.getElementById('sb-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
@@ -821,7 +796,6 @@ function finishSetup(){
   boot(); toast('Ready to dial',3000,'ok');
 }
 
-/* ═══ NAV ═══ */
 function navigate(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
@@ -834,7 +808,6 @@ function navigate(id){
   if(id==='search'){updateApiStatus();refreshStateLabels();}
 }
 
-/* ═══ SETTINGS ═══ */
 function loadSettingsUI(){
   document.getElementById('sName').value=cfg.user.name||'';
   document.getElementById('sBusiness').value=cfg.user.business||'';
@@ -843,6 +816,10 @@ function loadSettingsUI(){
   document.getElementById('sMetaKey').value=cfg.metaAdsKey||'';
   document.getElementById('sHunterKey').value=cfg.hunterKey||'';
   document.getElementById('sNeverBounceKey').value=cfg.neverBounceKey||'';
+  document.getElementById('sEmailGoal').value=cfg.emailGoal||30;
+  document.getElementById('sWarmupStart').value=cfg.warmupStart||'';
+  document.getElementById('sGhlToken').value=cfg.ghlToken||'';
+  document.getElementById('sGhlLocation').value=cfg.ghlLocation||'';
   document.getElementById('sTextTpl').value=cfg.textTpl||'';
   document.getElementById('sScriptTemplate').value=cfg.scriptTemplate||DEFAULT_SCRIPT_TEMPLATE;
   document.getElementById('sPages').value=cfg.maxPages||3;
@@ -856,6 +833,10 @@ function saveSettings(){
   cfg.metaAdsKey=document.getElementById('sMetaKey').value.trim();
   cfg.hunterKey=document.getElementById('sHunterKey').value.trim();
   cfg.neverBounceKey=document.getElementById('sNeverBounceKey').value.trim();
+  const eg=parseInt(document.getElementById('sEmailGoal').value);cfg.emailGoal=isNaN(eg)||eg<=0?30:eg;
+  cfg.warmupStart=document.getElementById('sWarmupStart').value||'';
+  cfg.ghlToken=document.getElementById('sGhlToken').value.trim();
+  cfg.ghlLocation=document.getElementById('sGhlLocation').value.trim();
   cfg.textTpl=document.getElementById('sTextTpl').value.trim();
   cfg.scriptTemplate=document.getElementById('sScriptTemplate').value||DEFAULT_SCRIPT_TEMPLATE;
   cfg.maxPages=parseInt(document.getElementById('sPages').value)||3;
@@ -869,7 +850,6 @@ function updateApiStatus(){
   const b=document.getElementById('setupBanner');if(b)b.style.display=ok?'none':'flex';
 }
 
-/* ═══ SCRIPT PAD (autosave) ═══ */
 let scriptTimer=null;
 document.addEventListener('input',e=>{
   if(e.target&&e.target.id==='scriptPad'){
@@ -878,7 +858,6 @@ document.addEventListener('input',e=>{
   }
 });
 
-/* ═══ STATE/CITY PICKER ═══ */
 function populateSuggestions(){
   ['bizSuggestions','bizSuggestions2'].forEach(id=>{const dl=document.getElementById(id);if(!dl)return;Object.keys(SYNONYMS).forEach(k=>{const o=document.createElement('option');o.value=k;dl.appendChild(o);});});
 }
@@ -934,7 +913,6 @@ function cityOnly(s){
   return s.trim();
 }
 
-/* ═══ COVERAGE ═══ */
 function renderCoverage(){
   const entries=Object.entries(searchedStates).sort((a,b)=>a[1].name.localeCompare(b[1].name));
   if(!entries.length){document.getElementById('coverageBody').innerHTML=`<div class="empty"><div class="empty-icon">🗺️</div><h3>No searches yet</h3><p>Run a few searches to build your coverage map.</p></div>`;return;}
@@ -951,7 +929,6 @@ function renderCoverage(){
   }).join('');
 }
 
-/* ═══ SEARCH ═══ */
 function setMode(m){searchMode=m;document.getElementById('modeSingle').style.display=m==='single'?'block':'none';document.getElementById('modeBulk').style.display=m==='bulk'?'block':'none';document.getElementById('tabSingle').classList.toggle('active',m==='single');document.getElementById('tabBulk').classList.toggle('active',m==='bulk');}
 function parseCities(raw){return raw.split(/[\n,]+/).map(c=>c.trim()).filter(Boolean);}
 
@@ -1026,7 +1003,6 @@ async function runSearch(){
     prog('Search complete ✓',`${allResults.length} leads found`);
     refreshStateLabels();if(currentPickedState)onStatePicked();
     if(!allResults.length){document.getElementById('progressWrap').style.display='none';document.getElementById('searchResults').innerHTML=`<div class="empty"><div class="empty-icon">😐</div><h3>No results</h3><p>Try a different business type or location.</p></div>`;return;}
-    // AUTO-ADD to call list — HARD FILTER: Maps/Places leads only ever enter the pipeline with no website.
     if(document.getElementById('autoAddList').checked) autoAddResults();
     renderResults();
   }catch(err){document.getElementById('progressWrap').style.display='none';document.getElementById('searchResults').innerHTML=`<div class="empty"><div class="empty-icon">❌</div><h3>Error</h3><p>${esc(err.message)}</p></div>`;}
@@ -1034,12 +1010,11 @@ async function runSearch(){
 }
 
 function newLeadFrom(l){
-  const base={...l,savedAt:Date.now(),status:'new',lastTouchAt:0,callCount:0,vmCount:0,textCount:0,notes:'',everReached:false,noAnswerDays:0,lastNoAnswerDate:'',noAnswerAttemptsToday:0,callbackDate:'',adQualityScore:null,adQualityFlags:null,adStaleDays:null,fbPageUrl:'',email:'',emailStatus:'',source:'places',contactName:''};
-  refreshScriptPreservingNotes(base); // auto-filled — shows up in Notes the moment you open the lead
+  const base={...l,savedAt:Date.now(),status:'new',lastTouchAt:0,callCount:0,vmCount:0,textCount:0,notes:'',everReached:false,noAnswerDays:0,lastNoAnswerDate:'',noAnswerAttemptsToday:0,callbackDate:'',adQualityScore:null,adQualityFlags:null,adStaleDays:null,fbPageUrl:'',email:'',emailStatus:'',source:'places',contactName:'',pushedToGhl:false};
+  refreshScriptPreservingNotes(base);
   return base;
 }
 
-// HARD FILTER: no-website-only for anything sourced from Google Maps/Places. Not a toggle.
 function autoAddResults(){
   const existingIds=new Set([...leads,...backlogLeads].map(l=>l.id));
   let added=0,skippedHasSite=0;
@@ -1100,7 +1075,6 @@ function renderResults(){
     <tbody>${rows}</tbody></table></div>`;
 }
 function toggleSave(id){
-  // Hard filter: only no-website leads can enter the pipeline from Places results.
   const idxL=leads.findIndex(l=>l.id===id),idxB=backlogLeads.findIndex(l=>l.id===id);
   if(idxL>=0){leads.splice(idxL,1);persist();toast('Removed from pipeline');}
   else if(idxB>=0){backlogLeads.splice(idxB,1);persistBacklog();toast('Removed from backlog');}
@@ -1114,12 +1088,11 @@ function toggleSave(id){
 }
 function saveAll(){
   const existingIds=new Set([...leads,...backlogLeads].map(l=>l.id));
-  const list=allResults.filter(l=>!existingIds.has(l.id)&&!l.website); // hard filter, always
+  const list=allResults.filter(l=>!existingIds.has(l.id)&&!l.website);
   list.forEach(l=>admitOrBacklog(newLeadFrom(l)));
   renderResults();updateDialBadge();toast(`Added ${list.length} no-website leads to pipeline`,2600,'ok');
 }
 
-/* ═══ PIPELINE CAP + BACKLOG ═══ */
 function activeCount(){return leads.length;}
 function admitOrBacklog(lead){
   if(activeCount()>=CAP_MAX){backlogLeads.push(lead);persistBacklog();}
@@ -1141,7 +1114,6 @@ function renderBacklogBanner(){
   }else{el.style.display='none';}
 }
 
-/* ═══ CONNECT RATE ═══ */
 function connectStats(){
   const all=[...leads,...archivedLeads];
   const worked=all.filter(l=>(l.callCount||0)>0||(l.vmCount||0)>0);
@@ -1150,7 +1122,6 @@ function connectStats(){
   return {worked:worked.length,reached:reached.length,rate};
 }
 
-/* ═══ ARCHIVE (Unreachable / Out of Service) ═══ */
 function archiveLead(id,reason){
   const i=leadIdx(id);if(i<0)return;
   const l=leads[i];
@@ -1173,7 +1144,6 @@ function markOutOfService(id){
   archiveLead(id,'out_of_service');
 }
 
-/* ═══ DIALER ═══ */
 function setDialFilter(f){dialFilter=f;document.querySelectorAll('[data-lf]').forEach(b=>b.classList.toggle('active',b.dataset.lf===f));renderDialer();}
 
 let nicheFilter='all';
@@ -1211,9 +1181,28 @@ function updateDialBadge(){
   updateDialStats();
 }
 
-function dialsToday(){const t=startOfToday();return callLog.filter(c=>c.ts>=t&&c.type!=='text').length;}
-function dialsWeek(){const w=startOfWeek();return callLog.filter(c=>c.ts>=w&&c.type!=='text').length;}
-function dialsAll(){return callLog.filter(c=>c.type!=='text').length;}
+function dialsToday(){const t=startOfToday();return callLog.filter(c=>c.ts>=t&&c.type!=='text'&&c.type!=='email').length;}
+function dialsWeek(){const w=startOfWeek();return callLog.filter(c=>c.ts>=w&&c.type!=='text'&&c.type!=='email').length;}
+function dialsAll(){return callLog.filter(c=>c.type!=='text'&&c.type!=='email').length;}
+
+function emailsSentToday(){const t=startOfToday();return callLog.filter(c=>c.ts>=t&&c.type==='email').length;}
+function warmupDay(){
+  if(!cfg.warmupStart)return null;
+  return Math.floor((Date.now()-new Date(cfg.warmupStart+'T00:00:00').getTime())/86400000);
+}
+function suggestedEmailCap(){
+  const d=warmupDay();
+  if(d===null)return cfg.emailGoal||30;
+  if(d<7)return 25;
+  if(d<14)return 50;
+  return Math.max(cfg.emailGoal||30,75);
+}
+function updateEmailStat(){
+  const se=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  const sent=emailsSentToday(),cap=suggestedEmailCap(),d=warmupDay();
+  se('stEmails',sent);
+  se('stEmailCap','of '+cap+' cap'+(d!==null?` (day ${d+1} warming)`:' (set warmup date in Settings)'));
+}
 
 function updateDialStats(){
   const se=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
@@ -1233,6 +1222,7 @@ function updateDialStats(){
   se('stVM',leads.filter(l=>l.status==='voicemail').length);
   se('stTexted',leads.filter(l=>l.status==='texted').length);
   se('stBooked',leads.filter(l=>l.status==='booked').length);
+  updateEmailStat();
   renderBacklogBanner();
 }
 function setGoal(){
@@ -1257,16 +1247,14 @@ function renderDialer(){
     }
     return true;
   });
-  // Callback tab: overdue/due-today first. Other tabs: prior sort logic.
   if(dialFilter==='callback'){
     list.sort((a,b)=>(a.callbackDate||'9999').localeCompare(b.callbackDate||'9999'));
   }else{
     list.sort((a,b)=>{
       const aw=a.website?1:0, bw=b.website?1:0;
-      if(aw!==bw)return aw-bw; // no-website (0) before has-website (1)
+      if(aw!==bw)return aw-bw;
       const at=leadQuality(a).s==='thin'?1:0, bt=leadQuality(b).s==='thin'?1:0;
-      if(at!==bt)return at-bt; // thin/shitbox sinks within the group
-      // established + weak ads = best prospect, float to the top
+      if(at!==bt)return at-bt;
       const aScore=prospectScore(a), bScore=prospectScore(b);
       if(aScore!==bScore)return bScore-aScore;
       if(dialFilter==='new')return a.savedAt-b.savedAt;
@@ -1316,7 +1304,7 @@ function renderDialer(){
         <button class="btn btn-secondary btn-sm" onclick="markNoAnswer('${esc(l.id)}')">🔁 No Answer</button>
         <button class="btn btn-secondary btn-sm" onclick="markCallLater('${esc(l.id)}')">🗓 Call Later</button>
         <button class="btn btn-secondary btn-sm" onclick="openAdModal('${esc(l.id)}')">🎯 Ad Quality</button>
-        <button class="btn btn-secondary btn-sm" onclick="openEmailModal('${esc(l.id)}')">📧 Email</button>
+        <button class="btn btn-secondary btn-sm" onclick="openEmailModal('${esc(l.id)}')">📧 Email${l.pushedToGhl?' ✓':''}</button>
         <button class="btn btn-secondary btn-sm" onclick="markOutOfService('${esc(l.id)}')">☎️ Out of Service</button>
         ${unreachableBtn}
         <button class="btn btn-ghost btn-sm" onclick="markDead('${esc(l.id)}')">✕ Dead</button>
@@ -1326,7 +1314,6 @@ function renderDialer(){
 }
 
 function leadIdx(id){return leads.findIndex(l=>l.id===id);}
-/* shitbox / quality flags from data we already capture */
 function leadQuality(l){
   const rv=l.reviews||0, rt=l.rating||0;
   if(rv>0&&rv<8)return {s:'thin',html:'<span class="badge badge-thin">⚠️ Thin (' +rv+ ' rev)</span>'};
@@ -1338,13 +1325,6 @@ function mobileFlag(l){
   return '';
 }
 
-/* ═══ COLD-CALL SCRIPT GENERATOR ═══
-   Finds the strongest, most defensible reason this specific lead isn't getting jobs from
-   whatever data we've already collected on them — no extra API, no AI call. Priority order
-   matters: no-website beats everything (it's the loudest signal and the whole reason this
-   lead is in the pipeline), then weak-ad specifics (only if you've run the Ad Quality check),
-   then thin reviews, then no-fixed-address. First one that's true wins — don't stack them,
-   one clean problem is more persuasive on a cold call than a list of complaints. */
 function detectProblem(lead){
   if(!lead.website){
     return {problem:"you don't have a website up anywhere I could find",
@@ -1379,11 +1359,6 @@ function sourceLabelFor(lead){
   if(lead.website)return 'website';
   return 'business online';
 }
-// {name} resolves to a saved Contact Name if you've got one (see the modal), otherwise a
-// literal [Their Name] placeholder — none of our sources (Places, Ad Library, manual entry)
-// hand us the owner's personal name up front, so you fill it in live once they answer or a
-// gatekeeper gives it to you, then it's remembered for next time. Wording itself lives in
-// Settings → Call Opener Script, so you can tune it without touching code.
 function buildColdCallScript(lead){
   const yourName=(cfg.user.name||'').trim()||'[Your Name]';
   const src=sourceLabelFor(lead);
@@ -1397,15 +1372,12 @@ function buildColdCallScript(lead){
     .split('{consequence}').join(consequence)
     .split('{business}').join(lead.name||'');
 }
-// Everything below this line in Notes is yours — regenerating the script only ever
-// touches the part above the divider, so gatekeeper names, callback times, whatever
-// you type during the call never gets clobbered.
 const NOTES_DIVIDER='\n\n— your notes below —\n';
 function refreshScriptPreservingNotes(l){
   const idx=(l.notes||'').indexOf(NOTES_DIVIDER);
   let manual;
   if(idx!==-1)manual=l.notes.slice(idx+NOTES_DIVIDER.length);
-  else manual=(l.notes&&!l.notes.startsWith('Hey [Their Name]?'))?l.notes:''; // legacy/freeform notes get kept, not eaten
+  else manual=(l.notes&&!l.notes.startsWith('Hey [Their Name]?'))?l.notes:'';
   l.notes=buildColdCallScript(l)+NOTES_DIVIDER+manual;
 }
 function regenerateScript(){
@@ -1439,15 +1411,12 @@ function emailBadge(l){
   if(l.emailStatus==='invalid')return '<span class="badge badge-emailbad">✉ Invalid</span>';
   return '<span class="badge badge-emailunk">✉ Unverified</span>';
 }
-// Composite ranking: an established business running weak ads is the best prospect —
-// they can afford to fix it and clearly aren't getting help. A thin/sketchy business
-// running weak ads is a much weaker prospect (may not be a real, fundable business at all).
 function prospectScore(l){
   let score=0;
   const q=leadQuality(l).s;
   if(q==='strong')score+=2; else if(q==='ok')score+=1;
   if(l.adQualityScore!==null&&l.adQualityScore!==undefined&&l.adQualityScore<50){
-    score+= (q==='strong')?3:(q==='ok'?1.5:0.25); // weak ads matter a lot more on an established biz
+    score+= (q==='strong')?3:(q==='ok'?1.5:0.25);
   }
   return score;
 }
@@ -1458,7 +1427,6 @@ function pickNiche(term){
   const loc=searchMode==='bulk'?document.getElementById('bulkCities'):document.getElementById('location');
   if(loc)loc.focus();
 }
-/* live open/closed against the business's own timezone (utcOffset). returns open|closed|unknown */
 function openStatus(l){
   const periods=l&&l.hours;
   if(!periods||!periods.length)return 'unknown';
@@ -1473,9 +1441,9 @@ function openStatus(l){
   for(const p of periods){
     if(!p.open)continue;
     const openMOW=p.open.day*1440+p.open.hour*60+(p.open.minute||0);
-    if(!p.close)return 'open'; // 24/7
+    if(!p.close)return 'open';
     let closeMOW=p.close.day*1440+p.close.hour*60+(p.close.minute||0);
-    if(closeMOW<=openMOW)closeMOW+=10080; // wraps past end of week
+    if(closeMOW<=openMOW)closeMOW+=10080;
     if((nowMOW>=openMOW&&nowMOW<closeMOW)||(nowMOW+10080>=openMOW&&nowMOW+10080<closeMOW))return 'open';
   }
   return 'closed';
@@ -1486,7 +1454,6 @@ function openBadge(l){
        :s==='closed'?'<span class="badge badge-closedhrs">🔴 Closed</span>':'';
 }
 
-/* ── Call outcomes ── */
 function markCalled(id){
   const i=leadIdx(id);if(i<0)return;
   leads[i].callCount=(leads[i].callCount||0)+1;leads[i].lastTouchAt=Date.now();
@@ -1524,7 +1491,6 @@ function markDead(id){
   leads[i].status='dead';leads[i].lastTouchAt=Date.now();leads[i].everReached=true;persist();renderDialer();updateDialBadge();toast('Marked dead');
 }
 
-/* ── No-Answer retry cycle: same-day retry once, then next day, up to 5 days ── */
 function markNoAnswer(id){
   const i=leadIdx(id);if(i<0)return;const l=leads[i];
   const today=todayISO();
@@ -1544,7 +1510,6 @@ function markNoAnswer(id){
   else toast(`No answer — day ${l.noAnswerDays} of 5, retry once more today`,2400);
 }
 
-/* ── Manual call-later: specific date + note ── */
 function markCallLater(id){
   const i=leadIdx(id);if(i<0)return;
   const dateStr=prompt('Follow up on which date? (YYYY-MM-DD)',todayISO());
@@ -1558,7 +1523,6 @@ function markCallLater(id){
   toast('Callback set for '+dateStr,2200,'ok');
 }
 
-/* ═══ LEAD MODAL ═══ */
 function openLeadModal(id){
   const l=leads.find(x=>x.id===id);if(!l)return;activeLeadId=id;
   const sm={new:'s-new',called:'s-called',texted:'s-texted',voicemail:'s-voicemail',booked:'s-booked',dead:'s-dead',callback:'s-callback'};
@@ -1585,9 +1549,6 @@ function openLeadModal(id){
     ['f Facebook',l.fbPageUrl||`https://www.facebook.com/search/top/?q=${qq}`],...(l.website?[['🌐 Website',l.website]]:[]),
   ].map(([t,u])=>`<a class="btn btn-secondary btn-xs" href="${esc(u)}" target="_blank">${t}</a>`).join('');
   document.getElementById('mContactName').value=l.contactName||'';
-  // Auto-fill: leads created before this feature (or anything that slipped through) get their
-  // script generated the first time you open them. Once the divider's present, this is a no-op —
-  // regenerating after that is only ever manual, via the button above.
   if(!(l.notes||'').includes(NOTES_DIVIDER)){refreshScriptPreservingNotes(l);persist();}
   document.getElementById('mNotes').value=l.notes||'';
   document.getElementById('leadModal').classList.add('open');
@@ -1601,10 +1562,6 @@ function saveLeadNotes(){const i=leadIdx(activeLeadId);if(i<0)return;leads[i].no
 function closeLeadModal(){document.getElementById('leadModal').classList.remove('open');activeLeadId=null;renderDialer();}
 function deleteLead(){if(!activeLeadId||!confirm('Remove this lead?'))return;leads=leads.filter(l=>l.id!==activeLeadId);persist();closeLeadModal();updateDialBadge();toast('Removed');}
 
-/* ═══ AD QUALITY MODAL ═══
-   Meta Ad Library API needs a verified developer access token (see Settings) — flagged as
-   an external dependency, unverified against live data. The manual checklist works with zero
-   setup: it's what actually drives the ranking, the API pull just saves you eyeballing time. */
 function openAdModal(id){
   const l=leads.find(x=>x.id===id);if(!l)return;adLeadId=id;
   document.getElementById('adLeadName').textContent=l.name;
@@ -1624,11 +1581,10 @@ function closeAdModal(){document.getElementById('adModal').classList.remove('ope
   document.addEventListener('input',e=>{if(e.target&&e.target.id===id)updateAdScorePreview();});
 });
 function computeAdScore(flags,staleDays){
-  // Weighted checklist — no AI call required. Weak execution + long-unchanged runtime = weak ads.
   let score=0;
   if(flags.hook)score+=25; if(flags.cta)score+=25; if(flags.realWork)score+=25; if(flags.match)score+=15;
   const sd=Number(staleDays)||0;
-  if(sd>=60)score-=10; else if(sd>=30)score-=5; // long-unchanged is a mild negative signal on top of the checklist
+  if(sd>=60)score-=10; else if(sd>=30)score-=5;
   return Math.max(0,Math.min(100,score+10));
 }
 function updateAdScorePreview(){
@@ -1643,9 +1599,6 @@ async function fetchMetaAds(){
   document.getElementById('adPulledList').innerHTML=`<div class="ad-item"><span class="spinner"></span> Pulling ads…</div>`;
   try{
     const q=encodeURIComponent(l.name);
-    // NOTE: unverified against a live token — Meta gates this endpoint behind ID-verified
-    // developer access, and field names can shift between API versions. Check the current
-    // docs at https://www.facebook.com/ads/library/api if this comes back empty or errors.
     const url=`https://graph.facebook.com/v19.0/ads_archive?search_terms=${q}&ad_reached_countries=['US']&ad_active_status=ACTIVE&fields=ad_creative_bodies,ad_creation_time,ad_delivery_start_time,page_name,page_id&access_token=${encodeURIComponent(cfg.metaAdsKey)}`;
     const r=await fetch(url);
     if(!r.ok)throw new Error('API '+r.status);
@@ -1675,33 +1628,33 @@ function saveAdScore(){
   leads[i].adQualityFlags=flags;
   leads[i].adStaleDays=staleDays===''?null:Number(staleDays);
   leads[i].adQualityScore=computeAdScore(flags,staleDays);
-  refreshScriptPreservingNotes(leads[i]); // now that we know the actual ad problem, the script gets specific instead of defaulting to "no website"
+  refreshScriptPreservingNotes(leads[i]);
   persist();closeAdModal();renderDialer();
   if(activeLeadId===leads[i].id)document.getElementById('mNotes').value=leads[i].notes;
   toast('Ad score saved — script updated to match',2400,'ok');
 }
 
-/* ═══ EMAIL MODAL ═══
-   Hunter/Snov are DOMAIN-based finders. Most leads here have no website by design (hard
-   filter), so there's often no domain to search — expect a low hit rate. Falls back to
-   whatever you've already pulled onto fbPageUrl (Facebook Pages often list a public email
-   under About) as the more realistic source for this segment. */
 function openEmailModal(id){
   const l=leads.find(x=>x.id===id);if(!l)return;emailLeadId=id;
   document.getElementById('emailLeadName').textContent=l.name;
   document.getElementById('emailAddr').value=l.email||'';
   document.getElementById('emailStatusLine').textContent=l.emailStatus?`Last verification: ${l.emailStatus}`:(l.website?'':'No website on file — Hunter/Snov domain search will likely find nothing. Check their Facebook Page "About" section manually, or enter an email you found yourself.');
+  updateEmailCapLine();
   document.getElementById('emailModal').classList.add('open');
 }
 function closeEmailModal(){document.getElementById('emailModal').classList.remove('open');emailLeadId=null;}
+function updateEmailCapLine(){
+  const sent=emailsSentToday(),cap=suggestedEmailCap();
+  const el=document.getElementById('emailCapLine');if(!el)return;
+  el.textContent=`Sent ${sent} of ${cap} today via Push to GHL.`+(sent>=cap?' ⚠️ At/over today\'s cap — consider waiting for tomorrow to protect the domain.':'');
+}
 async function findEmail(){
   const l=leads.find(x=>x.id===emailLeadId);if(!l)return;
-  if(!cfg.hunterKey){toast('Add your Hunter.io API key in Settings first',3000,'err');return;}
+  if(!cfg.hunterKey){toast('Add your Hunter.io API key in Settings first (or just type an organically-found email above)',3400,'err');return;}
   if(!l.website){toast('No domain to search — this lead has no website (see note above)',3200,'err');return;}
   const domain=cleanUrl(l.website).split('/')[0];
   document.getElementById('emailStatusLine').textContent='Searching Hunter.io…';
   try{
-    // NOTE: unverified against a live key — confirm field names against current Hunter.io docs.
     const url=`https://api.hunter.io/v2/domain-search?domain=${encodeURIComponent(domain)}&api_key=${encodeURIComponent(cfg.hunterKey)}`;
     const r=await fetch(url);if(!r.ok)throw new Error('API '+r.status);
     const data=await r.json();
@@ -1716,11 +1669,10 @@ async function verifyEmail(){
   if(!cfg.neverBounceKey){toast('Add your NeverBounce API key in Settings first',3000,'err');return;}
   document.getElementById('emailStatusLine').textContent='Verifying via NeverBounce…';
   try{
-    // NOTE: unverified against a live key — confirm field names against current NeverBounce docs.
     const url=`https://api.neverbounce.com/v4/single/check?key=${encodeURIComponent(cfg.neverBounceKey)}&email=${encodeURIComponent(email)}`;
     const r=await fetch(url);if(!r.ok)throw new Error('API '+r.status);
     const data=await r.json();
-    const result=data.result||'unknown'; // valid | invalid | disposable | catchall | unknown
+    const result=data.result||'unknown';
     const i=leadIdx(emailLeadId);if(i>=0){leads[i].emailStatus=result==='valid'?'valid':(result==='invalid'?'invalid':'unknown');persist();}
     document.getElementById('emailStatusLine').textContent=`NeverBounce result: ${result}`;
     toast('Verification: '+result,2400,result==='valid'?'ok':'err');
@@ -1732,7 +1684,52 @@ function saveEmail(){
   persist();closeEmailModal();renderDialer();toast('Email saved',2000,'ok');
 }
 
-/* ═══ MANUAL LEAD ENTRY ═══ */
+async function pushToGHL(){
+  const l=leads.find(x=>x.id===emailLeadId);if(!l)return;
+  const email=document.getElementById('emailAddr').value.trim();
+  if(!email){toast('Enter or find an email first',2400,'err');return;}
+  if(!cfg.ghlToken||!cfg.ghlLocation){toast('Add your GHL API token + Location ID in Settings first',3400,'err');return;}
+
+  const sent=emailsSentToday(),cap=suggestedEmailCap();
+  if(sent>=cap){
+    if(!confirm(`You've already pushed ${sent} today, at/over your ${cap}/day warmup cap. Push this one anyway?`))return;
+  }
+
+  document.getElementById('emailStatusLine').textContent='Pushing to GHL…';
+  try{
+    const [firstName,...rest]=(l.contactName||l.name||'').split(' ');
+    const body={
+      locationId:cfg.ghlLocation,
+      firstName:firstName||l.name||'',
+      lastName:rest.join(' ')||'',
+      email,
+      phone:l.phone||'',
+      companyName:l.name||'',
+      tags:['leadflow'],
+    };
+    const r=await fetch('https://services.leadconnectorhq.com/contacts/',{
+      method:'POST',
+      headers:{
+        'Authorization':`Bearer ${cfg.ghlToken}`,
+        'Version':'2021-07-28',
+        'Content-Type':'application/json',
+      },
+      body:JSON.stringify(body),
+    });
+    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e?.message||'API '+r.status);}
+
+    const i=leadIdx(l.id);
+    if(i>=0){leads[i].pushedToGhl=true;leads[i].email=email;persist();}
+    callLog.push({ts:Date.now(),leadId:l.id,type:'email'});persistCallLog();
+    updateEmailStat();updateEmailCapLine();renderDialer();
+    document.getElementById('emailStatusLine').textContent='Pushed to GHL ✓ — send from there.';
+    toast('Pushed to GHL',2400,'ok');
+  }catch(err){
+    document.getElementById('emailStatusLine').textContent='GHL push failed: '+err.message;
+    toast('GHL push failed — check token/location in Settings',3200,'err');
+  }
+}
+
 function openManualAdd(){
   ['manName','manContactName','manPhone','manNiche','manCity','manWebsite','manEmail','manNotes'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('manualModal').classList.add('open');
@@ -1749,9 +1746,9 @@ function submitManualLead(){
     savedAt:Date.now(),status:'new',lastTouchAt:0,callCount:0,vmCount:0,textCount:0,
     notes:document.getElementById('manNotes').value.trim(),everReached:false,noAnswerDays:0,
     lastNoAnswerDate:'',noAnswerAttemptsToday:0,callbackDate:'',adQualityScore:null,adQualityFlags:null,
-    adStaleDays:null,fbPageUrl:'',emailStatus:'',source:'manual',
+    adStaleDays:null,fbPageUrl:'',emailStatus:'',source:'manual',pushedToGhl:false,
   };
-  refreshScriptPreservingNotes(lead); // lead.notes currently holds whatever was typed in the form — becomes the "your notes" section
+  refreshScriptPreservingNotes(lead);
   admitOrBacklog(lead);
   closeManualAdd();renderDialer();updateDialBadge();
   toast(activeCount()>=CAP_MAX&&leads.findIndex(l=>l.id===lead.id)<0?'Pipeline full — queued in backlog':'Added to pipeline',2400,'ok');
@@ -1759,13 +1756,12 @@ function submitManualLead(){
 
 function exportCSV(){
   if(!leads.length)return toast('No leads to export',2500,'err');
-  const h=['Name','Address','Phone','Website','HasWebsite','Rating','Reviews','City','Status','Calls','Voicemails','Texts','NoAnswerDays','CallbackDate','Email','EmailStatus','AdQualityScore','AdStaleDays','FacebookPage','EverReached','LastTouch','DaysSinceTouch','Notes','Source','Saved'];
-  const rows=leads.map(l=>[l.name,l.address,l.phone,l.website,l.website?'yes':'no',l.rating||'',l.reviews||'',l.city||'',l.status,l.callCount||0,l.vmCount||0,l.textCount||0,l.noAnswerDays||0,l.callbackDate||'',l.email||'',l.emailStatus||'',l.adQualityScore??'',l.adStaleDays??'',l.fbPageUrl||'',l.everReached?'yes':'no',l.lastTouchAt?new Date(l.lastTouchAt).toISOString().slice(0,10):'',l.lastTouchAt?daysSince(l.lastTouchAt):'',l.notes||'',l.source||'',new Date(l.savedAt).toISOString().slice(0,10)].map(csv).join(','));
+  const h=['Name','Address','Phone','Website','HasWebsite','Rating','Reviews','City','Status','Calls','Voicemails','Texts','NoAnswerDays','CallbackDate','Email','EmailStatus','PushedToGHL','AdQualityScore','AdStaleDays','FacebookPage','EverReached','LastTouch','DaysSinceTouch','Notes','Source','Saved'];
+  const rows=leads.map(l=>[l.name,l.address,l.phone,l.website,l.website?'yes':'no',l.rating||'',l.reviews||'',l.city||'',l.status,l.callCount||0,l.vmCount||0,l.textCount||0,l.noAnswerDays||0,l.callbackDate||'',l.email||'',l.emailStatus||'',l.pushedToGhl?'yes':'no',l.adQualityScore??'',l.adStaleDays??'',l.fbPageUrl||'',l.everReached?'yes':'no',l.lastTouchAt?new Date(l.lastTouchAt).toISOString().slice(0,10):'',l.lastTouchAt?daysSince(l.lastTouchAt):'',l.notes||'',l.source||'',new Date(l.savedAt).toISOString().slice(0,10)].map(csv).join(','));
   const blob=new Blob([h.join(',')+'\n'+rows.join('\n')],{type:'text/csv'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`leadflow-${todayISO()}.csv`;a.click();toast('Exported CSV',2000,'ok');
 }
 
-/* ═══ BACKUP ═══ */
 function exportBackup(){
   const data={};Object.values(LS).forEach(k=>{const v=localStorage.getItem(k);if(v!==null)data[k]=v;});
   const dump={app:'LeadFlow Dialer',version:'dialer-v2',exportedAt:new Date().toISOString(),data};
