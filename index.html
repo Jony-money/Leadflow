@@ -367,7 +367,6 @@ tbody td{padding:11px 14px;vertical-align:middle}
         <button class="mode-tab" data-lf="callback" onclick="setDialFilter('callback')">Callbacks</button>
         <button class="mode-tab" data-lf="called" onclick="setDialFilter('called')">Called</button>
         <button class="mode-tab" data-lf="booked" onclick="setDialFilter('booked')">Booked</button>
-        <button class="mode-tab" data-lf="dead" onclick="setDialFilter('dead')">Dead</button>
         <button class="mode-tab" data-lf="all" onclick="setDialFilter('all')">All</button>
         <input type="text" id="dialSearch" placeholder="Search name / city / phone…" oninput="renderDialer()" style="max-width:200px;margin-left:auto" />
       </div>
@@ -724,7 +723,7 @@ const US_CITIES={
 
 <script>
 const LS={CFG:'lf_cfg',LEADS:'lf_leads',SEARCHED:'lf_searched',SCRIPT:'lf_script',CALLLOG:'lf_calllog',ARCHIVE:'lf_archive',BACKLOG:'lf_backlog'};
-const CAP_MAX=100, CAP_REFILL_BELOW=40;
+const CAP_MAX=200, CAP_REFILL_BELOW=80;
 const DEFAULT_SCRIPT_TEMPLATE=`Hey {name}?
 
 Hey, this is {yourname}.
@@ -1174,7 +1173,8 @@ function archiveLead(id,reason){
   persist();persistArchive();
   const moved=promoteBacklog();
   renderDialer();updateDialBadge();renderNicheFilters();renderBacklogBanner();
-  toast((reason==='unreachable'?'Marked unreachable':'Marked out of service')+' — removed from pipeline'+(moved?` (pulled in ${moved} from backlog)`:''),2800);
+  const labels={unreachable:'Marked unreachable',out_of_service:'Marked out of service',dead:'Marked dead'};
+  toast((labels[reason]||'Archived')+' — removed from pipeline'+(moved?` (pulled in ${moved} from backlog)`:''),2800);
 }
 function markUnreachable(id){
   const l=leads.find(x=>x.id===id);
@@ -1535,7 +1535,9 @@ function sendText(id){
 }
 function markDead(id){
   const i=leadIdx(id);if(i<0)return;
-  leads[i].status='dead';leads[i].lastTouchAt=Date.now();leads[i].everReached=true;persist();logActivity(id,'dead','Marked dead');renderDialer();updateDialBadge();toast('Marked dead');
+  leads[i].everReached=true;
+  logActivity(id,'dead','Marked dead — removed from active pipeline');
+  archiveLead(id,'dead');
 }
 
 function markNoAnswer(id){
