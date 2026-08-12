@@ -343,8 +343,9 @@ tbody td{padding:11px 14px;vertical-align:middle}
         <div class="script-body"><textarea id="scriptPad" placeholder="Paste your cold-call opener, objection responses, and voicemail script here. Saves automatically."></textarea></div>
       </div>
 
-      <div class="stats-grid">
-        <div class="stat-card warn"><div class="stat-label">To Call</div><div class="stat-value" id="stToCall">0</div><div class="stat-sub">In queue</div></div>
+      <div class="stats-grid" style="grid-template-columns:repeat(5,1fr)">
+        <div class="stat-card warn"><div class="stat-label">Never Contacted</div><div class="stat-value" id="stToCall">0</div><div class="stat-sub">In queue</div></div>
+        <div class="stat-card" style="border-color:#fecaca"><div class="stat-label">Due Now</div><div class="stat-value" id="stDueNow" style="color:#dc2626">0</div><div class="stat-sub">Ready to re-contact</div></div>
         <div class="stat-card vm"><div class="stat-label">Voicemail</div><div class="stat-value" id="stVM">0</div><div class="stat-sub">Awaiting callback</div></div>
         <div class="stat-card"><div class="stat-label">Texted</div><div class="stat-value" id="stTexted">0</div><div class="stat-sub">Follow up</div></div>
         <div class="stat-card book"><div class="stat-label">Booked</div><div class="stat-value" id="stBooked">0</div><div class="stat-sub">Appointments</div></div>
@@ -361,7 +362,8 @@ tbody td{padding:11px 14px;vertical-align:middle}
       <div id="nicheFilters" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center"></div>
 
       <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
-        <button class="mode-tab active" data-lf="new" onclick="setDialFilter('new')">To Call</button>
+        <button class="mode-tab active" data-lf="new" onclick="setDialFilter('new')">Never Contacted</button>
+        <button class="mode-tab" data-lf="duenow" onclick="setDialFilter('duenow')">Due Now</button>
         <button class="mode-tab" data-lf="voicemail" onclick="setDialFilter('voicemail')">Voicemail</button>
         <button class="mode-tab" data-lf="texted" onclick="setDialFilter('texted')">Texted</button>
         <button class="mode-tab" data-lf="callback" onclick="setDialFilter('callback')">Callbacks</button>
@@ -520,8 +522,16 @@ tbody td{padding:11px 14px;vertical-align:middle}
         </div></div>
       <div class="card" style="max-width:680px;margin-top:16px"><div class="card-header"><span class="card-title">Niche Qualification Rules</span></div>
         <div class="card-body"><div class="field"><label>One rule per line: niche term = minimum reviews required. The term must match what you type into Business Type (case-insensitive) — or be a substring of it. Leads at or under the number won't show up in search results, and existing pipeline leads that no longer qualify get archived automatically the next time you load the app. Leave a niche out entirely to apply no review-count gate to it.</label><textarea id="sNicheMinReviews" style="min-height:140px;font-size:13px;line-height:1.6;font-family:ui-monospace,monospace" placeholder="detailer = 50&#10;auto detailing = 50"></textarea></div></div></div>
+      <div class="card" style="max-width:680px;margin-top:16px"><div class="card-header"><span class="card-title">Follow-Up Cadence (days)</span></div>
+        <div class="card-body settings-grid">
+          <div class="field"><label>After No Answer</label><input type="number" id="sCadenceNoAnswer" min="0" /></div>
+          <div class="field"><label>After Voicemail</label><input type="number" id="sCadenceVoicemail" min="0" /></div>
+          <div class="field"><label>After Text</label><input type="number" id="sCadenceTexted" min="0" /></div>
+          <div class="field"><label>After Reached (no next step)</label><input type="number" id="sCadenceCalled" min="0" /></div>
+          <p style="grid-column:1/-1;font-size:11.5px;color:var(--text-muted);line-height:1.5;margin-top:2px">This is what powers "Due Now" — a lead resurfaces this many days after each kind of touch instead of sitting there for you to redial on a whim. Spacing repeat contact out, rather than redialing/retexting the same lead same-day, is what keeps your number from getting tagged "Spam Likely" by carriers, and keeps you from coming across as a nuisance.</p>
+        </div></div>
       <div class="card" style="max-width:680px;margin-top:16px"><div class="card-header"><span class="card-title">Pipeline</span></div>
-        <div class="card-body"><p style="font-size:12.5px;color:var(--text-secondary);line-height:1.6">Active pipeline is capped at <strong>100</strong> leads. Once it drops under <strong>40</strong>, backlogged leads (from search or manual add) get pulled back in automatically. Unreachable / Out-of-Service leads move to a separate archive and no longer count against the cap — used to calculate your connect rate.</p></div></div>
+        <div class="card-body"><p style="font-size:12.5px;color:var(--text-secondary);line-height:1.6">Active pipeline is capped at <strong>200</strong> leads total. Backlogged leads (from search or manual add) pull back in automatically once your <strong>Never Contacted</strong> count — not the total pipeline — drops under <strong>40</strong>. Unreachable / Out-of-Service leads move to a separate archive and no longer count against the cap — used to calculate your connect rate.</p></div></div>
       <div class="card" style="max-width:680px;margin-top:16px"><div class="card-header"><span class="card-title">Backup &amp; Restore</span></div>
         <div class="card-body"><p style="font-size:12.5px;color:var(--text-muted);margin-bottom:14px;line-height:1.55">All data lives in this browser. Export a JSON backup so you don't lose your call list. Importing REPLACES current data.</p>
           <button class="btn btn-blue btn-sm" onclick="exportBackup()">⬇ Download Backup</button>
@@ -725,7 +735,7 @@ const US_CITIES={
 
 <script>
 const LS={CFG:'lf_cfg',LEADS:'lf_leads',SEARCHED:'lf_searched',SCRIPT:'lf_script',CALLLOG:'lf_calllog',ARCHIVE:'lf_archive',BACKLOG:'lf_backlog'};
-const CAP_MAX=200, CAP_REFILL_BELOW=80;
+const CAP_MAX=200, TOCALL_REFILL_BELOW=40; // refill is triggered by the never-contacted count, not total pipeline size — see toCallCount()
 const DEFAULT_SCRIPT_TEMPLATE=`Hey {name}?
 
 Hey, this is {yourname}.
@@ -743,7 +753,7 @@ Alright, I hear you.
 Would you be opposed to just taking a look at what it'd look like for your business?
 
 I've got mornings and afternoons open — what works better for you?`;
-let cfg={ready:false,user:{name:'',business:''},placesKey:'',metaAdsKey:'',hunterKey:'',neverBounceKey:'',maxPages:3,maxSynonyms:3,callGoal:50,emailGoal:30,warmupStart:'',ghlToken:'',ghlLocation:'',textTpl:'',scriptTemplate:'',nicheMinReviews:undefined};
+let cfg={ready:false,user:{name:'',business:''},placesKey:'',metaAdsKey:'',hunterKey:'',neverBounceKey:'',maxPages:3,maxSynonyms:3,callGoal:50,emailGoal:30,warmupStart:'',ghlToken:'',ghlLocation:'',textTpl:'',scriptTemplate:'',nicheMinReviews:undefined,followupCadence:undefined};
 let leads=[],searchedStates={},scriptText='',callLog=[],archivedLeads=[],backlogLeads=[];
 let allResults=[],cancelFlag=false,searchMode='single',dialFilter='new',activeLeadId=null,adLeadId=null,emailLeadId=null;
 let currentPickedState='',pickedCities=new Set();
@@ -767,6 +777,7 @@ function loadAll(){
   if(cfg.ghlLocation===undefined)cfg.ghlLocation='';
   if(!cfg.scriptTemplate)cfg.scriptTemplate=DEFAULT_SCRIPT_TEMPLATE;
   if(cfg.nicheMinReviews===undefined)cfg.nicheMinReviews={...DEFAULT_NICHE_MIN_REVIEWS};
+  if(cfg.followupCadence===undefined)cfg.followupCadence={...DEFAULT_FOLLOWUP_CADENCE};
   leads=lsGet(LS.LEADS,[])||[]; searchedStates=lsGet(LS.SEARCHED,{})||{};
   scriptText=lsGet(LS.SCRIPT,'')||''; callLog=lsGet(LS.CALLLOG,[])||[];
   archivedLeads=lsGet(LS.ARCHIVE,[])||[]; backlogLeads=lsGet(LS.BACKLOG,[])||[];
@@ -795,6 +806,7 @@ function loadAll(){
     if(l.contactName===undefined)l.contactName='';
     if(l.scriptGenerated===undefined)l.scriptGenerated=false;
     if(l.pushedToGhl===undefined)l.pushedToGhl=false;
+    if(l.nextContactAt===undefined)l.nextContactAt=0;
     if(l.activity===undefined)l.activity=[];
   }));
 }
@@ -879,6 +891,10 @@ function loadSettingsUI(){
   document.getElementById('sPages').value=cfg.maxPages||3;
   document.getElementById('sSynonyms').value=cfg.maxSynonyms||3;
   document.getElementById('sNicheMinReviews').value=serializeNicheMinReviews(cfg.nicheMinReviews);
+  document.getElementById('sCadenceNoAnswer').value=cfg.followupCadence.no_answer;
+  document.getElementById('sCadenceVoicemail').value=cfg.followupCadence.voicemail;
+  document.getElementById('sCadenceTexted').value=cfg.followupCadence.texted;
+  document.getElementById('sCadenceCalled').value=cfg.followupCadence.called;
 }
 function saveSettings(){
   cfg.user.name=document.getElementById('sName').value.trim();
@@ -897,6 +913,13 @@ function saveSettings(){
   cfg.maxPages=parseInt(document.getElementById('sPages').value)||3;
   cfg.maxSynonyms=parseInt(document.getElementById('sSynonyms').value)||3;
   cfg.nicheMinReviews=parseNicheMinReviews(document.getElementById('sNicheMinReviews').value);
+  const cadenceField=(id,fallback)=>{const v=parseInt(document.getElementById(id).value);return isNaN(v)||v<0?fallback:v;};
+  cfg.followupCadence={
+    no_answer:cadenceField('sCadenceNoAnswer',DEFAULT_FOLLOWUP_CADENCE.no_answer),
+    voicemail:cadenceField('sCadenceVoicemail',DEFAULT_FOLLOWUP_CADENCE.voicemail),
+    texted:cadenceField('sCadenceTexted',DEFAULT_FOLLOWUP_CADENCE.texted),
+    called:cadenceField('sCadenceCalled',DEFAULT_FOLLOWUP_CADENCE.called),
+  };
   persistCfg(); updateApiStatus(); loadSettingsUI(); updateDialStats(); toast('Settings saved',2000,'ok');
   const sweptAfterSave=sweepDisqualifiedNicheLeads();
   if(sweptAfterSave){renderDialer();updateDialBadge();toast(`Rules updated — archived ${sweptAfterSave} lead${sweptAfterSave!==1?'s':''} that no longer qualify`,3400);}
@@ -989,6 +1012,13 @@ function renderCoverage(){
 
 function setMode(m){searchMode=m;document.getElementById('modeSingle').style.display=m==='single'?'block':'none';document.getElementById('modeBulk').style.display=m==='bulk'?'block':'none';document.getElementById('tabSingle').classList.toggle('active',m==='single');document.getElementById('tabBulk').classList.toggle('active',m==='bulk');}
 function parseCities(raw){return raw.split(/[\n,]+/).map(c=>c.trim()).filter(Boolean);}
+
+// Follow-up cadence: how many days LeadFlow waits before a lead resurfaces in
+// "Due Now" after each kind of touch. Configurable in Settings — the point is
+// spacing repeat contact with the same lead far enough apart that you don't look
+// like a nuisance and don't trip carrier "Spam Likely" flagging on your number,
+// which is driven by repeated short-interval redials/retexts to the same numbers.
+const DEFAULT_FOLLOWUP_CADENCE={no_answer:1,voicemail:3,texted:2,called:4};
 
 // Niche qualification: minimum review count required per niche, configurable in
 // Settings (not hardcoded to one niche) so this same mechanism works for any niche,
@@ -1231,13 +1261,14 @@ function saveAll(){
 }
 
 function activeCount(){return leads.length;}
+function toCallCount(){return leads.filter(l=>l.status==='new').length;} // never-contacted count — the actual dial queue, not total pipeline size
 function admitOrBacklog(lead){
   if(activeCount()>=CAP_MAX){backlogLeads.push(lead);persistBacklog();}
   else{leads.unshift(lead);persist();}
 }
 function promoteBacklog(){
   let moved=0;
-  while(activeCount()<CAP_REFILL_BELOW&&backlogLeads.length){
+  while(toCallCount()<TOCALL_REFILL_BELOW&&activeCount()<CAP_MAX&&backlogLeads.length){
     leads.unshift(backlogLeads.shift());moved++;
   }
   if(moved){persist();persistBacklog();}
@@ -1247,7 +1278,7 @@ function renderBacklogBanner(){
   const el=document.getElementById('backlogBanner');if(!el)return;
   if(backlogLeads.length){
     el.style.display='flex';
-    el.innerHTML=`📥 <strong>${backlogLeads.length}</strong> lead${backlogLeads.length!==1?'s':''} waiting in backlog — pipeline is at ${activeCount()}/${CAP_MAX}. They'll pull in automatically once your active list drops under ${CAP_REFILL_BELOW}.`;
+    el.innerHTML=`📥 <strong>${backlogLeads.length}</strong> lead${backlogLeads.length!==1?'s':''} waiting in backlog — you have <strong>${toCallCount()}</strong> never-contacted lead${toCallCount()!==1?'s':''} right now. They'll pull in automatically once that drops under ${TOCALL_REFILL_BELOW}.`;
   }else{el.style.display='none';}
 }
 
@@ -1357,11 +1388,30 @@ function updateDialStats(){
   const remain=Math.max(0,goal-today);
   se('dhRemain',remain>0?`${remain} to go`:'🎯 Goal hit — keep dialing');
   se('stToCall',leads.filter(l=>l.status==='new').length);
+  se('stDueNow',leads.filter(l=>['called','voicemail','texted','callback'].includes(l.status)&&isDue(l)).length);
   se('stVM',leads.filter(l=>l.status==='voicemail').length);
   se('stTexted',leads.filter(l=>l.status==='texted').length);
   se('stBooked',leads.filter(l=>l.status==='booked').length);
   updateEmailStat();
+  updateFilterTabCounts();
   renderBacklogBanner();
+}
+function updateFilterTabCounts(){
+  const counts={
+    new:leads.filter(l=>l.status==='new').length,
+    duenow:leads.filter(l=>['called','voicemail','texted','callback'].includes(l.status)&&isDue(l)).length,
+    voicemail:leads.filter(l=>l.status==='voicemail').length,
+    texted:leads.filter(l=>l.status==='texted').length,
+    callback:leads.filter(l=>l.status==='callback').length,
+    called:leads.filter(l=>l.status==='called').length,
+    booked:leads.filter(l=>l.status==='booked').length,
+    all:leads.length,
+  };
+  const labels={new:'Never Contacted',duenow:'Due Now',voicemail:'Voicemail',texted:'Texted',callback:'Callbacks',called:'Called',booked:'Booked',all:'All'};
+  Object.keys(counts).forEach(k=>{
+    const btn=document.querySelector(`[data-lf="${k}"]`);
+    if(btn)btn.textContent=`${labels[k]} (${counts[k]})`;
+  });
 }
 function setGoal(){
   const g=prompt('Daily dial goal:',cfg.callGoal||50);if(g===null)return;
@@ -1374,8 +1424,14 @@ function renderDialer(){
   const qraw=(document.getElementById('dialSearch')?.value||'').trim();
   const q=qraw.toLowerCase();
   const qDigits=qraw.replace(/\D/g,'');
+  const DUE_STATUSES=['called','voicemail','texted','callback'];
   let list=leads.filter(l=>{
-    if(dialFilter!=='all'&&l.status!==dialFilter)return false;
+    if(dialFilter==='duenow'){
+      if(!DUE_STATUSES.includes(l.status))return false;
+      if(!isDue(l))return false;
+    }else if(dialFilter!=='all'&&l.status!==dialFilter){
+      return false;
+    }
     if(nicheFilter!=='all'&&nicheKey(l)!==nicheFilter)return false;
     if(q){
       const phoneDigits=(l.phone||'').replace(/\D/g,'');
@@ -1387,6 +1443,8 @@ function renderDialer(){
   });
   if(dialFilter==='callback'){
     list.sort((a,b)=>(a.callbackDate||'9999').localeCompare(b.callbackDate||'9999'));
+  }else if(dialFilter==='duenow'){
+    list.sort((a,b)=>(a.nextContactAt||0)-(b.nextContactAt||0)); // most overdue first
   }else{
     list.sort((a,b)=>{
       const aw=a.website?1:0, bw=b.website?1:0;
@@ -1423,7 +1481,7 @@ function renderDialer(){
     return `<div class="dlead ${l.status}">
       <div class="dlead-top">
         <div class="dlead-id">
-          <div class="dlead-name">${esc(l.name)} <span class="status-pill ${sm[l.status]}">${sl[l.status]}</span>${l.website?'<span class="badge badge-has-site">Has site</span>':'<span class="badge badge-no-site">No website</span>'}${openBadge(l)}${qualityBadges(l)}${adBadge(l)}${emailBadge(l)}</div>
+          <div class="dlead-name">${esc(l.name)} <span class="status-pill ${sm[l.status]}">${sl[l.status]}</span>${l.website?'<span class="badge badge-has-site">Has site</span>':'<span class="badge badge-no-site">No website</span>'}${nextContactBadge(l)}${openBadge(l)}${qualityBadges(l)}${adBadge(l)}${emailBadge(l)}</div>
           <div class="dlead-meta">${esc(meta)}</div>
         </div>
         <div class="dlead-since"><div class="n" style="color:${l.lastTouchAt&&daysSince(l.lastTouchAt)>=7?'var(--red)':'var(--text)'}">${sinceLabel(l.lastTouchAt)}</div><div class="l">last touch</div></div>
@@ -1549,6 +1607,20 @@ function emailBadge(l){
   if(l.emailStatus==='invalid')return '<span class="badge badge-emailbad">✉ Invalid</span>';
   return '<span class="badge badge-emailunk">✉ Unverified</span>';
 }
+// A lead is "due" once its cadence window has passed — used to build the Due Now
+// queue and stat. 'new' (never contacted) is handled separately since it's always
+// actionable by definition; booked/dead leads are done, never due again.
+function isDue(l){
+  if(l.status==='new'||l.status==='booked'||l.status==='dead')return false;
+  return !l.nextContactAt||l.nextContactAt<=Date.now();
+}
+function nextContactBadge(l){
+  if(l.status==='new')return '<span class="badge" style="background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe">🆕 Never contacted</span>';
+  if(l.status==='booked'||l.status==='dead')return '';
+  if(isDue(l))return '<span class="badge" style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca">⏰ Due now</span>';
+  const days=Math.max(1,Math.round((l.nextContactAt-Date.now())/86400000));
+  return `<span class="badge" style="background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb">⏳ Next in ${days}d</span>`;
+}
 function prospectScore(l){
   let score=0;
   const q=leadQuality(l).s;
@@ -1597,6 +1669,7 @@ function markCalled(id){
   leads[i].callCount=(leads[i].callCount||0)+1;leads[i].lastTouchAt=Date.now();
   leads[i].everReached=true;
   if(leads[i].status==='new'||leads[i].status==='callback')leads[i].status='called';
+  leads[i].nextContactAt=Date.now()+(cfg.followupCadence.called||4)*86400000;
   callLog.push({ts:Date.now(),leadId:id,type:'call'});persistCallLog();persist();
   logActivity(id,'call','Reached — call #'+leads[i].callCount);
   renderDialer();updateDialBadge();toast('Marked reached',1600,'ok');
@@ -1604,6 +1677,7 @@ function markCalled(id){
 function markVoicemail(id){
   const i=leadIdx(id);if(i<0)return;
   leads[i].vmCount=(leads[i].vmCount||0)+1;leads[i].lastTouchAt=Date.now();leads[i].status='voicemail';
+  leads[i].nextContactAt=Date.now()+(cfg.followupCadence.voicemail||3)*86400000;
   callLog.push({ts:Date.now(),leadId:id,type:'voicemail'});persistCallLog();persist();
   logActivity(id,'voicemail','Left voicemail #'+leads[i].vmCount);
   renderDialer();updateDialBadge();toast('Voicemail logged (counts as a dial)',2000,'ok');
@@ -1621,6 +1695,7 @@ function sendText(id){
   const tpl=(cfg.textTpl||'Hi {name}, ').replace(/\{name\}/g,l.name||'there');
   leads[i].textCount=(leads[i].textCount||0)+1;leads[i].lastTouchAt=Date.now();
   if(leads[i].status==='new'||leads[i].status==='called')leads[i].status='texted';
+  leads[i].nextContactAt=Date.now()+(cfg.followupCadence.texted||2)*86400000;
   callLog.push({ts:Date.now(),leadId:id,type:'text'});persistCallLog();persist();
   logActivity(id,'text','Texted — attempt #'+leads[i].textCount);
   window.location.href=smsHref(l.phone,tpl);
@@ -1645,6 +1720,7 @@ function markNoAnswer(id){
   }else{
     l.noAnswerAttemptsToday=(l.noAnswerAttemptsToday||0)+1;
   }
+  l.nextContactAt=Date.now()+(cfg.followupCadence.no_answer||1)*86400000;
   if(l.status==='new'||l.status==='callback')l.status='new';
   callLog.push({ts:Date.now(),leadId:id,type:'no_answer'});persistCallLog();persist();
   logActivity(id,'no_answer','No answer — day '+l.noAnswerDays+' of 5');
@@ -1661,6 +1737,7 @@ function markCallLater(id){
   const note=prompt('Note for this follow-up (optional):','')||'';
   leads[i].status='callback';
   leads[i].callbackDate=dateStr;
+  leads[i].nextContactAt=new Date(dateStr+'T09:00:00').getTime()||Date.now();
   leads[i].notes=(leads[i].notes?leads[i].notes+'\n':'')+`[Callback ${dateStr}] ${note}`;
   leads[i].lastTouchAt=Date.now();
   persist();logActivity(id,'callback','Callback set for '+dateStr+(note?' — '+note:''));renderDialer();updateDialBadge();
