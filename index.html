@@ -408,7 +408,7 @@ tbody td{padding:11px 14px;vertical-align:middle}
           </div>
           <div style="font-size:11.5px;color:#92400e;background:#fff;border:1px solid #fde68a;border-radius:8px;padding:9px 11px;line-height:1.5">
             <b>Skip a niche if</b> one job is under $500, customers only find them by word-of-mouth, or they're booked solid (that's what killed drywall).
-            <br><b>Detailers:</b> use "ceramic coating" / "auto spa" — never "car wash" or "mobile detailing." Auto-filtered to 50+ reviews only — anything at or under 50 reviews won't show up in search results at all. No fixed address is still flagged, not filtered.
+            <br><b>Detailers:</b> use "ceramic coating" / "auto spa" — never "car wash" or "mobile detailing." Auto-filtered by a minimum review count (default 50+, editable in Settings → Niche Qualification Rules) — anything at or under the threshold won't show up in search results at all. No fixed address is still flagged, not filtered. Add the same kind of rule for any other niche in Settings.
           </div>
         </div>
       </div>
@@ -420,7 +420,7 @@ tbody td{padding:11px 14px;vertical-align:middle}
       </div>
 
       <div class="state-picker">
-        <div class="state-picker-header"><span class="state-picker-title">&#128506;&#65039; Quick State &amp; City Picker</span>
+        <div class="state-picker-header"><span class="state-picker-title">&#128506;&#65039; Quick State &amp; City Picker (US)</span>
           <div class="state-select"><select id="statePick" onchange="onStatePicked()"><option value="">Choose a state…</option></select></div>
         </div>
         <div id="cityPickerBody" style="display:none">
@@ -432,7 +432,7 @@ tbody td{padding:11px 14px;vertical-align:middle}
             <button class="btn btn-primary btn-sm" onclick="applyPickedCities()" id="applyCitiesBtn" disabled>Apply &rarr;</button>
           </div>
         </div>
-        <div id="cityPickerEmpty" style="font-size:12px;color:var(--text-muted);text-align:center;padding:8px 0">Pick a state to see its cities. Cities with &#10003; have already been searched.</div>
+        <div id="cityPickerEmpty" style="font-size:12px;color:var(--text-muted);text-align:center;padding:8px 0">Pick a state to see its cities — cities with &#10003; have already been searched. This picker is a US shortcut; outside the US, skip it and just type any city, region, or country directly into Search below — it works the same way everywhere.</div>
       </div>
 
       <div class="card" style="margin-bottom:20px">
@@ -441,14 +441,14 @@ tbody td{padding:11px 14px;vertical-align:middle}
           <div id="modeSingle">
             <div class="search-grid">
               <div class="field"><label>Business Type</label><input type="text" id="bizType" placeholder="drywall, detailer, gym…" list="bizSuggestions" /><datalist id="bizSuggestions"></datalist></div>
-              <div class="field"><label>City / Area</label><input type="text" id="location" placeholder="e.g. Appleton WI" /></div>
+              <div class="field"><label>City / Area</label><input type="text" id="location" placeholder="e.g. Appleton WI, or Manchester UK, or Toronto ON" /></div>
               <button class="btn btn-primary" id="searchBtn" onclick="runSearch()" style="height:38px">Search</button>
             </div>
           </div>
           <div id="modeBulk" style="display:none">
             <div class="search-grid-bulk">
               <div class="field"><label>Business Type</label><input type="text" id="bizTypeBulk" placeholder="drywall, detailer…" list="bizSuggestions2" /><datalist id="bizSuggestions2"></datalist></div>
-              <div class="field"><label>Cities — one per line or comma-separated</label><textarea id="bulkCities" style="height:90px;font-size:13px" placeholder="Appleton WI&#10;Green Bay WI"></textarea></div>
+              <div class="field"><label>Cities — one per line or comma-separated</label><textarea id="bulkCities" style="height:90px;font-size:13px" placeholder="Appleton WI&#10;Green Bay WI&#10;Manchester UK"></textarea></div>
               <div class="field" style="margin-top:22px"><button class="btn btn-primary" id="searchBtnBulk" onclick="runSearch()" style="width:100%;justify-content:center">&#128640; Search All</button></div>
             </div>
           </div>
@@ -465,7 +465,7 @@ tbody td{padding:11px 14px;vertical-align:middle}
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><div class="progress-label" id="progLabel">Searching…</div><button class="btn btn-ghost btn-sm" onclick="cancelFlag=true" style="font-size:11px;color:#dc2626">&times; Cancel</button></div>
         <div class="progress-sub" id="progSub">Fetching from Google Places</div>
         <div class="progress-bar-bg"><div class="progress-bar-fill" id="progBar" style="width:0%"></div></div>
-        <div class="progress-stats"><div>Found: <strong id="progFound">0</strong></div><div>No website: <strong id="progNoSite" style="color:var(--primary)">0</strong></div></div>
+        <div class="progress-stats"><div>Found: <strong id="progFound">0</strong></div><div>No website: <strong id="progNoSite" style="color:var(--primary)">0</strong></div><div id="progFilteredWrap" style="display:none">Filtered (niche rule): <strong id="progFiltered" style="color:var(--amber)">0</strong></div></div>
       </div>
 
       <div id="searchResults"><div class="empty"><div class="empty-icon">&#128269;</div><h3>Ready to search</h3><p>Enter a business type and city — or use the picker above.</p></div></div>
@@ -518,6 +518,8 @@ tbody td{padding:11px 14px;vertical-align:middle}
           <div class="field"><label>Max Pages per Query</label><select id="sPages"><option value="1">1 page (20)</option><option value="2">2 pages (40)</option><option value="3" selected>3 pages (60)</option></select></div>
           <div class="field"><label>Max Synonym Queries</label><select id="sSynonyms"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="5">5 (broad)</option></select></div>
         </div></div>
+      <div class="card" style="max-width:680px;margin-top:16px"><div class="card-header"><span class="card-title">Niche Qualification Rules</span></div>
+        <div class="card-body"><div class="field"><label>One rule per line: niche term = minimum reviews required. The term must match what you type into Business Type (case-insensitive) — or be a substring of it. Leads at or under the number won't show up in search results, and existing pipeline leads that no longer qualify get archived automatically the next time you load the app. Leave a niche out entirely to apply no review-count gate to it.</label><textarea id="sNicheMinReviews" style="min-height:140px;font-size:13px;line-height:1.6;font-family:ui-monospace,monospace" placeholder="detailer = 50&#10;auto detailing = 50"></textarea></div></div></div>
       <div class="card" style="max-width:680px;margin-top:16px"><div class="card-header"><span class="card-title">Pipeline</span></div>
         <div class="card-body"><p style="font-size:12.5px;color:var(--text-secondary);line-height:1.6">Active pipeline is capped at <strong>100</strong> leads. Once it drops under <strong>40</strong>, backlogged leads (from search or manual add) get pulled back in automatically. Unreachable / Out-of-Service leads move to a separate archive and no longer count against the cap — used to calculate your connect rate.</p></div></div>
       <div class="card" style="max-width:680px;margin-top:16px"><div class="card-header"><span class="card-title">Backup &amp; Restore</span></div>
@@ -741,7 +743,7 @@ Alright, I hear you.
 Would you be opposed to just taking a look at what it'd look like for your business?
 
 I've got mornings and afternoons open — what works better for you?`;
-let cfg={ready:false,user:{name:'',business:''},placesKey:'',metaAdsKey:'',hunterKey:'',neverBounceKey:'',maxPages:3,maxSynonyms:3,callGoal:50,emailGoal:30,warmupStart:'',ghlToken:'',ghlLocation:'',textTpl:'',scriptTemplate:''};
+let cfg={ready:false,user:{name:'',business:''},placesKey:'',metaAdsKey:'',hunterKey:'',neverBounceKey:'',maxPages:3,maxSynonyms:3,callGoal:50,emailGoal:30,warmupStart:'',ghlToken:'',ghlLocation:'',textTpl:'',scriptTemplate:'',nicheMinReviews:undefined};
 let leads=[],searchedStates={},scriptText='',callLog=[],archivedLeads=[],backlogLeads=[];
 let allResults=[],cancelFlag=false,searchMode='single',dialFilter='new',activeLeadId=null,adLeadId=null,emailLeadId=null;
 let currentPickedState='',pickedCities=new Set();
@@ -764,6 +766,7 @@ function loadAll(){
   if(cfg.ghlToken===undefined)cfg.ghlToken='';
   if(cfg.ghlLocation===undefined)cfg.ghlLocation='';
   if(!cfg.scriptTemplate)cfg.scriptTemplate=DEFAULT_SCRIPT_TEMPLATE;
+  if(cfg.nicheMinReviews===undefined)cfg.nicheMinReviews={...DEFAULT_NICHE_MIN_REVIEWS};
   leads=lsGet(LS.LEADS,[])||[]; searchedStates=lsGet(LS.SEARCHED,{})||{};
   scriptText=lsGet(LS.SCRIPT,'')||''; callLog=lsGet(LS.CALLLOG,[])||[];
   archivedLeads=lsGet(LS.ARCHIVE,[])||[]; backlogLeads=lsGet(LS.BACKLOG,[])||[];
@@ -828,9 +831,11 @@ function startOfWeek(){const d=new Date();d.setHours(0,0,0,0);const day=(d.getDa
 
 document.addEventListener('DOMContentLoaded',()=>{
   loadAll();
+  const sweptOnLoad=sweepDisqualifiedNicheLeads();
   document.getElementById('sb-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
   if(!cfg.ready){document.getElementById('setup').classList.add('show');return;}
   boot();
+  if(sweptOnLoad)toast(`Archived ${sweptOnLoad} lead${sweptOnLoad!==1?'s':''} below niche review minimums`,3400);
 });
 function boot(){
   populateStateDropdown(); populateSuggestions(); loadSettingsUI(); updateApiStatus();
@@ -873,6 +878,7 @@ function loadSettingsUI(){
   document.getElementById('sScriptTemplate').value=cfg.scriptTemplate||DEFAULT_SCRIPT_TEMPLATE;
   document.getElementById('sPages').value=cfg.maxPages||3;
   document.getElementById('sSynonyms').value=cfg.maxSynonyms||3;
+  document.getElementById('sNicheMinReviews').value=serializeNicheMinReviews(cfg.nicheMinReviews);
 }
 function saveSettings(){
   cfg.user.name=document.getElementById('sName').value.trim();
@@ -890,7 +896,10 @@ function saveSettings(){
   cfg.scriptTemplate=document.getElementById('sScriptTemplate').value||DEFAULT_SCRIPT_TEMPLATE;
   cfg.maxPages=parseInt(document.getElementById('sPages').value)||3;
   cfg.maxSynonyms=parseInt(document.getElementById('sSynonyms').value)||3;
+  cfg.nicheMinReviews=parseNicheMinReviews(document.getElementById('sNicheMinReviews').value);
   persistCfg(); updateApiStatus(); loadSettingsUI(); updateDialStats(); toast('Settings saved',2000,'ok');
+  const sweptAfterSave=sweepDisqualifiedNicheLeads();
+  if(sweptAfterSave){renderDialer();updateDialBadge();toast(`Rules updated — archived ${sweptAfterSave} lead${sweptAfterSave!==1?'s':''} that no longer qualify`,3400);}
 }
 function updateApiStatus(){
   const ok=!!cfg.placesKey,dot=document.getElementById('apiDot');if(!dot)return;
@@ -944,7 +953,7 @@ function applyPickedCities(){
 }
 function recordSearch(ab,city,n){
   if(!ab)return;
-  if(!searchedStates[ab])searchedStates[ab]={name:US_CITIES[ab]?.name||ab,cities:{}};
+  if(!searchedStates[ab])searchedStates[ab]={name:ab==='INTL'?'International / Other':(US_CITIES[ab]?.name||ab),cities:{}};
   const cur=searchedStates[ab].cities[city]||{count:0,ts:0};
   searchedStates[ab].cities[city]={count:(cur.count||0)+(n||0),ts:Date.now()};
   persistSearched();
@@ -981,19 +990,75 @@ function renderCoverage(){
 function setMode(m){searchMode=m;document.getElementById('modeSingle').style.display=m==='single'?'block':'none';document.getElementById('modeBulk').style.display=m==='bulk'?'block':'none';document.getElementById('tabSingle').classList.toggle('active',m==='single');document.getElementById('tabBulk').classList.toggle('active',m==='bulk');}
 function parseCities(raw){return raw.split(/[\n,]+/).map(c=>c.trim()).filter(Boolean);}
 
-// Detailer-only qualification: 50+ reviews required. Applies ONLY to detailer-type
-// searches (detailer, auto detailing, car detailing, mobile detailing, auto spa,
-// ceramic coating, paint protection film) — every other niche is unaffected.
-const DETAILER_TERMS=new Set(['detailer','auto detailing','car detailing','mobile detailing','auto spa','ceramic coating','paint protection film','ppf']);
-function isDetailerBizType(bt){
-  const t=(bt||'').trim().toLowerCase();
-  if(DETAILER_TERMS.has(t))return true;
-  return /detail|ceramic coating|paint protection film|\bppf\b/.test(t);
+// Niche qualification: minimum review count required per niche, configurable in
+// Settings (not hardcoded to one niche) so this same mechanism works for any niche,
+// in any country — you decide which niches get gated and at what threshold.
+// Seeded by default with the original detailer terms/50-review rule so behavior is
+// unchanged out of the box; edit or add lines in Settings → Niche Qualification Rules.
+const DEFAULT_NICHE_MIN_REVIEWS={
+  'detailer':50,'auto detailing':50,'car detailing':50,'mobile detailing':50,
+  'auto spa':50,'ceramic coating':50,'paint protection film':50,'ppf':50,
+};
+function parseNicheMinReviews(text){
+  const obj={};
+  (text||'').split('\n').forEach(line=>{
+    const idx=line.indexOf('=');
+    if(idx<0)return;
+    const key=line.slice(0,idx).trim().toLowerCase();
+    const val=parseInt(line.slice(idx+1).trim());
+    if(key&&!isNaN(val)&&val>=0)obj[key]=val;
+  });
+  return obj;
+}
+function serializeNicheMinReviews(obj){
+  return Object.entries(obj||{}).map(([k,v])=>`${k} = ${v}`).join('\n');
+}
+function getNicheMinReviews(bizTypeStr){
+  const t=(bizTypeStr||'').trim().toLowerCase();
+  if(!t)return null;
+  const rules=cfg.nicheMinReviews||{};
+  if(Object.prototype.hasOwnProperty.call(rules,t))return rules[t];
+  // fallback: substring match against configured niche keys (longest key wins),
+  // so typing something close to a configured term ("mobile detailing near me")
+  // still gets caught even without an exact match
+  let best=null,bestLen=0;
+  for(const key in rules){
+    if(key&&t.includes(key)&&key.length>bestLen){best=rules[key];bestLen=key.length;}
+  }
+  return best;
 }
 function passesNicheQualification(bizTypeStr,reviewCount){
-  if(isDetailerBizType(bizTypeStr))return (reviewCount||0)>50;
-  return true; // no hard review-count gate for any other niche
+  const minReviews=getNicheMinReviews(bizTypeStr);
+  if(minReviews===null||minReviews===undefined)return true; // no rule configured — no gate
+  return (reviewCount||0)>minReviews;
 }
+
+// Retroactive cleanup: catches leads that entered the pipeline BEFORE a niche rule
+// existed (or before its threshold changed), plus any that slip in via Manual Add
+// or CSV Import (those two entry points intentionally bypass the search-time filter
+// so you can still hand-add a specific lead you already trust, since neither form
+// collects a review count to gate on). Archives them — same pattern as
+// Unreachable/Out of Service/Dead — so they're recoverable via CSV/JSON export but
+// never shown in the dialer, backlog, or niche filters again.
+function sweepDisqualifiedNicheLeads(){
+  let moved=0;
+  const sweepArray=(arr)=>{
+    const keep=[],drop=[];
+    arr.forEach(l=>{
+      const bt=l.bizType||l.niche||'';
+      const rv=l.reviews||0;
+      if(!passesNicheQualification(bt,rv))drop.push(l);else keep.push(l);
+    });
+    drop.forEach(l=>archivedLeads.unshift({...l,archivedAt:Date.now(),archiveReason:'niche_disqualified'}));
+    moved+=drop.length;
+    return keep;
+  };
+  leads=sweepArray(leads);
+  backlogLeads=sweepArray(backlogLeads);
+  if(moved){persist();persistBacklog();persistArchive();}
+  return moved;
+}
+
 
 async function geocodeCity(city){
   try{const r=await fetch('https://places.googleapis.com/v1/places:searchText',{method:'POST',headers:{'Content-Type':'application/json','X-Goog-Api-Key':cfg.placesKey,'X-Goog-FieldMask':'places.location'},body:JSON.stringify({textQuery:city,maxResultCount:1})});if(!r.ok)return null;const d=await r.json();const p=d.places?.[0];return p?.location?{lat:p.location.latitude,lng:p.location.longitude}:null;}catch(e){return null;}
@@ -1027,12 +1092,19 @@ async function runSearch(){
   const queries=(useSyns&&syns)?[...new Set([...syns,bizType])].slice(0,maxSyns):[bizType];
 
   ['searchBtn','searchBtnBulk'].forEach(id=>{const b=document.getElementById(id);if(b){b.disabled=true;b.innerHTML='<span class="spinner"></span>';}});
-  cancelFlag=false;allResults=[];const seen=new Set();const cityCounts={};
+  cancelFlag=false;allResults=[];let filteredOut=0;const seen=new Set();const cityCounts={};
   const totalCalls=cityList.length*queries.length*maxPages;let done=0;
   document.getElementById('progressWrap').style.display='block';
   document.getElementById('searchResults').innerHTML='';
 
-  function prog(label,sub){document.getElementById('progLabel').textContent=label;document.getElementById('progSub').textContent=sub;document.getElementById('progBar').style.width=Math.round(done/totalCalls*100)+'%';document.getElementById('progFound').textContent=allResults.length;document.getElementById('progNoSite').textContent=allResults.filter(l=>!l.website).length;}
+  function prog(label,sub){
+    document.getElementById('progLabel').textContent=label;document.getElementById('progSub').textContent=sub;
+    document.getElementById('progBar').style.width=Math.round(done/totalCalls*100)+'%';
+    document.getElementById('progFound').textContent=allResults.length;
+    document.getElementById('progNoSite').textContent=allResults.filter(l=>!l.website).length;
+    const fw=document.getElementById('progFilteredWrap');
+    if(filteredOut>0){fw.style.display='block';document.getElementById('progFiltered').textContent=filteredOut;}
+  }
 
   async function fetchPage(query,city,token){
     const body={textQuery:`${query} in ${city}`,maxResultCount:20,languageCode:'en'};if(token)body.pageToken=token;
@@ -1054,7 +1126,7 @@ async function runSearch(){
             (data.places||[]).forEach(pl=>{
               const id=pl.id||pl.formattedAddress;if(seen.has(id))return;seen.add(id);
               const reviewCount=pl.userRatingCount||0;
-              if(!passesNicheQualification(bizType,reviewCount))return; // detailer-only: hides <=50-review detailers entirely, never enters results
+              if(!passesNicheQualification(bizType,reviewCount)){filteredOut++;return;} // niche rule: hides leads under the configured minimum, never enters results
               allResults.push({id,placeId:pl.id||'',name:pl.displayName?.text||'Unknown',address:pl.formattedAddress||'',phone:pl.nationalPhoneNumber||'',website:pl.websiteUri||'',rating:pl.rating||null,reviews:reviewCount,city,googleMapsUri:pl.googleMapsUri||'',bizType,hours:pl.regularOpeningHours?.periods||null,utcOffset:(typeof pl.utcOffsetMinutes==='number'?pl.utcOffsetMinutes:null)});
               cityCounts[city]++;
             });
@@ -1063,11 +1135,17 @@ async function runSearch(){
           }catch(err){done++;console.warn(query,city,err.message);}
         }
       }
-      const st=detectState(city);if(st)recordSearch(st,cityOnly(city),cityCounts[city]);
+      const st=detectState(city);
+      recordSearch(st||'INTL',st?cityOnly(city):city,cityCounts[city]);
     }
-    prog('Search complete ✓',`${allResults.length} leads found`);
+    prog('Search complete ✓',`${allResults.length} leads found`+(filteredOut?`, ${filteredOut} filtered by niche rule`:''));
     refreshStateLabels();if(currentPickedState)onStatePicked();
-    if(!allResults.length){document.getElementById('progressWrap').style.display='none';document.getElementById('searchResults').innerHTML=`<div class="empty"><div class="empty-icon">😐</div><h3>No results</h3><p>Try a different business type or location.</p></div>`;return;}
+    if(!allResults.length){
+      document.getElementById('progressWrap').style.display='none';
+      const filteredMsg=filteredOut?`<p>${filteredOut} result${filteredOut!==1?'s were':' was'} found but filtered out by your niche qualification rule in Settings — lower the minimum there, or try a different business type or location.</p>`:`<p>Try a different business type or location.</p>`;
+      document.getElementById('searchResults').innerHTML=`<div class="empty"><div class="empty-icon">😐</div><h3>No results</h3>${filteredMsg}</div>`;
+      return;
+    }
     if(document.getElementById('autoAddList').checked) autoAddResults();
     renderResults();
   }catch(err){document.getElementById('progressWrap').style.display='none';document.getElementById('searchResults').innerHTML=`<div class="empty"><div class="empty-icon">❌</div><h3>Error</h3><p>${esc(err.message)}</p></div>`;}
