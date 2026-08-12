@@ -410,7 +410,7 @@ tbody td{padding:11px 14px;vertical-align:middle}
           </div>
           <div style="font-size:11.5px;color:#92400e;background:#fff;border:1px solid #fde68a;border-radius:8px;padding:9px 11px;line-height:1.5">
             <b>Skip a niche if</b> one job is under $500, customers only find them by word-of-mouth, or they're booked solid (that's what killed drywall).
-            <br><b>Detailers:</b> use "ceramic coating" / "auto spa" — never "car wash" or "mobile detailing." Auto-filtered by a minimum review count (default 50+, editable in Settings → Niche Qualification Rules) — anything at or under the threshold won't show up in search results at all. No fixed address is still flagged, not filtered. Add the same kind of rule for any other niche in Settings.
+            <br><b>Detailers:</b> use "ceramic coating" / "auto spa" — never "car wash" or "mobile detailing." No website? Always shown, no review-count gate — that's the ideal prospect. Already got a site? Needs 20+ reviews by default (editable in Settings → Niche Qualification Rules), or it won't show up in search results at all. No fixed address is still flagged, not filtered. Add the same kind of rule for any other niche in Settings.
           </div>
         </div>
       </div>
@@ -521,7 +521,7 @@ tbody td{padding:11px 14px;vertical-align:middle}
           <div class="field"><label>Max Synonym Queries</label><select id="sSynonyms"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="5">5 (broad)</option></select></div>
         </div></div>
       <div class="card" style="max-width:680px;margin-top:16px"><div class="card-header"><span class="card-title">Niche Qualification Rules</span></div>
-        <div class="card-body"><div class="field"><label>One rule per line: niche term = minimum reviews required. The term must match what you type into Business Type (case-insensitive) — or be a substring of it. Leads at or under the number won't show up in search results, and existing pipeline leads that no longer qualify get archived automatically the next time you load the app. Leave a niche out entirely to apply no review-count gate to it.</label><textarea id="sNicheMinReviews" style="min-height:140px;font-size:13px;line-height:1.6;font-family:ui-monospace,monospace" placeholder="detailer = 50&#10;auto detailing = 50"></textarea></div></div></div>
+        <div class="card-body"><div class="field"><label>One rule per line: niche term = minimum reviews required — this threshold only applies to leads that already have a website. Leads with no website always qualify regardless of review count, since that's the ideal prospect for what we sell. The term must match what you type into Business Type (case-insensitive) — or be a substring of it. Leads at or under the number won't show up in search results, and existing pipeline leads that no longer qualify get archived automatically the next time you load the app. Leave a niche out entirely to apply no review-count gate to it.</label><textarea id="sNicheMinReviews" style="min-height:140px;font-size:13px;line-height:1.6;font-family:ui-monospace,monospace" placeholder="detailer = 20&#10;auto detailing = 20"></textarea></div></div></div>
       <div class="card" style="max-width:680px;margin-top:16px"><div class="card-header"><span class="card-title">Follow-Up Cadence (days)</span></div>
         <div class="card-body settings-grid">
           <div class="field"><label>After No Answer</label><input type="number" id="sCadenceNoAnswer" min="0" /></div>
@@ -776,7 +776,16 @@ function loadAll(){
   if(cfg.ghlToken===undefined)cfg.ghlToken='';
   if(cfg.ghlLocation===undefined)cfg.ghlLocation='';
   if(!cfg.scriptTemplate)cfg.scriptTemplate=DEFAULT_SCRIPT_TEMPLATE;
-  if(cfg.nicheMinReviews===undefined)cfg.nicheMinReviews={...DEFAULT_NICHE_MIN_REVIEWS};
+  if(cfg.nicheMinReviews===undefined){
+    cfg.nicheMinReviews={...DEFAULT_NICHE_MIN_REVIEWS};
+  }else{
+    // one-time: anyone whose saved rule is still exactly the old 50-review default gets
+    // moved to the new 20-review default automatically; anything you've since edited
+    // to a custom number is left untouched
+    Object.keys(DEFAULT_NICHE_MIN_REVIEWS).forEach(k=>{
+      if(cfg.nicheMinReviews[k]===50)cfg.nicheMinReviews[k]=DEFAULT_NICHE_MIN_REVIEWS[k];
+    });
+  }
   if(cfg.followupCadence===undefined)cfg.followupCadence={...DEFAULT_FOLLOWUP_CADENCE};
   leads=lsGet(LS.LEADS,[])||[]; searchedStates=lsGet(LS.SEARCHED,{})||{};
   scriptText=lsGet(LS.SCRIPT,'')||''; callLog=lsGet(LS.CALLLOG,[])||[];
@@ -1026,8 +1035,8 @@ const DEFAULT_FOLLOWUP_CADENCE={no_answer:1,voicemail:3,texted:2,called:4};
 // Seeded by default with the original detailer terms/50-review rule so behavior is
 // unchanged out of the box; edit or add lines in Settings → Niche Qualification Rules.
 const DEFAULT_NICHE_MIN_REVIEWS={
-  'detailer':50,'auto detailing':50,'car detailing':50,'mobile detailing':50,
-  'auto spa':50,'ceramic coating':50,'paint protection film':50,'ppf':50,
+  'detailer':20,'auto detailing':20,'car detailing':20,'mobile detailing':20,
+  'auto spa':20,'ceramic coating':20,'paint protection film':20,'ppf':20,
 };
 function parseNicheMinReviews(text){
   const obj={};
@@ -1057,9 +1066,10 @@ function getNicheMinReviews(bizTypeStr){
   }
   return best;
 }
-function passesNicheQualification(bizTypeStr,reviewCount){
+function passesNicheQualification(bizTypeStr,reviewCount,hasWebsite){
   const minReviews=getNicheMinReviews(bizTypeStr);
   if(minReviews===null||minReviews===undefined)return true; // no rule configured — no gate
+  if(!hasWebsite)return true; // no-website leads always qualify — they're the ideal prospect regardless of review count
   return (reviewCount||0)>minReviews;
 }
 
@@ -1077,7 +1087,7 @@ function sweepDisqualifiedNicheLeads(){
     arr.forEach(l=>{
       const bt=l.bizType||l.niche||'';
       const rv=l.reviews||0;
-      if(!passesNicheQualification(bt,rv))drop.push(l);else keep.push(l);
+      if(!passesNicheQualification(bt,rv,!!l.website))drop.push(l);else keep.push(l);
     });
     drop.forEach(l=>archivedLeads.unshift({...l,archivedAt:Date.now(),archiveReason:'niche_disqualified'}));
     moved+=drop.length;
@@ -1156,7 +1166,7 @@ async function runSearch(){
             (data.places||[]).forEach(pl=>{
               const id=pl.id||pl.formattedAddress;if(seen.has(id))return;seen.add(id);
               const reviewCount=pl.userRatingCount||0;
-              if(!passesNicheQualification(bizType,reviewCount)){filteredOut++;return;} // niche rule: hides leads under the configured minimum, never enters results
+              if(!passesNicheQualification(bizType,reviewCount,!!pl.websiteUri)){filteredOut++;return;} // niche rule: hides leads under the configured minimum, unless they have no website — that's the ideal prospect regardless of reviews
               allResults.push({id,placeId:pl.id||'',name:pl.displayName?.text||'Unknown',address:pl.formattedAddress||'',phone:pl.nationalPhoneNumber||'',website:pl.websiteUri||'',rating:pl.rating||null,reviews:reviewCount,city,googleMapsUri:pl.googleMapsUri||'',bizType,hours:pl.regularOpeningHours?.periods||null,utcOffset:(typeof pl.utcOffsetMinutes==='number'?pl.utcOffsetMinutes:null)});
               cityCounts[city]++;
             });
