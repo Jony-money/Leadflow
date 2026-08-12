@@ -408,7 +408,7 @@ tbody td{padding:11px 14px;vertical-align:middle}
           </div>
           <div style="font-size:11.5px;color:#92400e;background:#fff;border:1px solid #fde68a;border-radius:8px;padding:9px 11px;line-height:1.5">
             <b>Skip a niche if</b> one job is under $500, customers only find them by word-of-mouth, or they're booked solid (that's what killed drywall).
-            <br><b>Detailers:</b> use "ceramic coating" / "auto spa" — never "car wash" or "mobile detailing." Skip anything under ~8 reviews or with no fixed address (flagged on each lead).
+            <br><b>Detailers:</b> use "ceramic coating" / "auto spa" — never "car wash" or "mobile detailing." Auto-filtered to 50+ reviews only — anything at or under 50 reviews won't show up in search results at all. No fixed address is still flagged, not filtered.
           </div>
         </div>
       </div>
@@ -981,6 +981,20 @@ function renderCoverage(){
 function setMode(m){searchMode=m;document.getElementById('modeSingle').style.display=m==='single'?'block':'none';document.getElementById('modeBulk').style.display=m==='bulk'?'block':'none';document.getElementById('tabSingle').classList.toggle('active',m==='single');document.getElementById('tabBulk').classList.toggle('active',m==='bulk');}
 function parseCities(raw){return raw.split(/[\n,]+/).map(c=>c.trim()).filter(Boolean);}
 
+// Detailer-only qualification: 50+ reviews required. Applies ONLY to detailer-type
+// searches (detailer, auto detailing, car detailing, mobile detailing, auto spa,
+// ceramic coating, paint protection film) — every other niche is unaffected.
+const DETAILER_TERMS=new Set(['detailer','auto detailing','car detailing','mobile detailing','auto spa','ceramic coating','paint protection film','ppf']);
+function isDetailerBizType(bt){
+  const t=(bt||'').trim().toLowerCase();
+  if(DETAILER_TERMS.has(t))return true;
+  return /detail|ceramic coating|paint protection film|\bppf\b/.test(t);
+}
+function passesNicheQualification(bizTypeStr,reviewCount){
+  if(isDetailerBizType(bizTypeStr))return (reviewCount||0)>50;
+  return true; // no hard review-count gate for any other niche
+}
+
 async function geocodeCity(city){
   try{const r=await fetch('https://places.googleapis.com/v1/places:searchText',{method:'POST',headers:{'Content-Type':'application/json','X-Goog-Api-Key':cfg.placesKey,'X-Goog-FieldMask':'places.location'},body:JSON.stringify({textQuery:city,maxResultCount:1})});if(!r.ok)return null;const d=await r.json();const p=d.places?.[0];return p?.location?{lat:p.location.latitude,lng:p.location.longitude}:null;}catch(e){return null;}
 }
@@ -1039,7 +1053,9 @@ async function runSearch(){
             const data=await fetchPage(query,city,token);done++;
             (data.places||[]).forEach(pl=>{
               const id=pl.id||pl.formattedAddress;if(seen.has(id))return;seen.add(id);
-              allResults.push({id,placeId:pl.id||'',name:pl.displayName?.text||'Unknown',address:pl.formattedAddress||'',phone:pl.nationalPhoneNumber||'',website:pl.websiteUri||'',rating:pl.rating||null,reviews:pl.userRatingCount||0,city,googleMapsUri:pl.googleMapsUri||'',bizType,hours:pl.regularOpeningHours?.periods||null,utcOffset:(typeof pl.utcOffsetMinutes==='number'?pl.utcOffsetMinutes:null)});
+              const reviewCount=pl.userRatingCount||0;
+              if(!passesNicheQualification(bizType,reviewCount))return; // detailer-only: hides <=50-review detailers entirely, never enters results
+              allResults.push({id,placeId:pl.id||'',name:pl.displayName?.text||'Unknown',address:pl.formattedAddress||'',phone:pl.nationalPhoneNumber||'',website:pl.websiteUri||'',rating:pl.rating||null,reviews:reviewCount,city,googleMapsUri:pl.googleMapsUri||'',bizType,hours:pl.regularOpeningHours?.periods||null,utcOffset:(typeof pl.utcOffsetMinutes==='number'?pl.utcOffsetMinutes:null)});
               cityCounts[city]++;
             });
             prog(`"${query}" in ${city}`,`${allResults.length} found`);
