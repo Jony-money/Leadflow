@@ -225,6 +225,38 @@ tbody td{padding:11px 14px;vertical-align:middle}
 .searched-state-tag{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:14px;font-size:11.5px;font-weight:600;background:var(--primary-light);color:var(--primary-dark);border:1px solid #a7f3d0}
 .searched-state-tag .count{font-size:10px;background:rgba(255,255,255,.6);padding:1px 6px;border-radius:8px}
 .backlog-banner{background:#eff3fe;border:1px solid #bfdbfe;border-radius:var(--radius);padding:10px 16px;margin-bottom:14px;font-size:12.5px;color:#1d4ed8;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.kanban-layout{display:flex;gap:16px;align-items:flex-start}
+.niche-sidebar{width:200px;min-width:200px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px;box-shadow:var(--shadow);position:sticky;top:74px;max-height:calc(100vh - 100px);overflow-y:auto}
+.niche-sidebar-title{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);padding:6px 8px 8px}
+.niche-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 9px;border-radius:7px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:1px}
+.niche-item:hover{background:var(--bg);color:var(--text)}
+.niche-item.active{background:var(--primary-light);color:var(--primary-dark);font-weight:700}
+.niche-item .cnt{font-size:11px;font-weight:700;color:var(--text-muted);background:var(--bg);padding:1px 7px;border-radius:10px}
+.niche-item.active .cnt{background:#fff;color:var(--primary-dark)}
+.niche-sidebar-clear{width:100%;margin-top:8px}
+.kanban-wrap{flex:1;min-width:0}
+.kanban-toolbar{margin-bottom:10px}
+.kanban-board{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;align-items:flex-start}
+.kcol{min-width:270px;max-width:270px;background:#f3f4f6;border-radius:10px;padding:8px;flex-shrink:0}
+.kcol-head{display:flex;align-items:center;justify-content:space-between;padding:6px 6px 10px;font-size:12.5px;font-weight:700;color:var(--text-secondary)}
+.kcol-head .cnt{font-size:11px;font-weight:700;color:var(--text-muted);background:#fff;border:1px solid var(--border);padding:1px 8px;border-radius:10px}
+.kcol-body{display:flex;flex-direction:column;gap:8px;min-height:40px}
+.kcard{background:#fff;border:1px solid var(--border);border-radius:9px;padding:10px 11px;box-shadow:0 1px 2px rgba(0,0,0,.05);cursor:pointer}
+.kcard:hover{border-color:var(--border-strong);box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.kcard-top{display:flex;align-items:flex-start;gap:6px}
+.kdot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.kdot.red{background:#dc2626}.kdot.amber{background:#f59e0b}.kdot.blue{background:#3b7ef8}.kdot.gray{background:#d1d5db}
+.kcard-name{font-weight:700;font-size:13px;line-height:1.3;flex:1}
+.kcard-sub{font-size:11px;color:var(--text-muted);margin:3px 0 8px 14px}
+.kcard-actions{display:flex;gap:5px;margin-left:14px}
+.kcard-actions .btn{flex:1;justify-content:center;padding:5px 6px;font-size:11px}
+.kcard-actions .btn-icon{flex:0 0 auto;width:26px;padding:5px 0}
+@media(max-width:900px){
+  .kanban-layout{flex-direction:column}
+  .niche-sidebar{width:100%;min-width:0;position:static;max-height:none;display:flex;flex-wrap:wrap;gap:4px;padding:8px}
+  .niche-sidebar-title{width:100%}
+  .niche-item{flex:0 0 auto}
+}
 .modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
 .modal-overlay.open{display:flex}
 .modal{background:var(--surface);border-radius:14px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
@@ -359,21 +391,15 @@ tbody td{padding:11px 14px;vertical-align:middle}
         </div>
       </div>
 
-      <div id="nicheFilters" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center"></div>
-
-      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
-        <button class="mode-tab active" data-lf="new" onclick="setDialFilter('new')">Never Contacted</button>
-        <button class="mode-tab" data-lf="duenow" onclick="setDialFilter('duenow')">Due Now</button>
-        <button class="mode-tab" data-lf="voicemail" onclick="setDialFilter('voicemail')">Voicemail</button>
-        <button class="mode-tab" data-lf="texted" onclick="setDialFilter('texted')">Texted</button>
-        <button class="mode-tab" data-lf="callback" onclick="setDialFilter('callback')">Callbacks</button>
-        <button class="mode-tab" data-lf="called" onclick="setDialFilter('called')">Called</button>
-        <button class="mode-tab" data-lf="booked" onclick="setDialFilter('booked')">Booked</button>
-        <button class="mode-tab" data-lf="all" onclick="setDialFilter('all')">All</button>
-        <input type="text" id="dialSearch" placeholder="Search name / city / phone…" oninput="renderDialer()" style="max-width:200px;margin-left:auto" />
+      <div class="kanban-layout">
+        <aside class="niche-sidebar" id="nicheSidebar"></aside>
+        <div class="kanban-wrap">
+          <div class="kanban-toolbar">
+            <input type="text" id="dialSearch" placeholder="Search name / city / phone…" oninput="renderDialer()" style="max-width:280px" />
+          </div>
+          <div class="kanban-board" id="kanbanBoard"></div>
+        </div>
       </div>
-
-      <div id="dialerBody"></div>
     </div>
   </div>
 
@@ -554,6 +580,18 @@ tbody td{padding:11px 14px;vertical-align:middle}
     <div class="modal-body">
       <div id="mInfo"></div>
       <div style="margin-top:14px"><div class="section-label" style="margin-bottom:6px">Find Online</div><div id="mSocial" style="display:flex;gap:6px;flex-wrap:wrap"></div></div>
+      <div style="margin-top:14px">
+        <div class="section-label" style="margin-bottom:6px">Actions</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-purple btn-sm" onclick="sendText(activeLeadId)">💬 Text</button>
+          <button class="btn btn-secondary btn-sm" onclick="markCallLater(activeLeadId)">🗓 Call Later</button>
+          <button class="btn btn-secondary btn-sm" onclick="openAdModal(activeLeadId)">🎯 Ad Quality</button>
+          <button class="btn btn-secondary btn-sm" onclick="openEmailModal(activeLeadId)">📧 Email</button>
+          <button class="btn btn-secondary btn-sm" onclick="markOutOfService(activeLeadId)">☎️ Out of Service</button>
+          <button class="btn btn-secondary btn-sm" onclick="markUnreachable(activeLeadId)">🚫 Unreachable</button>
+          <button class="btn btn-ghost btn-sm" onclick="markDead(activeLeadId)">✕ Dead</button>
+        </div>
+      </div>
       <div style="margin-top:16px"><div class="section-label" style="margin-bottom:6px">Contact Name (if known)</div><input type="text" id="mContactName" placeholder="e.g. Mike — leave blank to keep the [Their Name] placeholder" onblur="saveContactName()"></div>
       <div style="margin-top:16px">
         <div class="section-label" style="margin-bottom:6px">Activity Timeline</div>
@@ -755,7 +793,7 @@ Would you be opposed to just taking a look at what it'd look like for your busin
 I've got mornings and afternoons open — what works better for you?`;
 let cfg={ready:false,user:{name:'',business:''},placesKey:'',metaAdsKey:'',hunterKey:'',neverBounceKey:'',maxPages:3,maxSynonyms:3,callGoal:50,emailGoal:30,warmupStart:'',ghlToken:'',ghlLocation:'',textTpl:'',scriptTemplate:'',nicheMinReviews:undefined,followupCadence:undefined};
 let leads=[],searchedStates={},scriptText='',callLog=[],archivedLeads=[],backlogLeads=[];
-let allResults=[],cancelFlag=false,searchMode='single',dialFilter='new',activeLeadId=null,adLeadId=null,emailLeadId=null;
+let allResults=[],cancelFlag=false,searchMode='single',activeLeadId=null,adLeadId=null,emailLeadId=null;
 let currentPickedState='',pickedCities=new Set();
 
 const lsGet=(k,d=null)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}};
@@ -1323,22 +1361,29 @@ function markOutOfService(id){
   archiveLead(id,'out_of_service');
 }
 
-function setDialFilter(f){dialFilter=f;document.querySelectorAll('[data-lf]').forEach(b=>b.classList.toggle('active',b.dataset.lf===f));renderDialer();}
+const KANBAN_COLUMNS=[
+  {key:'new',label:'Never Contacted'},
+  {key:'called',label:'Reached'},
+  {key:'voicemail',label:'Voicemail'},
+  {key:'texted',label:'Texted'},
+  {key:'callback',label:'Callback'},
+  {key:'booked',label:'Booked'},
+];
 
 let nicheFilter='all';
 function nicheKey(l){return (l.bizType||l.niche||'').trim().toLowerCase();}
 function renderNicheFilters(){
-  const el=document.getElementById('nicheFilters');if(!el)return;
+  const el=document.getElementById('nicheSidebar');if(!el)return;
   const counts={};
   leads.forEach(l=>{const k=nicheKey(l);if(k)counts[k]=(counts[k]||0)+1;});
   const niches=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]||a.localeCompare(b));
-  let html=`<span style="font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text-muted)">Niche</span>`;
-  html+=`<button class="mode-tab ${nicheFilter==='all'?'active':''}" onclick='setNiche("all")'>All (${leads.length})</button>`;
+  let html=`<div class="niche-sidebar-title">Niches</div>`;
+  html+=`<div class="niche-item ${nicheFilter==='all'?'active':''}" onclick='setNiche("all")'><span>All</span><span class="cnt">${leads.length}</span></div>`;
   niches.forEach(n=>{
-    html+=`<button class="mode-tab ${nicheFilter===n?'active':''}" onclick='setNiche(${JSON.stringify(n)})'>${esc(n)} (${counts[n]})</button>`;
+    html+=`<div class="niche-item ${nicheFilter===n?'active':''}" onclick='setNiche(${JSON.stringify(n)})'><span>${esc(n)}</span><span class="cnt">${counts[n]}</span></div>`;
   });
   const label=nicheFilter==='all'?`🗑 Clear all`:`🗑 Clear ${esc(nicheFilter)}`;
-  html+=`<button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="clearList()">${label}</button>`;
+  html+=`<button class="btn btn-danger btn-sm niche-sidebar-clear" onclick="clearList()">${label}</button>`;
   el.innerHTML=html;
 }
 function setNiche(n){nicheFilter=n;renderNicheFilters();renderDialer();}
@@ -1403,25 +1448,7 @@ function updateDialStats(){
   se('stTexted',leads.filter(l=>l.status==='texted').length);
   se('stBooked',leads.filter(l=>l.status==='booked').length);
   updateEmailStat();
-  updateFilterTabCounts();
   renderBacklogBanner();
-}
-function updateFilterTabCounts(){
-  const counts={
-    new:leads.filter(l=>l.status==='new').length,
-    duenow:leads.filter(l=>['called','voicemail','texted','callback'].includes(l.status)&&isDue(l)).length,
-    voicemail:leads.filter(l=>l.status==='voicemail').length,
-    texted:leads.filter(l=>l.status==='texted').length,
-    callback:leads.filter(l=>l.status==='callback').length,
-    called:leads.filter(l=>l.status==='called').length,
-    booked:leads.filter(l=>l.status==='booked').length,
-    all:leads.length,
-  };
-  const labels={new:'Never Contacted',duenow:'Due Now',voicemail:'Voicemail',texted:'Texted',callback:'Callbacks',called:'Called',booked:'Booked',all:'All'};
-  Object.keys(counts).forEach(k=>{
-    const btn=document.querySelector(`[data-lf="${k}"]`);
-    if(btn)btn.textContent=`${labels[k]} (${counts[k]})`;
-  });
 }
 function setGoal(){
   const g=prompt('Daily dial goal:',cfg.callGoal||50);if(g===null)return;
@@ -1429,19 +1456,22 @@ function setGoal(){
   toast('Goal set to '+cfg.callGoal,2000,'ok');
 }
 
+// Urgency dot on each card: blue = never contacted (always actionable), red = due now,
+// amber = due within a day, gray = booked/dead/not due yet.
+function dotClass(l){
+  if(l.status==='new')return 'blue';
+  if(l.status==='booked'||l.status==='dead')return 'gray';
+  if(isDue(l))return 'red';
+  const days=l.nextContactAt?Math.round((l.nextContactAt-Date.now())/86400000):99;
+  return days<=1?'amber':'gray';
+}
+
 function renderDialer(){
   renderNicheFilters();renderBacklogBanner();
   const qraw=(document.getElementById('dialSearch')?.value||'').trim();
   const q=qraw.toLowerCase();
   const qDigits=qraw.replace(/\D/g,'');
-  const DUE_STATUSES=['called','voicemail','texted','callback'];
-  let list=leads.filter(l=>{
-    if(dialFilter==='duenow'){
-      if(!DUE_STATUSES.includes(l.status))return false;
-      if(!isDue(l))return false;
-    }else if(dialFilter!=='all'&&l.status!==dialFilter){
-      return false;
-    }
+  const working=leads.filter(l=>{
     if(nicheFilter!=='all'&&nicheKey(l)!==nicheFilter)return false;
     if(q){
       const phoneDigits=(l.phone||'').replace(/\D/g,'');
@@ -1451,70 +1481,51 @@ function renderDialer(){
     }
     return true;
   });
-  if(dialFilter==='callback'){
-    list.sort((a,b)=>(a.callbackDate||'9999').localeCompare(b.callbackDate||'9999'));
-  }else if(dialFilter==='duenow'){
-    list.sort((a,b)=>(a.nextContactAt||0)-(b.nextContactAt||0)); // most overdue first
-  }else{
-    list.sort((a,b)=>{
-      const aw=a.website?1:0, bw=b.website?1:0;
-      if(aw!==bw)return aw-bw;
-      const at=leadQuality(a).s==='thin'?1:0, bt=leadQuality(b).s==='thin'?1:0;
-      if(at!==bt)return at-bt;
-      const aScore=prospectScore(a), bScore=prospectScore(b);
-      if(aScore!==bScore)return bScore-aScore;
-      if(dialFilter==='new')return a.savedAt-b.savedAt;
-      return (b.lastTouchAt||0)-(a.lastTouchAt||0);
-    });
-  }
 
-  const body=document.getElementById('dialerBody');
-  if(!list.length){
-    const msg=leads.length===0?['Your call list is empty','Go to Find Leads — no-website results auto-drop here so you can start dialing.','Find Leads →',"navigate('search')"]:['Nothing in this view','Switch tabs or run another search.','',''];
-    body.innerHTML=`<div class="empty"><div class="empty-icon">📞</div><h3>${msg[0]}</h3><p>${msg[1]}</p>${msg[2]?`<button class="btn btn-primary btn-sm" style="margin-top:14px" onclick="${msg[3]}">${msg[2]}</button>`:''}</div>`;
+  const board=document.getElementById('kanbanBoard');
+  if(!leads.length){
+    board.innerHTML=`<div class="empty" style="width:100%"><div class="empty-icon">📞</div><h3>Your call list is empty</h3><p>Go to Find Leads — no-website results auto-drop here so you can start dialing.</p><button class="btn btn-primary btn-sm" style="margin-top:14px" onclick="navigate('search')">Find Leads →</button></div>`;
     return;
   }
-  const sm={new:'s-new',called:'s-called',texted:'s-texted',voicemail:'s-voicemail',booked:'s-booked',dead:'s-dead',callback:'s-callback'};
-  const sl={new:'To call',called:'Called',texted:'Texted',voicemail:'Voicemail',booked:'Booked',dead:'Dead',callback:'Callback'};
-  body.innerHTML=list.map(l=>{
-    const gmaps=l.googleMapsUri||(l.placeId?`https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(l.placeId)}`:'');
-    const metaBits=[l.city||l.address||'',l.callCount?`called ${l.callCount}×`:'',l.vmCount?`${l.vmCount} VM`:'',l.textCount?`${l.textCount} text`:''];
-    if(l.status==='callback'&&l.callbackDate)metaBits.push(`follow up ${l.callbackDate}`);
-    if((l.noAnswerDays||0)>0)metaBits.push(`no-answer day ${l.noAnswerDays}/5`);
-    const meta=metaBits.filter(Boolean).join(' · ');
-    const callBtn=l.phone
-      ? `<a class="call-btn" href="${telHref(l.phone)}">📞 Call <span class="num">${esc(l.phone)}</span></a>`
-      : `<span class="call-btn nophone">No phone number</span>`;
-    const unreachableBtn=(l.noAnswerDays||0)>=5
-      ? `<button class="btn btn-danger btn-sm" onclick="markUnreachable('${esc(l.id)}')">🚫 Unreachable (day ${l.noAnswerDays}/5)</button>`
-      : `<button class="btn btn-ghost btn-sm" onclick="markUnreachable('${esc(l.id)}')">🚫 Unreachable</button>`;
-    return `<div class="dlead ${l.status}">
-      <div class="dlead-top">
-        <div class="dlead-id">
-          <div class="dlead-name">${esc(l.name)} <span class="status-pill ${sm[l.status]}">${sl[l.status]}</span>${l.website?'<span class="badge badge-has-site">Has site</span>':'<span class="badge badge-no-site">No website</span>'}${nextContactBadge(l)}${openBadge(l)}${qualityBadges(l)}${adBadge(l)}${emailBadge(l)}</div>
-          <div class="dlead-meta">${esc(meta)}</div>
-        </div>
-        <div class="dlead-since"><div class="n" style="color:${l.lastTouchAt&&daysSince(l.lastTouchAt)>=7?'var(--red)':'var(--text)'}">${sinceLabel(l.lastTouchAt)}</div><div class="l">last touch</div></div>
+  if(!working.length){
+    board.innerHTML=`<div class="empty" style="width:100%"><div class="empty-icon">📞</div><h3>Nothing matches this view</h3><p>Try a different niche or clear the search.</p></div>`;
+    return;
+  }
+
+  const gmapsFor=l=>l.googleMapsUri||(l.placeId?`https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(l.placeId)}`:'');
+
+  function sortCol(key,arr){
+    if(key==='new')return arr.sort((a,b)=>a.savedAt-b.savedAt);
+    if(key==='callback')return arr.sort((a,b)=>(a.callbackDate||'9999').localeCompare(b.callbackDate||'9999'));
+    if(key==='booked')return arr.sort((a,b)=>(b.lastTouchAt||0)-(a.lastTouchAt||0));
+    return arr.sort((a,b)=>(a.nextContactAt||0)-(b.nextContactAt||0)); // called/voicemail/texted: most overdue first
+  }
+
+  function cardHtml(l){
+    const meta=[l.city||l.address||'',nicheKey(l)].filter(Boolean).join(' · ');
+    const quickActions=(l.status==='booked')?'':`
+      <a class="btn btn-primary btn-icon" href="${l.phone?telHref(l.phone):'#'}" title="Call" onclick="event.stopPropagation();${l.phone?'':'return false;'}">📞</a>
+      <button class="btn btn-amber btn-icon" title="Reached" onclick="event.stopPropagation();markCalled('${esc(l.id)}')">✓</button>
+      <button class="btn btn-sky btn-icon" title="Voicemail" onclick="event.stopPropagation();markVoicemail('${esc(l.id)}')">📩</button>
+      <button class="btn btn-secondary btn-icon" title="No Answer" onclick="event.stopPropagation();markNoAnswer('${esc(l.id)}')">🔁</button>
+      <button class="btn btn-green btn-icon" title="Booked" onclick="event.stopPropagation();markBooked('${esc(l.id)}')">📅</button>`;
+    return `<div class="kcard" onclick="openLeadModal('${esc(l.id)}')">
+      <div class="kcard-top">
+        <div class="kdot ${dotClass(l)}"></div>
+        <div class="kcard-name">${esc(l.name)}</div>
       </div>
-      ${l.notes?`<div class="dlead-note">${notePreview(l)}</div>`:''}
-      <div class="dlead-actions">
-        ${callBtn}
-        <button class="btn btn-sky btn-sm" onclick="markVoicemail('${esc(l.id)}')">📩 Voicemail</button>
-        <button class="btn btn-purple btn-sm" onclick="sendText('${esc(l.id)}')">💬 Text</button>
-        <button class="btn btn-green btn-sm" onclick="markBooked('${esc(l.id)}')">📅 Booked</button>
-        <button class="btn btn-amber btn-sm" onclick="markCalled('${esc(l.id)}')">✓ Reached</button>
-        <button class="btn btn-ghost btn-sm" onclick="openLeadModal('${esc(l.id)}')">📝 Notes</button>
-        ${gmaps?`<a href="${esc(gmaps)}" target="_blank" class="btn btn-ghost btn-sm" style="text-decoration:none">📍 Google</a>`:''}
-      </div>
-      <div class="dlead-actions2">
-        <button class="btn btn-secondary btn-sm" onclick="markNoAnswer('${esc(l.id)}')">🔁 No Answer</button>
-        <button class="btn btn-secondary btn-sm" onclick="markCallLater('${esc(l.id)}')">🗓 Call Later</button>
-        <button class="btn btn-secondary btn-sm" onclick="openAdModal('${esc(l.id)}')">🎯 Ad Quality</button>
-        <button class="btn btn-secondary btn-sm" onclick="openEmailModal('${esc(l.id)}')">📧 Email${l.pushedToGhl?' ✓':''}</button>
-        <button class="btn btn-secondary btn-sm" onclick="markOutOfService('${esc(l.id)}')">☎️ Out of Service</button>
-        ${unreachableBtn}
-        <button class="btn btn-ghost btn-sm" onclick="markDead('${esc(l.id)}')">✕ Dead</button>
-      </div>
+      <div class="kcard-sub">${esc(meta)}${l.phone?' · '+esc(l.phone):''}</div>
+      ${l.callCount||l.vmCount||l.textCount?`<div class="kcard-sub" style="margin-top:-4px">${[l.callCount?`${l.callCount} call${l.callCount!==1?'s':''}`:'',l.vmCount?`${l.vmCount} VM`:'',l.textCount?`${l.textCount} text`:''].filter(Boolean).join(' · ')}</div>`:''}
+      ${l.status==='callback'&&l.callbackDate?`<div class="kcard-sub" style="margin-top:-4px;color:#854d0e">Follow up ${esc(l.callbackDate)}</div>`:''}
+      <div class="kcard-actions">${quickActions}</div>
+    </div>`;
+  }
+
+  board.innerHTML=KANBAN_COLUMNS.map(col=>{
+    const items=sortCol(col.key,working.filter(l=>l.status===col.key));
+    return `<div class="kcol">
+      <div class="kcol-head"><span>${col.label}</span><span class="cnt">${items.length}</span></div>
+      <div class="kcol-body">${items.length?items.map(cardHtml).join(''):'<div style="text-align:center;padding:16px 6px;font-size:12px;color:var(--text-muted)">No leads here</div>'}</div>
     </div>`;
   }).join('');
 }
