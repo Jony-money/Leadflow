@@ -225,15 +225,12 @@ tbody td{padding:11px 14px;vertical-align:middle}
 .searched-state-tag{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:14px;font-size:11.5px;font-weight:600;background:var(--primary-light);color:var(--primary-dark);border:1px solid #a7f3d0}
 .searched-state-tag .count{font-size:10px;background:rgba(255,255,255,.6);padding:1px 6px;border-radius:8px}
 .backlog-banner{background:#eff3fe;border:1px solid #bfdbfe;border-radius:var(--radius);padding:10px 16px;margin-bottom:14px;font-size:12.5px;color:#1d4ed8;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.kanban-layout{display:flex;gap:16px;align-items:flex-start}
-.niche-sidebar{width:200px;min-width:200px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px;box-shadow:var(--shadow);position:sticky;top:74px;max-height:calc(100vh - 100px);overflow-y:auto}
-.niche-sidebar-title{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);padding:6px 8px 8px}
-.niche-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 9px;border-radius:7px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:1px}
-.niche-item:hover{background:var(--bg);color:var(--text)}
-.niche-item.active{background:var(--primary-light);color:var(--primary-dark);font-weight:700}
-.niche-item .cnt{font-size:11px;font-weight:700;color:var(--text-muted);background:var(--bg);padding:1px 7px;border-radius:10px}
-.niche-item.active .cnt{background:#fff;color:var(--primary-dark)}
-.niche-sidebar-clear{width:100%;margin-top:8px}
+.nav-niche-section{margin:2px 0 6px;padding:0 8px 6px;max-height:240px;overflow-y:auto;border-bottom:1px solid #1e293b}
+.nav-niche-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 8px;border-radius:6px;cursor:pointer;font-size:12.5px;color:var(--sidebar-text);margin-bottom:1px}
+.nav-niche-item:hover{background:var(--sidebar-hover);color:#cbd5e1}
+.nav-niche-item.active{background:var(--sidebar-active);color:var(--sidebar-text-active);font-weight:700;border-left:2px solid var(--primary);padding-left:6px}
+.nav-niche-item .cnt{font-size:10px;font-weight:700;color:#64748b;background:#1e293b;padding:1px 6px;border-radius:9px;flex-shrink:0}
+.nav-niche-item.active .cnt{background:#0f172a;color:#cbd5e1}
 .kanban-wrap{flex:1;min-width:0}
 .kanban-toolbar{margin-bottom:10px}
 .kanban-board{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;align-items:flex-start}
@@ -251,12 +248,6 @@ tbody td{padding:11px 14px;vertical-align:middle}
 .kcard-actions{display:flex;gap:5px;margin-left:14px}
 .kcard-actions .btn{flex:1;justify-content:center;padding:5px 6px;font-size:11px}
 .kcard-actions .btn-icon{flex:0 0 auto;width:26px;padding:5px 0}
-@media(max-width:900px){
-  .kanban-layout{flex-direction:column}
-  .niche-sidebar{width:100%;min-width:0;position:static;max-height:none;display:flex;flex-wrap:wrap;gap:4px;padding:8px}
-  .niche-sidebar-title{width:100%}
-  .niche-item{flex:0 0 auto}
-}
 .modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
 .modal-overlay.open{display:flex}
 .modal{background:var(--surface);border-radius:14px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
@@ -327,6 +318,7 @@ tbody td{padding:11px 14px;vertical-align:middle}
   <nav class="sidebar-nav">
     <div class="nav-label">Calling</div>
     <button class="nav-item active" data-page="dialer" onclick="navigate('dialer')"><span class="nav-icon">&#9742;</span>Dialer<span class="nav-badge warn" id="dialBadge">0</span></button>
+    <div id="navNicheSection" class="nav-niche-section"></div>
     <button class="nav-item" data-page="search" onclick="navigate('search')"><span class="nav-icon">&#8981;</span>Find Leads</button>
     <button class="nav-item" data-page="coverage" onclick="navigate('coverage')"><span class="nav-icon">&#8982;</span>Coverage</button>
     <div class="nav-label">Setup</div>
@@ -391,14 +383,11 @@ tbody td{padding:11px 14px;vertical-align:middle}
         </div>
       </div>
 
-      <div class="kanban-layout">
-        <aside class="niche-sidebar" id="nicheSidebar"></aside>
-        <div class="kanban-wrap">
-          <div class="kanban-toolbar">
-            <input type="text" id="dialSearch" placeholder="Search name / city / phone…" oninput="renderDialer()" style="max-width:280px" />
-          </div>
-          <div class="kanban-board" id="kanbanBoard"></div>
+      <div class="kanban-wrap">
+        <div class="kanban-toolbar">
+          <input type="text" id="dialSearch" placeholder="Search name / city / phone…" oninput="renderDialer()" style="max-width:280px" />
         </div>
+        <div class="kanban-board" id="kanbanBoard"></div>
       </div>
     </div>
   </div>
@@ -916,6 +905,7 @@ function navigate(id){
   document.querySelector(`[data-page="${id}"]`)?.classList.add('active');
   document.querySelector('.sidebar').classList.remove('open');
   document.getElementById('sidebarBackdrop').style.display='none';
+  const navNiche=document.getElementById('navNicheSection');if(navNiche)navNiche.style.display=id==='dialer'?'block':'none';
   if(id==='dialer'){renderDialer();updateDialStats();}
   if(id==='coverage')renderCoverage();
   if(id==='search'){updateApiStatus();refreshStateLabels();}
@@ -1373,23 +1363,38 @@ const KANBAN_COLUMNS=[
 let nicheFilter='all';
 function nicheKey(l){return (l.bizType||l.niche||'').trim().toLowerCase();}
 function renderNicheFilters(){
-  const el=document.getElementById('nicheSidebar');if(!el)return;
-  const counts={};
-  leads.forEach(l=>{const k=nicheKey(l);if(k)counts[k]=(counts[k]||0)+1;});
+  const el=document.getElementById('navNicheSection');if(!el)return;
+  const counts={};let uncategorized=0;
+  leads.forEach(l=>{const k=nicheKey(l);if(k)counts[k]=(counts[k]||0)+1;else uncategorized++;});
   const niches=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]||a.localeCompare(b));
-  let html=`<div class="niche-sidebar-title">Niches</div>`;
-  html+=`<div class="niche-item ${nicheFilter==='all'?'active':''}" onclick='setNiche("all")'><span>All</span><span class="cnt">${leads.length}</span></div>`;
+  let html=`<div class="nav-niche-item ${nicheFilter==='all'?'active':''}" onclick='setNiche("all")'><span>All niches</span><span class="cnt">${leads.length}</span></div>`;
   niches.forEach(n=>{
-    html+=`<div class="niche-item ${nicheFilter===n?'active':''}" onclick='setNiche(${JSON.stringify(n)})'><span>${esc(n)}</span><span class="cnt">${counts[n]}</span></div>`;
+    html+=`<div class="nav-niche-item ${nicheFilter===n?'active':''}" onclick='setNiche(${JSON.stringify(n)})'><span>${esc(n)}</span><span class="cnt">${counts[n]}</span></div>`;
   });
-  const label=nicheFilter==='all'?`🗑 Clear all`:`🗑 Clear ${esc(nicheFilter)}`;
-  html+=`<button class="btn btn-danger btn-sm niche-sidebar-clear" onclick="clearList()">${label}</button>`;
+  if(uncategorized>0){
+    html+=`<div class="nav-niche-item ${nicheFilter==='__uncat'?'active':''}" onclick='setNiche("__uncat")'><span>(Uncategorized)</span><span class="cnt">${uncategorized}</span></div>`;
+    html+=`<button class="btn btn-secondary btn-xs" style="width:100%;margin-top:4px" onclick="bulkTagUncategorized()">🏷 Tag ${uncategorized} uncategorized</button>`;
+  }
+  const label=nicheFilter==='all'?`🗑 Clear all`:`🗑 Clear this view`;
+  html+=`<button class="btn btn-danger btn-xs" style="width:100%;margin-top:4px" onclick="clearList()">${label}</button>`;
   el.innerHTML=html;
 }
 function setNiche(n){nicheFilter=n;renderNicheFilters();renderDialer();}
+function bulkTagUncategorized(){
+  const target=leads.filter(l=>!nicheKey(l));
+  if(!target.length){toast('Nothing uncategorized');return;}
+  const tag=prompt(`Tag ${target.length} uncategorized lead(s) as which niche?`,'');
+  if(!tag||!tag.trim())return;
+  target.forEach(l=>{l.niche=tag.trim();});
+  persist();
+  nicheFilter='all';
+  renderNicheFilters();renderDialer();
+  toast(`Tagged ${target.length} lead(s) as "${tag.trim()}"`,2600,'ok');
+}
 function clearList(){
   let target,desc;
   if(nicheFilter==='all'){target=leads.slice();desc=`all ${leads.length} leads`;}
+  else if(nicheFilter==='__uncat'){target=leads.filter(l=>!nicheKey(l));desc=`${target.length} uncategorized lead${target.length!==1?'s':''}`;}
   else{target=leads.filter(l=>nicheKey(l)===nicheFilter);desc=`${target.length} "${nicheFilter}" lead${target.length!==1?'s':''}`;}
   if(!target.length){toast('Nothing to clear');return;}
   if(!confirm(`Delete ${desc} from your call list? This can't be undone.`))return;
@@ -1472,7 +1477,8 @@ function renderDialer(){
   const q=qraw.toLowerCase();
   const qDigits=qraw.replace(/\D/g,'');
   const working=leads.filter(l=>{
-    if(nicheFilter!=='all'&&nicheKey(l)!==nicheFilter)return false;
+    if(nicheFilter==='__uncat'){if(nicheKey(l))return false;}
+    else if(nicheFilter!=='all'&&nicheKey(l)!==nicheFilter)return false;
     if(q){
       const phoneDigits=(l.phone||'').replace(/\D/g,'');
       const textHit=l.name.toLowerCase().includes(q)||(l.address||'').toLowerCase().includes(q)||(l.city||'').toLowerCase().includes(q);
