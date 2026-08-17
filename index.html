@@ -782,6 +782,7 @@ Would you be opposed to just taking a look at what it'd look like for your busin
 I've got mornings and afternoons open — what works better for you?`;
 let cfg={ready:false,user:{name:'',business:''},placesKey:'',metaAdsKey:'',hunterKey:'',neverBounceKey:'',maxPages:3,maxSynonyms:3,callGoal:50,emailGoal:30,warmupStart:'',ghlToken:'',ghlLocation:'',textTpl:'',scriptTemplate:'',nicheMinReviews:undefined,followupCadence:undefined};
 let leads=[],searchedStates={},scriptText='',callLog=[],archivedLeads=[],backlogLeads=[];
+const BOOKING_LINK='https://api.leadconnectorhq.com/widget/bookings/website-peek';
 let allResults=[],cancelFlag=false,searchMode='single',activeLeadId=null,adLeadId=null,emailLeadId=null;
 let currentPickedState='',pickedCities=new Set();
 
@@ -1715,6 +1716,7 @@ function markBooked(id){
   leads[i].lastTouchAt=Date.now();leads[i].status='booked';leads[i].everReached=true;
   if(!wasCounted){leads[i].callCount=(leads[i].callCount||0)+1;callLog.push({ts:Date.now(),leadId:id,type:'booked'});persistCallLog();}
   persist();logActivity(id,'booked','Appointment booked');renderDialer();updateDialBadge();toast('📅 Appointment booked — nice',2600,'ok');
+  if(BOOKING_LINK)window.open(BOOKING_LINK,'_blank');
 }
 function sendText(id){
   const i=leadIdx(id);if(i<0)return;const l=leads[i];
