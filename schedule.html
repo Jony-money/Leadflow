@@ -120,6 +120,24 @@
   .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--good);
     color:#06210f;font-weight:700;font-size:13px;padding:11px 18px;border-radius:11px;opacity:0;transition:.25s;z-index:50;pointer-events:none}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .lowbtn{width:100%;margin-top:12px;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:12px 14px;color:var(--txt);cursor:pointer;display:flex;flex-direction:column;gap:3px;font-family:var(--sans)}
+  .lowbtn b{font-size:13px;letter-spacing:.3px}
+  .lowbtn span{font-size:12px;color:var(--muted);line-height:1.4}
+  .lowbtn.on{border-color:var(--warn);background:#2a2410}
+  .lowbtn.on b{color:var(--warn)}
+  .rule{padding:8px 0;border-top:1px solid var(--line)}
+  .rule:first-child{border-top:none;padding-top:0}
+  .rule b{display:block;font-size:13px}
+  .rule span{display:block;font-size:12.5px;color:var(--muted);line-height:1.45;margin-top:2px}
+  .ex-rest{font-family:var(--mono);font-size:10px;color:var(--dim);text-align:right;margin-top:2px;font-weight:500}
+  .deload{margin-top:12px;border:1px solid var(--good);background:var(--good-dim);border-radius:14px;padding:12px 14px;font-size:12.5px;line-height:1.45;color:var(--txt)}
+  .deload b{color:var(--good);display:block;font-size:13px;margin-bottom:2px}
+  .pace{margin-top:10px;font-size:12.5px;line-height:1.45;border-radius:10px;padding:9px 11px}
+  .pace.good{background:var(--good-dim);color:var(--good)}
+  .pace.warn{background:#2a2410;color:var(--warn)}
+  .pace.info{background:var(--panel-2);color:var(--muted)}
+  .wtbtn{background:var(--accent);color:#1a0f06;border:none;font-weight:700;font-size:12px;padding:9px 14px;border-radius:8px;cursor:pointer}
   .save{color:var(--dim);font-family:var(--mono);font-size:10px;text-align:center;margin-top:24px;letter-spacing:.5px}
 </style>
 </head>
@@ -128,7 +146,7 @@
   <header>
     <div class="brand">
       <h1>TRAIN<span class="acc">.</span></h1>
-      <div class="todaytag">5-day split<b id="todayName">—</b></div>
+      <div class="todaytag"><span id="weekTag">5-day split</span><b id="todayName">—</b></div>
     </div>
     <div class="tabs" id="tabs"></div>
   </header>
@@ -139,46 +157,84 @@
 
 <script>
 /* ---------- PLAN ---------- */
-const REST_COMP="2–3 min", REST_SS="45–60s", REST_CORE="45–60s";
+const REST_COMP="2–3 min", REST_ACC="90s", REST_SS="45–60s", REST_CORE="45–60s";
+
+/* ---------- CUT: 227 → 187 lb in 26 weeks (~1.5 lb/week) ---------- */
+const CUT_START="2026-09-14", START_LB=227, GOAL_LB=187, CUT_WEEKS=26;
+const WKEY="train_weights_v1";
+function dayStr(d=new Date()){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
+function daysSinceStart(){ const [y,m,d]=CUT_START.split("-").map(Number); return Math.floor((new Date().setHours(0,0,0,0)-new Date(y,m-1,d).getTime())/864e5); }
+function weekNum(){ return Math.max(1,Math.floor(daysSinceStart()/7)+1); }
+// every 4th week: one less set on everything, no intervals
+function isDeload(){ const w=weekNum(); return w<=CUT_WEEKS && w%4===0; }
+function dl(scheme){ return isDeload()?scheme.replace(/^(\d+)×/,(m,n)=>`${Math.max(1,n-1)}×`):scheme; }
+function loadWeights(){ try{ return JSON.parse(localStorage.getItem(WKEY))||[]; }catch(e){ return []; } }
+function logWeight(){
+  const v=parseFloat(document.getElementById("wtin").value);
+  if(!v||v<80||v>500){ flash("Enter your weight"); return; }
+  const today=dayStr(); const ws=loadWeights().filter(e=>e.d!==today);
+  ws.push({d:today,lb:v}); ws.sort((a,b)=>a.d<b.d?-1:1);
+  try{ localStorage.setItem(WKEY,JSON.stringify(ws.slice(-250))); localStorage.setItem("train_bw",v); }catch(e){}
+  flash("Weight logged ✓"); renderDay();
+}
+function avg7(){
+  const ws=loadWeights(); if(!ws.length) return null;
+  const cutoff=dayStr(new Date(Date.now()-6*864e5));
+  const recent=ws.filter(e=>e.d>=cutoff); const use=recent.length?recent:ws.slice(-1);
+  return use.reduce((s,e)=>s+e.lb,0)/use.length;
+}
+function paceTarget(){ const days=Math.min(Math.max(daysSinceStart(),0),CUT_WEEKS*7); return START_LB-(START_LB-GOAL_LB)*days/(CUT_WEEKS*7); }
+function calTarget(lb){ return lb>215?"2,700":lb>200?"2,550":"2,400"; }
+function fmt1(n){ return (Math.round(n*10)/10).toFixed(1); }
+
+/* ---------- MAXES (target weights for the big lifts) ---------- */
+const DEFAULT_MAXES={bench:315,squat:450,deadlift:427,ohp:195};
+const MAX_LABELS={bench:"Bench",squat:"Squat",deadlift:"Deadlift",ohp:"OHP"};
+function getMaxes(){ try{ return {...DEFAULT_MAXES,...(JSON.parse(localStorage.getItem("train_maxes"))||{})}; }catch(e){ return {...DEFAULT_MAXES}; } }
+function onMax(lift,v){ const m=getMaxes(); m[lift]=parseFloat(v)||0; try{localStorage.setItem("train_maxes",JSON.stringify(m))}catch(e){} renderDay(); }
+function target(ex){ return ex.lift? Math.round(getMaxes()[ex.lift]*ex.pct/5)*5 : null; }
 
 // loggable kinds: 'w'=weight×reps, 'br'=bodyweight reps, 'time'=hold seconds
+// lift+pct = target from your max · key = kept on a low-energy day · cardio = StairMaster minutes after the lift
+const ZONE2="Zone 2: steady, level 7–9. You can talk in short sentences. Hands off the rails.";
 const PLAN = {
-  mon:{day:"Mon",label:"Push",core:"A",jog:25,jogOpt:false,
+  mon:{day:"Mon",label:"Push",core:"B",mins:32,cardio:25,cardioNote:ZONE2,
     main:[
-      {id:"incline_bb",name:"Incline barbell bench",scheme:"4×6–8",rest:REST_COMP,kind:"w",inc:5,lo:6,hi:8},
-      {id:"flat_db",name:"Flat DB press",scheme:"3×8–10",rest:REST_COMP,kind:"w",inc:5,lo:8,hi:10},
-      {id:"seated_ohp",name:"Seated shoulder press",scheme:"3×8–10",rest:REST_COMP,kind:"w",inc:5,lo:8,hi:10},
+      {id:"bench_bb",name:"Bench press",scheme:"4×5",rest:REST_COMP,kind:"w",inc:5,lo:5,hi:5,lift:"bench",pct:.80,key:true},
+      {id:"ohp_bb",name:"Standing overhead press",scheme:"3×6",rest:REST_COMP,kind:"w",inc:5,lo:6,hi:6,lift:"ohp",pct:.70},
+      {id:"incl_db",name:"Incline DB press",scheme:"3×8–10",rest:REST_ACC,kind:"w",inc:5,lo:8,hi:10},
       {ss:true,scheme:"3×12–15",rest:REST_SS,a:{id:"lat_raise",name:"Lateral raises",kind:"w",inc:2.5,lo:12,hi:15},
         b:{id:"tri_pushdown",name:"Tricep pushdown",kind:"w",inc:5,lo:12,hi:15}},
     ]},
-  tue:{day:"Tue",label:"Pull",core:"B",jog:25,jogOpt:false,
+  tue:{day:"Tue",label:"Pull",core:null,mins:30,cardio:25,cardioNote:ZONE2,
     main:[
-      {id:"pullup",name:"Pull-ups",scheme:"4×6–8",rest:REST_COMP,kind:"w",inc:5,lo:6,hi:8,bwAdd:true},
-      {id:"bb_row",name:"Barbell row",scheme:"4×8",rest:REST_COMP,kind:"w",inc:5,lo:8,hi:8},
-      {id:"lat_pulldown",name:"Lat pulldown",scheme:"3×10",rest:REST_COMP,kind:"w",inc:5,lo:10,hi:10},
+      {id:"deadlift",name:"Deadlift",scheme:"3×3",rest:REST_COMP,kind:"w",inc:5,lo:3,hi:3,lift:"deadlift",pct:.80,key:true},
+      {id:"pullup",name:"Pull-ups",scheme:"4×6–8",rest:REST_ACC,kind:"w",inc:5,lo:6,hi:8,bwAdd:true},
+      {id:"bb_row",name:"Barbell row",scheme:"3×8",rest:REST_ACC,kind:"w",inc:5,lo:8,hi:8},
       {ss:true,scheme:"3×12–15",rest:REST_SS,a:{id:"face_pull",name:"Face pulls",kind:"w",inc:5,lo:12,hi:15},
         b:{id:"db_curl",name:"DB curls",kind:"w",inc:2.5,lo:12,hi:15}},
     ]},
-  wed:{day:"Wed",label:"Legs",core:"C",jog:10,jogOpt:true,
+  wed:{day:"Wed",label:"Legs",core:null,mins:30,cardio:10,cardioOpt:true,cardioNote:"Optional and easy, level 5–7. Legs are already cooked, so skip it if you're drained.",
     main:[
-      {id:"back_squat",name:"Back squat",scheme:"4×6–8",rest:REST_COMP,kind:"w",inc:10,lo:6,hi:8},
-      {id:"rdl",name:"Romanian deadlift",scheme:"3×8",rest:REST_COMP,kind:"w",inc:10,lo:8,hi:8},
-      {id:"bulg_split",name:"Bulgarian split squat",scheme:"3×10/leg",rest:REST_COMP,kind:"w",inc:5,lo:10,hi:10},
+      {id:"back_squat",name:"Back squat",scheme:"4×5",rest:REST_COMP,kind:"w",inc:5,lo:5,hi:5,lift:"squat",pct:.75,key:true},
+      {id:"leg_press",name:"Leg press",scheme:"3×10–12",rest:REST_ACC,kind:"w",inc:10,lo:10,hi:12},
+      {id:"bulg_split",name:"Bulgarian split squat",scheme:"3×10/leg",rest:REST_ACC,kind:"w",inc:5,lo:10,hi:10},
       {ss:true,scheme:"3×12–15",rest:REST_SS,a:{id:"leg_curl",name:"Leg curl",kind:"w",inc:5,lo:12,hi:15},
         b:{id:"calf_raise",name:"Calf raise",kind:"w",inc:10,lo:12,hi:15}},
     ]},
-  thu:{day:"Thu",label:"Upper",sub:"lighter pump",pump:true,core:"A",jog:25,jogOpt:false,
+  thu:{day:"Thu",label:"Upper",sub:"lighter pump",pump:true,core:"A",mins:25,intervals:true,cardio:25,
+    cardioNote:"Intervals: 5 min easy → 8 rounds of 1 min hard (level 12–14) / 1 min easy → 4 min easy. Your only hard stair day.",
     main:[
-      {ss:true,scheme:"3×12",rest:REST_SS,a:{id:"incl_db_p",name:"Incline DB press",kind:"w",inc:5,lo:12,hi:12},
+      {ss:true,key:true,scheme:"3×12",rest:REST_SS,a:{id:"incl_db_p",name:"Incline DB press",kind:"w",inc:5,lo:12,hi:12},
         b:{id:"cs_row",name:"Chest-supported row",kind:"w",inc:5,lo:12,hi:12}},
       {ss:true,scheme:"3×12–15",rest:REST_SS,a:{id:"db_ohp_t",name:"DB shoulder press",kind:"w",inc:5,lo:12,hi:15},
         b:{id:"lat_raise_t",name:"Lateral raise",kind:"w",inc:2.5,lo:12,hi:15}},
       {ss:true,scheme:"3×15",rest:REST_SS,a:{id:"cable_curl_t",name:"Cable curl",kind:"w",inc:5,lo:15,hi:15},
         b:{id:"pushdown_t",name:"Pushdown",kind:"w",inc:5,lo:15,hi:15}},
     ]},
-  fri:{day:"Fri",label:"Arms",core:"B",jog:25,jogOpt:false,
+  fri:{day:"Fri",label:"Arms",core:"C",mins:25,cardio:25,cardioNote:ZONE2,
     main:[
-      {id:"cgbp",name:"Close-grip bench",scheme:"4×8",rest:REST_COMP,kind:"w",inc:5,lo:8,hi:8},
+      {id:"cgbp",name:"Close-grip bench",scheme:"3×8",rest:REST_COMP,kind:"w",inc:5,lo:8,hi:8,lift:"bench",pct:.60,key:true},
       {ss:true,scheme:"3×10–12",rest:REST_SS,a:{id:"bb_curl",name:"Barbell curl",kind:"w",inc:5,lo:10,hi:12},
         b:{id:"skullcrush",name:"Skull crushers",kind:"w",inc:5,lo:10,hi:12}},
       {ss:true,scheme:"3×12–15",rest:REST_SS,a:{id:"hammer",name:"Hammer curls",kind:"w",inc:2.5,lo:12,hi:15},
@@ -196,7 +252,7 @@ const CORE = {
     {id:"cable_crunch_b",name:"Cable crunch",scheme:"4×15",kind:"w",inc:5,lo:15,hi:15},
     {id:"abwheel_b",name:"Ab-wheel rollout",scheme:"3×8–10",kind:"br"},
     {id:"wtwist_b",name:"Weighted Russian twists",scheme:"3×20",kind:"w",inc:2.5,lo:20,hi:20}]},
-  C:{tag:"Pack C · leg-friendly",moves:[
+  C:{tag:"Pack C · easy finisher",moves:[
     {id:"plank_c",name:"Plank",scheme:"3×60s",kind:"time"},
     {id:"side_plank_c",name:"Side plank",scheme:"3×40s/side",kind:"time"},
     {id:"rtwist_c",name:"Russian twists",scheme:"3×20",kind:"br"}]},
@@ -219,7 +275,8 @@ function bestOf(id){
 
 /* ---------- OVERLOAD ESTIMATOR ---------- */
 function suggest(ex){
-  const h=exHist(ex.id); if(!h.length) return null;
+  const h=exHist(ex.id);
+  if(!h.length) return ex.lift?{action:"start",text:`Start <span class="up">${fmt(target(ex))} for ${ex.lo}</span> · leave 1–2 reps in the tank`,last:""}:null;
   const last=h[h.length-1];
   const w=last.w||0, r=last.r||0;
   // double progression: hit top of range on logged top set -> add load, reset to bottom
@@ -250,6 +307,8 @@ function renderTabs(){
   });
   document.getElementById("todayName").textContent =
     PLAN[todayKey]?`${PLAN[todayKey].day} · ${PLAN[todayKey].label}`:"Rest day";
+  document.getElementById("weekTag").textContent =
+    weekNum()>CUT_WEEKS?"cut complete":`week ${weekNum()} of ${CUT_WEEKS}${isDeload()?" · deload":""}`;
 }
 
 function loggable(m){
@@ -266,7 +325,7 @@ function loggable(m){
   }
   // weighted
   return `<div class="logrow" data-id="${m.id}" data-kind="w">
-    <input type="number" placeholder="lb" inputmode="decimal" data-f="w"><span class="x">×</span>
+    <input type="number" placeholder="lb" inputmode="decimal" data-f="w" value="${m.lift?target(m):""}"><span class="x">×</span>
     <input type="number" placeholder="reps" inputmode="numeric" data-f="r"><span class="unit">top set</span>
     <button onclick="doLog('${m.id}')">Log</button></div>`;
 }
@@ -279,17 +338,18 @@ function exBlock(item){
       <div class="ex-top">
         <div class="ex-name">Superset
           <span class="sup"><b>${a.name}</b> + <b>${b.name}</b></span></div>
-        <div class="ex-scheme">${item.scheme}</div>
+        <div class="ex-scheme">${dl(item.scheme)}${item.rest?`<div class="ex-rest">rest ${item.rest}</div>`:""}</div>
       </div>
       ${loggable(a)}${hintBox(a)}
       ${loggable(b)}${hintBox(b)}
     </div>`;
   }
   const extra=item.bwAdd?` <span class="sup">log added weight (0 = bodyweight)</span>`:"";
+  const tgt=item.lift?` <span class="sup">target <b>${fmt(target(item))} lb</b> · ${Math.round(item.pct*100)}% of your ${MAX_LABELS[item.lift]} max</span>`:"";
   return `<div class="ex">
     <div class="ex-top">
-      <div class="ex-name">${item.name}${extra}</div>
-      <div class="ex-scheme">${item.scheme}</div>
+      <div class="ex-name">${item.name}${extra}${tgt}</div>
+      <div class="ex-scheme">${dl(item.scheme)}${item.rest?`<div class="ex-rest">rest ${item.rest}</div>`:""}</div>
     </div>
     ${loggable(item)}${hintBox(item)}
   </div>`;
@@ -299,73 +359,157 @@ function renderDay(){
   const v=document.getElementById("view");
   const p=PLAN[activeKey];
   if(!p){
-    v.innerHTML=`<div class="restday"><div class="em">🛌</div>
-      <h2>Rest day</h2>
-      <p>Full recovery. Walk, hydrate, sleep 7–9h. Muscle is built between sessions, not during them.</p></div>`;
+    const r=REST_DAYS[activeKey];
+    v.innerHTML=`<div class="restday"><div class="em">${r.em}</div>
+      <h2>${r.title}</h2>
+      <p>${r.text}</p></div>`+cutTrackerCard()+cutCard();
     return;
   }
-  const core=CORE[p.core];
+  const low=isLow();
+  const main=low?p.main.filter(it=>it.key):p.main;
+  const cardio=low?Math.min(15,p.cardio):p.cardio;
+  const core=p.core?CORE[p.core]:null;
+  const deload=isDeload();
+  const mins=low?35:5+p.mins+(core?8:0)+cardio;
   let html=`<div class="dayhead">
     <h2>${p.day} · ${p.label}</h2>
-    <div class="focus">${p.sub?p.sub:p.label} day</div></div>`;
+    <div class="focus">${p.sub?p.sub:p.label} day · ~${mins} min</div></div>`;
+
+  if(deload) html+=`<div class="deload"><b>Deload week</b>One less set on everything, same weights, stairs all easy. This is planned recovery so weeks 5–26 keep moving. Not a week off.</div>`;
+
+  // low-energy toggle
+  html+=`<button class="lowbtn${low?" on":""}" onclick="toggleLow()">
+    <b>${low?"⚡ Low-energy day: ON":"⚡ Low-energy day"}</b>
+    <span>${low?"Main lift + 15 easy minutes. Still counts. Tap again for the full session.":"Bad sleep or a heavy client day? Tap to trim today so you don't crash tonight."}</span></button>`;
+
+  // morning weigh-in sits at the top of today's tab
+  if(activeKey===todayKey) html+=cutTrackerCard();
 
   // warmup
   html+=`<div class="section">
     <div class="sechead"><span class="ico">🔥</span>Warmup<span class="rest">easy pace</span></div>
     <div class="ex"><div class="ex-top"><div class="ex-name">Easy cardio
       <span class="sup">bike / row / incline walk — raise temp, no fatigue</span></div>
-      <div class="ex-scheme">5 min</div></div></div></div>`;
+      <div class="ex-scheme">5 min</div></div></div>
+    <div class="ex"><div class="ex-top"><div class="ex-name">Ramp-up sets
+      <span class="sup">first lift only: empty bar ×10 → 50% ×5 → 70% ×3. Don't skip them, don't add more.</span></div>
+      <div class="ex-scheme">3 sets</div></div></div></div>`;
 
   // main
   html+=`<div class="section">
     <div class="sechead"><span class="ico">🏋️</span>Main lifts<span class="rest">${REST_COMP} · SS ${REST_SS}</span></div>
-    ${p.main.map(exBlock).join("")}</div>`;
+    ${main.map(exBlock).join("")}</div>`;
 
-  // core
-  html+=`<div class="section">
+  // core (skipped on a low-energy day)
+  if(!low && core) html+=`<div class="section">
     <div class="sechead"><span class="ico">🎯</span>Core — ${core.tag}<span class="rest">${REST_CORE}</span></div>
     ${core.moves.map(m=>exBlock(m)).join("")}</div>`;
 
-  // jog
+  // StairMaster
   html+=`<div class="section">
-    <div class="sechead"><span class="ico">🏃</span>Jog <span class="rest">after the lift</span></div>
-    <div class="jog ${p.jogOpt?"opt":""}">
-      <div class="big">${p.jog}'</div>
-      <div class="lbl">${p.jogOpt?"Optional / short — legs already cooked. Skip if drained.":"Steady conversational pace. Conditioning, not a race."}</div>
+    <div class="sechead"><span class="ico">🪜</span>StairMaster <span class="rest">after the lift</span></div>
+    <div class="jog ${p.cardioOpt||low?"opt":""}">
+      <div class="big">${cardio}'</div>
+      <div class="lbl">${low?"Easy Zone 2 only. Walk out with more energy than you walked in with.":deload&&p.intervals?"Deload week, no intervals. "+ZONE2:p.cardioNote}</div>
     </div></div>`;
 
   // estimators
-  html+=burnCard(p);
+  html+=burnCard(p,cardio,low);
   html+=trackerCard(p);
+  if(activeKey!==todayKey) html+=cutTrackerCard();
+  html+=cutCard();
+  html+=maxesCard();
 
   v.innerHTML=html;
   refreshHints(p);
+  calcBurn();
+}
+
+/* low-energy day (per calendar day) */
+function lowKey(){ const d=new Date(); return `train_low_${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
+function isLow(){ try{ return localStorage.getItem(lowKey())==="1"; }catch(e){ return false; } }
+function toggleLow(){ try{ isLow()?localStorage.removeItem(lowKey()):localStorage.setItem(lowKey(),"1"); }catch(e){} renderDay(); }
+
+/* maxes + cut plan cards */
+function maxesCard(){
+  const m=getMaxes();
+  return `<div class="card">
+    <h3><span class="ico">🏆</span>Your maxes<span style="margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--muted);font-weight:600">targets come from these</span></h3>
+    ${Object.keys(DEFAULT_MAXES).map(k=>`<div class="field"><label>${MAX_LABELS[k]}</label>
+      <input type="number" inputmode="decimal" value="${m[k]}" onchange="onMax('${k}',this.value)"><span class="unit" style="font-family:var(--mono);color:var(--muted);font-size:11px">lb</span></div>`).join("")}
+  </div>`;
+}
+const REST_DAYS={
+  sat:{em:"🚶",title:"Active recovery",text:"No gym. 45 min easy walk outside (take a call or a podcast on it), 10 min stretching, then 60–90 min meal prep for Mon–Wed."},
+  sun:{em:"🛌",title:"Full rest",text:"Real rest, no training. Tonight take 15 minutes: put Mon–Fri gym times on your calendar like client meetings and pack your gym bag."},
+};
+const CUT_RULES=[
+  ["Book the gym like a client","Same time every day, on the calendar, bag packed the night before. Deciding when to train is what kills consistency, not the workout."],
+  ["Leave 1–2 reps in the tank","No sets to failure on a cut. You keep your strength and still have energy for the agency after the gym."],
+  ["Steps are the cheat code","10k easy steps burns serious calories and costs zero recovery. Take calls walking. Don't add more hard cardio."],
+  ["Zone 2 is the default","You should be able to talk in short sentences on the stairs. Thursday is the only hard interval day."],
+  ["Low energy? Trim, don't skip","Bad sleep or a heavy client day: tap Low-energy day. Main lift + 15 easy minutes keeps the streak without the crash."],
+  ["Deload is automatic","Every 4th week the app drops a set from everything and removes intervals. Do exactly what it says."],
+  ["Stalled 2 weeks? Adjust small","If your 7-day average stops moving for 2 weeks, take off 150 calories or add 2,000 steps. One change at a time."],
+  ["Sleep is part of the program","7+ hours at a consistent bedtime. Short sleep drives hunger up and makes you lose muscle instead of fat."],
+  ["Eat around training","Put most of your carbs before and after the gym so your energy holds for calls instead of crashing at 3 PM."],
+];
+function cutTrackerCard(){
+  const a=avg7(), target=paceTarget(), w=Math.min(weekNum(),CUT_WEEKS);
+  const today=loadWeights().find(e=>e.d===dayStr());
+  let status=`<div class="pace info">Weigh in tomorrow morning to start tracking. The app compares your 7-day average to the ${fmt1((START_LB-GOAL_LB)/CUT_WEEKS)} lb/week pace.</div>`;
+  if(a!=null){
+    const diff=a-target;
+    status = diff>1.5 ? `<div class="pace warn">Behind pace by ${fmt1(diff)} lb. If that holds for 2 weeks: take 150 calories off or add 2,000 daily steps. Don't add hard cardio.</div>`
+      : diff<-3 ? `<div class="pace good">Ahead of pace by ${fmt1(-diff)} lb. If you're dragging or lifts are dropping, add 150 calories back. Faster isn't better if it costs muscle.</div>`
+      : `<div class="pace good">On pace. Don't change anything.</div>`;
+  }
+  return `<div class="card">
+    <h3><span class="ico">⚖️</span>Cut tracker · ${START_LB} → ${GOAL_LB} lb<span style="margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--muted);font-weight:600">week ${w} of ${CUT_WEEKS}</span></h3>
+    <div class="field"><label>Morning weight${today?` · logged ${fmt(today.lb)}`:""}</label>
+      <input type="number" id="wtin" inputmode="decimal" placeholder="lb"><button class="wtbtn" onclick="logWeight()">Log</button></div>
+    <div class="brow"><span>7-day average</span><span>${a!=null?fmt1(a)+" lb":"—"}</span></div>
+    <div class="brow"><span>Lost so far</span><span>${a!=null?fmt1(START_LB-a)+" lb":"—"}</span></div>
+    <div class="brow"><span>On-pace weight today</span><span>${fmt1(target)} lb</span></div>
+    ${status}
+    <div class="trk-meta" style="margin-top:8px"><span>Weigh in after the bathroom, before food. Judge the average, not one day.</span></div>
+  </div>`;
+}
+function cutCard(){
+  const lb=avg7()??START_LB;
+  const fuel=[["Calories",`${calTarget(lb)} / day`],["Protein","200 g / day"],["Steps","10k / day"],["Sleep","7+ hrs, same bedtime"],["Creatine","5 g / day (optional)"]];
+  return `<div class="card">
+    <h3><span class="ico">🥩</span>Fuel · at ${fmt1(lb)} lb</h3>
+    ${fuel.map(([k,v])=>`<div class="brow"><span>${k}</span><span>${v}</span></div>`).join("")}
+    <div class="trk-meta" style="margin-top:6px"><span>Calories step down as you lose: 2,700 above 215 · 2,550 to 200 · 2,400 below</span></div>
+    <div class="burnout">${CUT_RULES.map(([t,d])=>`<div class="rule"><b>${t}</b><span>${d}</span></div>`).join("")}</div>
+  </div>`;
 }
 
 /* burn estimator */
-function burnCard(p){
-  const liftMin = 42; // est working time main+core
+function burnCard(p,cardio,low){
   return `<div class="card">
     <h3><span class="ico">🔥</span>Calorie burn — ${p.day}</h3>
     <div class="field"><label>Bodyweight</label>
       <input type="number" id="bw" inputmode="decimal" value="${getBW()}" onchange="onBW()"><span class="unit" style="font-family:var(--mono);color:var(--muted);font-size:11px">lb</span></div>
-    <div class="field"><label>Jog this session</label>
-      <input type="number" id="jogmin" inputmode="numeric" value="${p.jog}" onchange="calcBurn()"><span class="unit" style="font-family:var(--mono);color:var(--muted);font-size:11px">min</span></div>
-    <div class="burnout" id="burnout"></div>
+    <div class="field"><label>StairMaster this session</label>
+      <input type="number" id="jogmin" inputmode="numeric" value="${cardio}" onchange="calcBurn()"><span class="unit" style="font-family:var(--mono);color:var(--muted);font-size:11px">min</span></div>
+    <div class="burnout" id="burnout" data-lift="${low?20:(p.core?42:34)}"></div>
   </div>`;
 }
-function getBW(){ return localStorage.getItem("train_bw")||180; }
+function getBW(){ return localStorage.getItem("train_bw")||227; }
 function onBW(){ const v=document.getElementById("bw").value; if(v)localStorage.setItem("train_bw",v); calcBurn(); }
 function calcBurn(){
   const out=document.getElementById("burnout"); if(!out)return;
-  const lb=parseFloat(document.getElementById("bw").value)||180;
+  const lb=parseFloat(document.getElementById("bw").value)||227;
   const kg=lb*0.4536;
   const jog=parseFloat(document.getElementById("jogmin").value)||0;
-  // MET: warmup 4, lifting (incl core, with supersets) 5, jog ~9
+  const liftMin=parseFloat(out.dataset.lift)||42;
+  // MET: warmup 4, lifting (incl core, with supersets) 5, StairMaster ~9
   const parts=[
     {n:"Warmup (5 min)",met:4,min:5},
-    {n:"Lifting + core (~42 min)",met:5,min:42},
-    {n:`Jog (${jog} min)`,met:9,min:jog},
+    {n:`Lifting${liftMin<42?"":" + core"} (~${liftMin} min)`,met:5,min:liftMin},
+    {n:`StairMaster (${jog} min)`,met:9,min:jog},
   ];
   let tot=0,rows="";
   parts.forEach(pt=>{ const c=Math.round(pt.met*kg*(pt.min/60)); tot+=c;
