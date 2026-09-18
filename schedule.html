@@ -138,6 +138,11 @@
   .pace.warn{background:#2a2410;color:var(--warn)}
   .pace.info{background:var(--panel-2);color:var(--muted)}
   .wtbtn{background:var(--accent);color:#1a0f06;border:none;font-weight:700;font-size:12px;padding:9px 14px;border-radius:8px;cursor:pointer}
+  .tab.recov:not(.active){color:var(--good);border-color:var(--good-dim)}
+  .donebtn{margin-left:8px;background:var(--panel-2);border:1px solid var(--line);color:var(--muted);font-weight:700;
+    font-size:11px;padding:5px 9px;border-radius:7px;cursor:pointer;font-family:var(--sans);white-space:nowrap}
+  .donebtn.on{background:var(--good);border-color:var(--good);color:#06210f}
+  .sechead.done{background:var(--good-dim)}
   .save{color:var(--dim);font-family:var(--mono);font-size:10px;text-align:center;margin-top:24px;letter-spacing:.5px}
 </style>
 </head>
@@ -241,6 +246,34 @@ const PLAN = {
         b:{id:"rope_pd",name:"Rope pushdown",kind:"w",inc:5,lo:12,hi:15}},
       {id:"wrist_curl",name:"Wrist curls",scheme:"3×15",rest:REST_SS,kind:"w",inc:2.5,lo:15,hi:15},
     ]},
+  // recovery day: no lifting — easy jog, core circuit, then massage + sauna/cold. Rendered by renderRecovery()
+  sat:{day:"Sat",label:"Recover",sub:"recovery + core",recovery:true,core:"R",jog:25,main:[]},
+};
+
+// Saturday blocks, in order. mins = time budget shown in the header.
+const RECOVERY={
+  jogNote:"Conversational pace the whole way: you can speak full sentences, nose-breathing if you can. Walk breaks are fine. Flat route or treadmill at 0–1%. At your size keep it soft: short quick steps, land under your hips.",
+  massage:[
+    ["Quads + hip flexors","60–90s each side"],
+    ["Hamstrings + glutes","60–90s each side"],
+    ["Calves","60s each side"],
+    ["Lats + upper back (beside the spine, never on it)","60s each side"],
+    ["Pecs + front delts","60s each side"],
+  ],
+  massageNote:"Massage gun on low–medium, keep it moving, skip bones, joints and the front of the neck. Using the hydro-massage bed instead? 10 min on a medium setting covers the same ground.",
+  contrast:[
+    ["🔥 Sauna","12–15 min","Sit upright on the lower bench if it's your first few times. Get out early if you feel dizzy."],
+    ["🧊 Cold","2–3 min","Water ~50–59°F. Walk in, slow long exhales through the first 30 seconds. New to it? Start with 1 minute."],
+    ["😮‍💨 Reset","2 min","Sit, sip water, let your heart rate settle before the next round."],
+  ],
+  contrastNote:"2 rounds, 3 if you have the time. Finish on cold so your body rewarms itself and you leave alert instead of sleepy.",
+  rules:[
+    ["Easy means easy","Nothing today should feel like training. Jog at talking pace, leave 2 reps in the tank on core. You should leave with more energy than you came in with."],
+    ["Hydrate for the sauna","Drink 20–30 oz of water with electrolytes (salt or a packet) across the session. Sauna sweat can drop 1–2 lb of water, so don't read Sunday's weigh-in as fat loss."],
+    ["Cold is fine today","Cold plunging right after lifting can blunt muscle growth. Saturday has no lifting, so this is the right day for it."],
+    ["Know when to skip heat/cold","Skip the sauna and plunge after alcohol, when you're sick, or if you have a heart or blood-pressure condition your doctor hasn't cleared."],
+    ["Then prep the week","Finish with 60–90 min of meal prep for Mon–Wed. That's what keeps the cut on track when client days get busy."],
+  ],
 };
 
 const CORE = {
@@ -256,6 +289,11 @@ const CORE = {
     {id:"plank_c",name:"Plank",scheme:"3×60s",kind:"time"},
     {id:"side_plank_c",name:"Side plank",scheme:"3×40s/side",kind:"time"},
     {id:"rtwist_c",name:"Russian twists",scheme:"3×20",kind:"br"}]},
+  R:{tag:"3 rounds",moves:[
+    {id:"deadbug_r",name:"Dead bug",sup:"lower back pressed flat, slow",scheme:"3×10/side",kind:"br"},
+    {id:"hkr_r",name:"Hanging knee raise",sup:"no swinging, curl the hips up",scheme:"3×12",kind:"br"},
+    {id:"pallof_r",name:"Pallof press",sup:"cable at chest height, 2s hold",scheme:"3×12/side",kind:"w"},
+    {id:"sideplank_r",name:"Side plank",sup:"hips high, straight line",scheme:"3×40s/side",kind:"time"}]},
 };
 
 const ORDER=["mon","tue","wed","thu","fri","sat","sun"];
@@ -300,7 +338,7 @@ function renderTabs(){
     const lbl=isRest?"Rest":PLAN[k].label;
     const d=isRest?(k==="sat"?"SAT":"SUN"):PLAN[k].day.toUpperCase();
     const el=document.createElement("button");
-    el.className="tab"+(isRest?" rest":"")+(k===activeKey?" active":"")+(k===todayKey?" today":"");
+    el.className="tab"+(isRest?" rest":"")+(!isRest&&PLAN[k].recovery?" recov":"")+(k===activeKey?" active":"")+(k===todayKey?" today":"");
     el.innerHTML=`<small>${d}</small>${lbl}`;
     el.onclick=()=>{activeKey=k;renderTabs();renderDay();window.scrollTo({top:0,behavior:"smooth"});};
     t.appendChild(el);
@@ -344,7 +382,7 @@ function exBlock(item){
       ${loggable(b)}${hintBox(b)}
     </div>`;
   }
-  const extra=item.bwAdd?` <span class="sup">log added weight (0 = bodyweight)</span>`:"";
+  const extra=item.bwAdd?` <span class="sup">log added weight (0 = bodyweight)</span>`:item.sup?` <span class="sup">${item.sup}</span>`:"";
   const tgt=item.lift?` <span class="sup">target <b>${fmt(target(item))} lb</b> · ${Math.round(item.pct*100)}% of your ${MAX_LABELS[item.lift]} max</span>`:"";
   return `<div class="ex">
     <div class="ex-top">
@@ -365,6 +403,7 @@ function renderDay(){
       <p>${r.text}</p></div>`+cutTrackerCard()+cutCard();
     return;
   }
+  if(p.recovery){ v.innerHTML=renderRecovery(p); calcRecBurn(); return; }
   const low=isLow();
   const main=low?p.main.filter(it=>it.key):p.main;
   const cardio=low?Math.min(15,p.cardio):p.cardio;
@@ -425,6 +464,98 @@ function renderDay(){
   calcBurn();
 }
 
+/* ---------- SATURDAY: ACTIVE RECOVERY ---------- */
+function recKey(){ return "train_rec_"+dayStr(); }
+function recDone(){ try{ return JSON.parse(localStorage.getItem(recKey()))||{}; }catch(e){ return {}; } }
+function toggleRec(step){
+  const d=recDone(); d[step]=!d[step];
+  try{ localStorage.setItem(recKey(),JSON.stringify(d)); }catch(e){}
+  if(d[step]) flash("Done ✓"); renderDay();
+}
+function recHead(step,ico,title,right){
+  // tick-off only on the actual day; other days just show the time note
+  const isToday=activeKey===todayKey, done=isToday && recDone()[step];
+  const btn=isToday?`<button class="donebtn${done?" on":""}" onclick="toggleRec('${step}')">${done?"✓ done":"mark done"}</button>`:"";
+  return `<div class="sechead${done?" done":""}"><span class="ico">${ico}</span>${title}<span class="rest">${right}</span>${btn}</div>`;
+}
+function renderRecovery(p){
+  const low=isLow(), R=RECOVERY, core=CORE[p.core];
+  const jog=low?20:p.jog;
+  const rounds=low?1:2;
+  const mins=5+jog+(low?0:15)+8+rounds*18;   // each sauna/cold round ≈ 18 min
+  const moves=core.moves;
+  let html=`<div class="dayhead">
+    <h2>${p.day} · ${p.label}</h2>
+    <div class="focus">${low?"recovery · trimmed":p.sub} · ~${mins} min</div></div>`;
+
+  html+=`<button class="lowbtn${low?" on":""}" onclick="toggleLow()">
+    <b>${low?"⚡ Low-energy day: ON":"⚡ Low-energy day"}</b>
+    <span>${low?"20 min brisk walk, no core, massage + 1 sauna/cold round. Tap again for the full session.":"Wiped from the week? Tap to trim today to a walk, massage and one sauna/cold round."}</span></button>`;
+
+  if(activeKey===todayKey) html+=cutTrackerCard();
+
+  // 1. jog
+  html+=`<div class="section">
+    ${recHead("jog","🏃",low?"Brisk walk":"Light jog","walk 5 first")}
+    <div class="jog ${low?"opt":""}">
+      <div class="big">${jog}'</div>
+      <div class="lbl">${low?"Brisk walk outside or on an incline treadmill. Take a call or a podcast.":R.jogNote}</div>
+    </div></div>`;
+
+  // 2. core
+  if(!low) html+=`<div class="section">
+    ${recHead("core","🎯",`Core · 3 rounds`,"45s rest")}
+    <div class="ex"><div class="ex-top"><div class="ex-name">How to run it
+      <span class="sup">One set of each move back-to-back, rest 45s, repeat for 3 rounds. Log your best set of each.</span></div>
+      <div class="ex-scheme">~15 min</div></div></div>
+    ${moves.map(m=>exBlock(m)).join("")}</div>`;
+
+  // 3. massage
+  html+=`<div class="section">
+    ${recHead("massage","💆","Massage","~8 min")}
+    ${R.massage.map(([a,b])=>`<div class="ex"><div class="ex-top"><div class="ex-name">${a}</div><div class="ex-scheme">${b}</div></div></div>`).join("")}
+    <div class="ex"><div class="ex-name"><span class="sup" style="margin:0">${R.massageNote}</span></div></div></div>`;
+
+  // 4. sauna + cold
+  html+=`<div class="section">
+    ${recHead("contrast","♨️","Sauna + cold",low?"1 round":"2–3 rounds")}
+    ${R.contrast.map(([a,b,c])=>`<div class="ex"><div class="ex-top"><div class="ex-name">${a}<span class="sup">${c}</span></div><div class="ex-scheme">${b}</div></div></div>`).join("")}
+    <div class="ex"><div class="ex-name"><span class="sup" style="margin:0">${low?"Just 1 round today. Still finish on cold.":R.contrastNote}</span></div></div></div>`;
+
+  // calorie burn
+  html+=`<div class="card">
+    <h3><span class="ico">🔥</span>Calorie burn — ${p.day}</h3>
+    <div class="field"><label>Bodyweight</label>
+      <input type="number" id="bw" inputmode="decimal" value="${getBW()}" onchange="onBW()"><span class="unit" style="font-family:var(--mono);color:var(--muted);font-size:11px">lb</span></div>
+    <div class="field"><label>${low?"Walk":"Jog"} this session</label>
+      <input type="number" id="jogmin" inputmode="numeric" value="${jog}" onchange="calcRecBurn()"><span class="unit" style="font-family:var(--mono);color:var(--muted);font-size:11px">min</span></div>
+    <div class="burnout" id="burnout" data-mode="${low?"walk":"jog"}" data-core="${low?0:15}"></div>
+  </div>`;
+
+  html+=`<div class="card">
+    <h3><span class="ico">🧊</span>Recovery rules</h3>
+    <div class="burnout" style="margin-top:0;border-top:none;padding-top:0">${R.rules.map(([t,d])=>`<div class="rule"><b>${t}</b><span>${d}</span></div>`).join("")}</div>
+  </div>`;
+  if(!low) html+=trackerCard(p);
+  if(activeKey!==todayKey) html+=cutTrackerCard();
+  html+=cutCard();
+  return html;
+}
+function calcRecBurn(){
+  const out=document.getElementById("burnout"); if(!out||!out.dataset.mode) return;
+  const lb=parseFloat(document.getElementById("bw").value)||227, kg=lb*0.4536;
+  const min=parseFloat(document.getElementById("jogmin").value)||0;
+  const coreMin=parseFloat(out.dataset.core)||0;
+  // MET: brisk walk 4.3, light jog 7, core circuit 3.8; sauna/cold/massage not counted
+  const parts=[{n:"Walk warmup (5 min)",met:3.5,min:5},
+    {n:`${out.dataset.mode==="walk"?"Brisk walk":"Light jog"} (${min} min)`,met:out.dataset.mode==="walk"?4.3:7,min},
+    ...(coreMin?[{n:`Core circuit (~${coreMin} min)`,met:3.8,min:coreMin}]:[])];
+  let tot=0,rows="";
+  parts.forEach(pt=>{ const c=Math.round(pt.met*kg*(pt.min/60)); tot+=c; rows+=`<div class="brow"><span>${pt.n}</span><span>${c} kcal</span></div>`; });
+  out.innerHTML=rows+`<div class="btot"><span>Session total</span><span>${tot} kcal</span></div>
+    <div class="trk-meta" style="margin-top:6px"><span>Sauna and cold aren't counted. Their burn is small; they're here for recovery.</span></div>`;
+}
+
 /* low-energy day (per calendar day) */
 function lowKey(){ const d=new Date(); return `train_low_${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
 function isLow(){ try{ return localStorage.getItem(lowKey())==="1"; }catch(e){ return false; } }
@@ -440,7 +571,6 @@ function maxesCard(){
   </div>`;
 }
 const REST_DAYS={
-  sat:{em:"🚶",title:"Active recovery",text:"No gym. 45 min easy walk outside (take a call or a podcast on it), 10 min stretching, then 60–90 min meal prep for Mon–Wed."},
   sun:{em:"🛌",title:"Full rest",text:"Real rest, no training. Tonight take 15 minutes: put Mon–Fri gym times on your calendar like client meetings and pack your gym bag."},
 };
 const CUT_RULES=[
@@ -500,7 +630,7 @@ function burnCard(p,cardio,low){
 function getBW(){ return localStorage.getItem("train_bw")||227; }
 function onBW(){ const v=document.getElementById("bw").value; if(v)localStorage.setItem("train_bw",v); calcBurn(); }
 function calcBurn(){
-  const out=document.getElementById("burnout"); if(!out)return;
+  const out=document.getElementById("burnout"); if(!out||out.dataset.mode)return;  // recovery day uses calcRecBurn
   const lb=parseFloat(document.getElementById("bw").value)||227;
   const kg=lb*0.4536;
   const jog=parseFloat(document.getElementById("jogmin").value)||0;
@@ -521,6 +651,7 @@ function calcBurn(){
 function trackerCard(p){
   const ids=[];
   p.main.forEach(it=> it.ss?ids.push(it.a,it.b):ids.push(it));
+  if(p.recovery) ids.push(...CORE[p.core].moves);
   let body="";
   ids.forEach(m=>{
     const h=exHist(m.id);
@@ -549,6 +680,7 @@ function clearDay(){
   if(!confirm("Delete logged history for this day's exercises?"))return;
   const p=PLAN[activeKey]; const ids=[];
   p.main.forEach(it=> it.ss?ids.push(it.a.id,it.b.id):ids.push(it.id));
+  if(p.recovery) CORE[p.core].moves.forEach(m=>ids.push(m.id));
   ids.forEach(id=>delete DB[id]); saveDB(DB); renderDay();
 }
 
